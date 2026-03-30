@@ -1,7 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, IceCream, Inbox, PanelLeft } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, PanelLeft } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import mySorvetesLogo from '@/assets/logo_My_Sorvetes200.png';
+import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
+import sellionLogoFullPos from '@/assets/logo_sellion_positiva.png';
+import sellionSimbolo from '@/assets/simbolo_sellion.png';
 
 import {
   Sidebar,
@@ -31,13 +33,24 @@ export function AppSidebar(){
 
   return(
     <Sidebar variant="inset" collapsible="icon" className="bg-primary text-white border-none w-65">
+
       {/* Topo do Sidebar */}
-      <SidebarHeader className="h-34 flex justify-center items-center bg-primary border-b border-white/50">
-        <img src={mySorvetesLogo} alt="Logo MySorvetes" className="w-24 h-24 object-contain transition-all duration-300 group-data-[collapsible=icon]:w-20 group-data-[collapsible=icon]:h-20"/>
+      <SidebarHeader className="h-16 flex justify-center items-center bg-primary border-b border-white/50">
+        <img 
+           src={sellionLogoFullNeg} 
+           alt="Sellion" 
+           className="w-32 object-contain transition-all duration-300 group-data-[collapsible=icon]:hidden" 
+         />
+
+        <img 
+           src={sellionSimbolo} 
+           alt="Sellion" 
+           className="hidden w-10 h-10 object-contain transition-all duration-300 group-data-[collapsible=icon]:block" 
+         />
       </SidebarHeader>
 
       {/* CONTENT */}
-      <SidebarContent className="bg-primary">
+      <SidebarContent className="bg-primary overflow-y-auto">
 
         {/* Grupo de Operação */}
         <SidebarGroup>
@@ -59,7 +72,7 @@ export function AppSidebar(){
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="text-white hover:bg-white/10 hover:text-white py-5">
                 {/* Alterar o to depois de termos as rotas definidas */}
-                  <Link to="/" activeProps={{ className: 'font-semibold' }}>
+                  <Link to="/caixa" activeProps={{ className: 'font-semibold' }}>
                     <Inbox/>
                     <span className="ml-1 text-2sm">Controle de Caixa</span>
                   </Link>
@@ -81,7 +94,7 @@ export function AppSidebar(){
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="text-white hover:bg-white/10 hover:text-white py-5">
                   <Link to="/gestao" activeProps={{ className: 'font-semibold' }}>
-                    <IceCream />
+                    <ChefHat />
                     <span className="ml-1 text-sm font-semibold">Catálogo & Ficha Técnica</span>
                   </Link>
                 </SidebarMenuButton>

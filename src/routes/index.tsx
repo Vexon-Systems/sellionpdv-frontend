@@ -5,6 +5,7 @@ import { PdvView } from '../features/pdv/PdvView';
 import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { CatalogoView } from '@/features/backoffice/CatalogoView';
+import { ControleCaixaView } from '@/features/caixa/ControleCaixaView';
 
 
 const rootRoute = createRootRoute({
@@ -46,6 +47,18 @@ const pdvRoute = createRoute({
     component: PdvView,
 });
 
+const caixaRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/caixa',
+    beforeLoad: () => {
+        const isAuthenticated = useAuthStore.getState().isAuthenticated;
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' }); 
+        }
+    },
+    component: ControleCaixaView,
+});
+
 const backofficeRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/gestao',
@@ -64,7 +77,7 @@ const backofficeRoute = createRoute({
     component: CatalogoView,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, backofficeRoute]);
+const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, backofficeRoute]);
 
 export const router = createRouter({ routeTree });
 

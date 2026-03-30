@@ -1,18 +1,28 @@
 // src/features/backoffice/ProdutoForm.tsx
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { ProdutoDTO } from "@/types/pdv";
 import { salvarProduto, excluirProduto } from "@/services/apiProdutos";
-import { categoriasMock } from "@/features/pdv/MockData"; // Para o <select> de categorias
+import { categoriasMock } from "@/features/pdv/MockData"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 import { Pen, Save, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
     nome: z.string().min(3, "O nome deve ter pelo menos 3 letras"),
@@ -33,7 +43,7 @@ interface ProdutoFormProps {
 export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps){
     const queryClient = useQueryClient();
     
-    const {register, handleSubmit, reset, watch, setValue, formState: {errors}} = useForm<FormInputs>({
+    const {register, handleSubmit, reset, watch, setValue, control, formState: {errors}} = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             nome: "",
@@ -70,6 +80,7 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
             return salvarProduto({ ...dados, id: produtoId || undefined });
         },
         onSuccess: () => {
+            toast.success(`Produto salvo com sucesso!`)
             queryClient.invalidateQueries({queryKey: ['lista-produtos']});
             onClose();
         }
@@ -78,6 +89,7 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
     const mutationExcluir = useMutation({
         mutationFn: excluirProduto,
         onSuccess: () => {
+            toast.success(`Produto deletado com sucesso!`)
             queryClient.invalidateQueries({queryKey: ['lista-produtos']});
             onClose();
         }
@@ -154,15 +166,34 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     {/* Categoria */}
                     <div className="space-y-2">
                         <Label>Categoria</Label>
-                        <select 
-                            {...register("categoriaId", {valueAsNumber: true})} 
-                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                        {categoriasMock.map((cat, index) => {
-                            if (cat === "Todos") return null; // Ignora a aba "Todos"
-                            return <option key={index} value={index}>{cat}</option>;
-                        })}
-                        </select>
+                        <Controller
+                            name="categoriaId"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                value={field.value?.toString()} 
+                                onValueChange={(valorEmTexto) => {
+                                    field.onChange(Number(valorEmTexto)); // Volta para número ao salvar no Zod
+                                }}
+                                >
+                                    <SelectTrigger className="w-full bg-white">
+                                        <SelectValue placeholder="Selecione uma categoria" />
+                                    </SelectTrigger>
+                                    
+                                    <SelectContent className="bg-white">
+                                        {categoriasMock.map((cat, index) => {
+                                        if (cat === "Todos") return null; // Ignora a aba "Todos"
+                                        return (
+                                            <SelectItem key={index} value={index.toString()}>
+                                            {cat}
+                                            </SelectItem>
+                                        );
+                                        })}
+                                    </SelectContent>
+                                </Select>
+                        )}
+                        />
+                        {errors.categoriaId && <p className="text-red-500 text-sm">{errors.categoriaId.message}</p>}
                     </div>
                 </div>
 

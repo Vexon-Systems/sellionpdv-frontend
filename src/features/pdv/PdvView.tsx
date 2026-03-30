@@ -9,9 +9,12 @@ import { ProdutoModal } from "./ProdutoModal";
 import { useCartStore } from "@/store/useCartStore";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProdutos } from "@/services/apiProdutos";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function PdvView(){
     const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoDTO | null>(null);
+    const [categoriaAtiva, setCategoriaAtiva] = useState<string>("Todos");
+
     const { itens, removerItem, alterarQuantidade } = useCartStore();
     const subtotal = itens.reduce((total, item) => total + (item.produto.preco * item.quantidade), 0);
 
@@ -20,90 +23,113 @@ export function PdvView(){
         queryFn: fetchProdutos, 
     });
 
+    const idCategoriaAtiva = categoriasMock.indexOf(categoriaAtiva);
+    const produtosFiltrados = produtos?.filter(produto =>
+        categoriaAtiva === "Todos" || produto.categoriaId === idCategoriaAtiva
+    );
+
     return (
-        <div className="flex flex-1 h-screen w-full bg-slate-100 overflow-hidden">
+        <div className="flex flex-1 h-screen w-full bg-slate-50 overflow-hidden">
 
             {/* Bloco: Conteúdo Principal */}
-            <main className="flex flex-1 flex-col bg-slate-100 p-8 overflow-y-auto">
+            <main className="flex flex-1 flex-col bg-slate-50 p-8 overflow-y-auto">
 
-                {/* Topo: Título e Pesquisa */}
-                <div className="flex flex-col gap-3 justify-between mb-8">
+                {/* 1. CABEÇALHO */}
+                <div className="flex justify-between items-center">
                     <div>
-                        <h2 className="text-3xl font-semibold text-gray-800 mt-3">Frente de Caixa</h2>  
-
+                        <h1 className="text-3xl font-bold text-gray-900 leading-tight">Frente de Caixas</h1>
+                        <p className="text-sm mt-1 text-gray-500">Realize vendas dos produtos.</p>
                     </div>
                     
-                    <div className="relative w-80">
+                    <div className="relative w-90">
                         <Search className="absolute left-2 top-1/5 text-gray-800" size={18}/>
                         <Input
                             type="text"
-                            placeholder="Pesquisar..."
+                            placeholder="Pesquisar por produto..."
                             className="bg-white pl-10 border-gray-200"
                         />
                     </div>
                 </div>
 
-                {/* FILTROS DE CATEGORIAS */}
-                <div className="flex gap-10 mb-6 pb-2">
-                    {categoriasMock.map((categoria, index) => (
-                        <button
-                        key={categoria}
-                        className={`pb-2 text-sm font-medium transition-colors ${
-                            index === 0
-                            ? 'border-b-2 border-primary text-primary' 
-                            : 'text-gray-500 hover:text-gray-800'
-                        }
-                            `}
-                        >
-                          {categoria}          
-                        </button>
-                    ))}
+                {/* Topo: Título e Pesquisa */}
+                <div className="flex flex-col gap-3 justify-between mb-8">
+                    
+                    
                 </div>
-                
-                {/* GRID DE PRODUTOS */}
-                    {isLoading && (
-                    <div className="flex justify-center items-center h-64 w-full">
-                        <p className="text-gray-500 font-medium animate-pulse">Carregando catálogo de produtos...</p>
+
+                {/* 2. CATEGORIAS (Navegação com Tabs do shadcn) */}
+                <div className="mb-6">
+                    <Tabs value={categoriaAtiva} onValueChange={setCategoriaAtiva} className="w-full">
+                        <TabsList className="flex w-full justify-start gap-6 rounded-md border-gray-200 bg-gray-100 h-auto">
+                        
+                            {categoriasMock.map((categoria) => (
+                                <TabsTrigger
+                                key={categoria}
+                                value={categoria}
+                                className="rounded-md transition-all"
+                                >
+                                {categoria}
+                                </TabsTrigger>
+                            ))}
+
+                        </TabsList>
+                    </Tabs>
+                </div>
+
+                {/* 3. VITRINE DE PRODUTOS */}
+                {isLoading && (
+                <div className="flex justify-center items-center h-64 w-full">
+                    <p className="text-gray-500 font-medium animate-pulse">Carregando catálogo...</p>
+                </div>
+                )}
+
+                {isError && (
+                <div className="flex justify-center items-center h-64 w-full text-red-500">
+                    <p>Erro ao conectar com o servidor. Tente novamente.</p>
+                </div>
+                )}
+
+                {!isLoading && !isError && produtosFiltrados && (
+                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-6">
+                    
+                    {produtosFiltrados.map((produto) => (
+                    <Card 
+                        key={produto.id} 
+                        onClick={() => setProdutoSelecionado(produto)}
+                        className="cursor-pointer hover:shadow-md transition-shadow border-gray-200 overflow-hidden"
+                    >                        
+                        <div className={`h-30 w-full ${produto.imagemUrl || 'bg-gray-200'} flex items-center justify-center`}>
+                            <span className="text-white font-bold opacity-50">IMAGEM</span>
+                        </div>
+
+                        <CardContent className="p-2">
+                            <h3 className="font-medium text-gray-800">{produto.nome}</h3>
+                            <p className="font-bold text-primary">
+                            {produto.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </p>
+                        </CardContent>
+
+                    </Card>
+                    ))}
+                    
+                    {/* Mensagem amigável caso uma categoria não tenha produtos ativos */}
+                    {produtosFiltrados.length === 0 && (
+                    <div className="col-span-full py-12 text-center text-gray-400">
+                        <p>Nenhum produto encontrado nesta categoria.</p>
                     </div>
                     )}
 
-                    {/* Se deu erro na API */}
-                    {isError && (
-                    <div className="flex justify-center items-center h-64 w-full text-red-500">
-                        <p>Erro ao conectar com o servidor. Tente novamente.</p>
-                    </div>
-                    )}
+                </div>
+                )}
 
-                    {!isLoading && !isError && produtos && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {produtos.map((produto) => (
-                        <Card 
-                            key={produto.id} 
-                            onClick={() => setProdutoSelecionado(produto)}
-                            className="cursor-pointer hover:shadow-md transition-shadow border-gray-200 overflow-hidden"
-                        >
-                            <div className={`h-40 w-full ${produto.imagemUrl} flex items-center justify-center`}>
-                                <span className="p-2 text-white font-bold opacity-50">IMAGEM</span>
-                            </div>
-
-                            <CardContent className="p-2">
-                                <h3 className="font-medium text-gray-800">{produto.nome}</h3>
-                                <p className="font-bold text-primary">
-                                    {produto.preco.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}
-                                </p>
-                            </CardContent>
-                        </Card>
-                        ))}
-                    </div>
-                    )}
             </main>
 
 
 
             {/* Bloco: Carrinho */}
-            <aside className="w-85 bg-gray-50 border-l border-gray-200 flex flex-col">
+            <aside className="w-1/5 bg-slate-50 border-l border-gray-200 flex flex-col">
                 {/* Título do Carrinho */}
-                <div className="p-4 border-b border-gray-200 bg-white flex gap-2">
+                <div className="p-4 border-b border-gray-200 bg-slate-50 flex gap-2">
                     <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
                         <ShoppingCart size={24}/>
                         Carrinho
@@ -111,9 +137,9 @@ export function PdvView(){
                 </div>
 
                 {/* Lista de Itens */}
-                <div className="flex-1 bg-white overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 bg-slate-50 overflow-y-auto p-4 space-y-4">
                     {itens.map((item) => (
-                        <div key={item.id_temporario} className="bg-white p-4 rounded-mds shadow-sm">
+                        <div key={item.id_temporario} className="bg-slate-50 p-4 rounded-mds shadow-sm">
                             {/* Linha 1: Nome e Preço */}
                             <div className="flex justify-between items-start mb-1">
                                 <div>
@@ -178,7 +204,7 @@ export function PdvView(){
                 </div>
 
                 {/* 3. RESUMO*/}
-                <div className="bg-white p-4 border-t border-gray-200">
+                <div className="bg-slate-50 p-4 border-t border-gray-200">
                 
                     <div className="space-y-2 mb-4">
                         <div className="flex justify-between text-gray-600">
@@ -198,7 +224,7 @@ export function PdvView(){
                     </div>
                 </div>
 
-                <div className="space-y-4 bg-white pr-4 pl-4 pb-2">
+                <div className="space-y-4 bg-slate-50 pr-4 pl-4 pb-2">
                     <h4 className="text-md font-semibold text-gray-800">Método de Pagamento</h4>
                         <div className="grid grid-cols-3 gap-2">
                             <Button variant="outline" className="flex flex-col h-16 gap-1 text-gray-600 hover:border-primary hover:text-primary">
