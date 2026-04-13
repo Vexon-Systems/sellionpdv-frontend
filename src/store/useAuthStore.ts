@@ -1,13 +1,6 @@
 import { create } from 'zustand'
-
+import { type User } from '@/types/user'
 export type Role = 'ROLE_ADMIN' | 'ROLE_OPERADOR'
-
-interface User{
-    id: number
-    nome: string
-    email: string
-    role: Role
-}
 
 interface AuthState {
     user: User | null

@@ -1,7 +1,6 @@
-// src/features/caixa/ControleCaixaView.tsx
 import { 
-  LockOpen, Lock, Box, Coins, DollarSign, 
-  ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound
+    LockOpen, Lock, Box, Coins, DollarSign, 
+    ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { extratoMock, resumoCaixaMock } from "./mockCaixa";
@@ -26,12 +25,12 @@ export function ControleCaixaView(){
     };
 
     return(
-        <div className="flex flex-col h-screen w-full bg-slate-50 overflow-y-auto p-8">
+        <div className="flex flex-col h-screen w-full bg-white overflow-y-auto p-8">
       
-            {/* 1. CABEÇALHO */}
+            {/* 1 - Cabeçalho */}
             <div className="flex justify-between items-start mb-8">
                 <div>
-                <h1 className="text-3xl font-bold text-gray-900 leading-tight">Controle de Caixa</h1>
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight">Controle de Caixa</h1>
                 <p className="text-sm text-gray-500 mt-1">
                     Operador: {resumoCaixaMock.operador} | Abertura: {resumoCaixaMock.dataAbertura} às {resumoCaixaMock.horaAbertura}
                 </p>
@@ -44,7 +43,7 @@ export function ControleCaixaView(){
                 </div>
             </div>
 
-            {/* 2. CARDS DE RESUMO */}
+            {/* 2 - Cards de Resumo */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex justify-between items-start mb-2">
@@ -80,7 +79,7 @@ export function ControleCaixaView(){
                 </div>
             </div>
 
-            {/* 3. BARRA DE AÇÕES */}
+            {/* 3 - Barra de ações */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex gap-3">
                     <Button
@@ -107,7 +106,7 @@ export function ControleCaixaView(){
                     </Button>
             </div>
 
-            {/* 4. EXTRATO DE MOVIMENTAÇÕES */}
+            {/* 4 - Extrato de Movimentação */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h3 className="font-semibold text-gray-800">Extrato de Movimentações</h3>

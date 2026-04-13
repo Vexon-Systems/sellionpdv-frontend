@@ -1,15 +1,16 @@
-// src/features/auth/LoginView.tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../store/useAuthStore";
+import { login } from "@/services/apiAuth";
 
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import sellionLogoPos from '../../assets/logo_sellion_positiva.png';
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Por favor, digite um e-mail válido."),
@@ -31,16 +32,23 @@ export function LoginView() {
   });
 
   const onSubmit = async (data: LoginFormInputs) => {
-    console.log("Dados enviados para a API (Fake):", data);
     
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const respostaApi = await login(data.email, data.senha);
 
-    const mockUser = { id: 1, nome: "Admin MySorvetes", email: data.email, role: "ROLE_ADMIN" as const };
-    const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fake-token";
+      setAuth(respostaApi.usuario, respostaApi.token);
 
-    setAuth(mockUser, mockToken);
+      toast.success(`Bem-vindo de volta, ${respostaApi.usuario.nome}!`);
 
-    navigate({ to: "/" });
+      navigate({ to: "/" });
+
+    } catch (error) {
+      console.error("Falha na autenticação:", error);
+      
+      toast.error("Erro ao acessar", {
+        description: "E-mail ou senha incorretos. Verifique e tente novamente."
+      });
+    }
   };
 
   return (

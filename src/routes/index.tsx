@@ -6,6 +6,7 @@ import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { CatalogoView } from '@/features/backoffice/CatalogoView';
 import { ControleCaixaView } from '@/features/caixa/ControleCaixaView';
+import { ModificadoresView } from '@/features/backoffice/ModificadoresView';
 
 
 const rootRoute = createRootRoute({
@@ -59,9 +60,9 @@ const caixaRoute = createRoute({
     component: ControleCaixaView,
 });
 
-const backofficeRoute = createRoute({
+const catalogoRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/gestao',
+    path: '/catalogo',
     beforeLoad: () => {
         const { isAuthenticated, user } = useAuthStore.getState();
         
@@ -77,7 +78,25 @@ const backofficeRoute = createRoute({
     component: CatalogoView,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, backofficeRoute]);
+const modificadoresRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/modificadores',
+    beforeLoad: () => {
+        const { isAuthenticated, user } = useAuthStore.getState();
+        
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' });
+        }
+        
+        if (user?.role !== 'ROLE_ADMIN') {
+            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            throw redirect({ to: '/' }); 
+        }
+    },
+    component: ModificadoresView,
+});
+
+const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute]);
 
 export const router = createRouter({ routeTree });
 

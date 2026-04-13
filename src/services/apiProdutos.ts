@@ -1,36 +1,38 @@
-import { type ProdutoDTO } from '@/types/pdv';
-import { produtosMock as produtosIniciais } from '@/features/pdv/MockData';
+import { api } from './api';
+import type { ProdutoDTO } from '@/types/pdv';
 
-let bdFalso = [...produtosIniciais]
-
-// GET
 export const fetchProdutos = async (): Promise<ProdutoDTO[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return [...bdFalso];
+  const response = await api.get<ProdutoDTO[]>('/api/produtos');
+  return response.data;
 };
 
-// POST ou PUT
-export const salvarProduto = async (produto: Omit<ProdutoDTO, 'id'> & { id?: number }): Promise<ProdutoDTO> => {
-  await new Promise((resolve) => setTimeout(resolve, 800));
+export const fetchProdutoPorId = async (id: number): Promise<ProdutoDTO> => {
+  const response = await api.get<ProdutoDTO>(`/api/produtos/${id}`);
+  return response.data;
+};
 
+export const salvarProduto = async (produto: Partial<ProdutoDTO>): Promise<ProdutoDTO> => {
+  
   if (produto.id) {
-    // É uma edição (PUT)
-    bdFalso = bdFalso.map(p => p.id === produto.id ? produto as ProdutoDTO : p);
-    return produto as ProdutoDTO;
+    const response = await api.put<ProdutoDTO>(`/api/produtos/${produto.id}`, produto);
+    return response.data;
   } else {
-    // É uma criação (POST)
-    const novoProduto: ProdutoDTO = {
-      ...produto,
-      id: Math.floor(Math.random() * 10000), // Backend falso gerando ID
-    } as ProdutoDTO;
-    bdFalso.push(novoProduto);
-    return novoProduto;
+    const { id, ...produtoNovo } = produto; 
+    const response = await api.post<ProdutoDTO>('/api/produtos', produtoNovo);
+    return response.data;
   }
 };
-
-// 3. EXCLUIR (DELETE)
+ 
 export const excluirProduto = async (id: number): Promise<void> => {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  bdFalso = bdFalso.filter(p => p.id !== id);
+  try {
+    await api.delete(`/api/produtos/${id}`);
+  } catch (error: any) {
+    if (error.response?.status === 405 || error.response?.status === 404) {
+      console.warn("Rota DELETE não encontrada, executando Soft Delete via PUT...");
+      const produto = await fetchProdutoPorId(id);
+      await api.put(`/api/produtos/${id}`, { ...produto, ativo: false });
+    } else {
+      throw error;
+    }
+  }
 };

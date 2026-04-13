@@ -1,14 +1,35 @@
+import type { OpcaoModificadorDTO } from "@/services/apiModificadores";
+
 export interface ProdutoDTO {
-    id: number;
+    id?: number;
     nome: string;
-    preco: number;
+    precoBase: number;
     ativo: boolean;
     categoriaId: number;
     imagemUrl?: string;
+    gruposModificadores: ProdutoGrupoModificadorDTO[];
+}
+
+export interface ModificadorSelecionado {
+    opcaoId: number;
+    nome: string;
+    precoAdicional: number;
 }
 
 export interface ItemCarrinho{
-    id_temporario: string;
+    idCarrinho: string;
     produto: ProdutoDTO;
     quantidade: number;
+    modificadores: ModificadorSelecionado[];
+    valorUnitarioTotal: number; // Preço base + soma dos modificadores
+    subtotal: number;
+}
+
+export interface ProdutoGrupoModificadorDTO {
+    grupoId: number;
+    nome: string; 
+    tipoEscolha: 'UNICA' | 'MULTIPLA';
+    minOpcoes: number;
+    maxOpcoes: number;
+    opcoes: OpcaoModificadorDTO[];
 }

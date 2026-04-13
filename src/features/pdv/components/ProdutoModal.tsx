@@ -38,21 +38,16 @@ export function ProdutoModal({isOpen, onClose, produto}: ProdutoModalProps){
     };
 
     return (
-    // onOpenChange avisa o componente pai quando o modal tenta fechar (ex: clicando fora)
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      {/* p-0 tira as margens internas, overflow-hidden corta as bordas pra ficarem arredondadas */}
       <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden bg-slate-50 border-none">
         
-        {/* CABEÇALHO ROXO (Igual ao seu Figma) */}
         <div className="bg-primary text-white p-4 flex justify-between items-center">
           <DialogTitle className="text-xl font-bold m-0">{produto.nome}</DialogTitle>
           
         </div>
 
-        {/* CORPO DO MODAL (Opções) */}
         <div className="p-6 space-y-6">
           
-          {/* Seção: Sabor */}
           <div className="space-y-3">
             <h4 className="font-bold text-lg text-gray-800">Sabor</h4>
             <div className="flex flex-wrap gap-2">
@@ -69,7 +64,7 @@ export function ProdutoModal({isOpen, onClose, produto}: ProdutoModalProps){
             </div>
           </div>
 
-          {/* Seção: Recheio */}
+          {/* Seção Recheio */}
           <div className="space-y-3">
             <h4 className="font-bold text-lg text-gray-800">Recheio</h4>
             <div className="flex flex-wrap gap-2">
@@ -88,7 +83,7 @@ export function ProdutoModal({isOpen, onClose, produto}: ProdutoModalProps){
 
         </div>
 
-        {/* RODAPÉ DO MODAL (Preço e Ações) */}
+        {/* RODAPÉ DO MODAL */}
         <div className="bg-gray-200 p-4 flex justify-between items-center mt-2">
           <span className="text-xl font-bold text-gray-900">
             {produto.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}

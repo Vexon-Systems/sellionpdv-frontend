@@ -1,17 +1,22 @@
-// src/features/backoffice/ProdutoForm.tsx
 import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
+import { useForm, Controller, useFieldArray} from "react-hook-form";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { fetchCategorias } from "@/services/apiCategorias"
+import { fetchModificadores } from "@/services/apiModificadores";
+import { criarCategoria } from "@/services/apiCategorias";
+import { Dialog, DialogContent, DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import type { ProdutoDTO } from "@/types/pdv";
-import { salvarProduto, excluirProduto } from "@/services/apiProdutos";
-import { categoriasMock } from "@/features/pdv/MockData"; 
+import { salvarProduto, excluirProduto } from "@/services/apiProdutos"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+
+import { type ProdutoGrupoModificadorDTO } from "@/types/pdv";
 
 import {
     Select,
@@ -21,19 +26,44 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { Pen, Save, Trash2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+import { GerenciarCategoriasDialog } from "./GerenciarCategoriasDialog";
+
+import { Pen, Save, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const formSchema = z.object({
     nome: z.string().min(3, "O nome deve ter pelo menos 3 letras"),
-    preco: z.number().min(0.01, "O preço deve ser maior que zero."),
+    precoBase: z.number().min(0.01, "O preço deve ser maior que zero."),
     categoriaId: z.number(),
     ativo: z.boolean(),
+
+    gruposModificadores: z.array(
+        z.object({
+            grupoId: z.number().min(1, "Selecione um grupo válido"),
+            tipoEscolha: z.enum(["UNICA", "MULTIPLA"]),
+            minOpcoes: z.number().min(0),
+            maxOpcoes: z.number().min(1),
+            opcoes: z.any().optional()
+        })
+    ).default([])
 });
 
-type FormInputs = z.infer<typeof formSchema>;
+type FormInputs = z.input<typeof formSchema>;
 
-// O que o formulário precisa receber da tela principal
 interface ProdutoFormProps {
     produtoId: number | null,
     produtoAtual: ProdutoDTO | undefined;
@@ -42,38 +72,54 @@ interface ProdutoFormProps {
 
 export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps){
     const queryClient = useQueryClient();
+
+    const [isCategoriaModalOpen, setIsCategoriaModalOpen] = useState(false);
+
+    const { data: categorias, isLoading: isLoadingCategorias } = useQuery({
+        queryKey: ['lista-categorias'],
+        queryFn: fetchCategorias,
+    });
     
     const {register, handleSubmit, reset, watch, setValue, control, formState: {errors}} = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             nome: "",
-            preco: 0,
+            precoBase: 0,
             categoriaId: 1,
             ativo: true,
+            gruposModificadores: [],
         }
     });
 
-    const precoAtual = watch("preco") || 0;
 
-    // Simulando que o custo é sempre 40%
+    const precoAtual = watch("precoBase") || 0;
+
     const custoEstimado = precoAtual * 0.4;
     const margemBruta = precoAtual > 0 ? ((precoAtual - custoEstimado) / precoAtual) * 100 : 0;
     
     const isAtivo = watch("ativo");
 
-    // Se o usuário clicar em um produto, o form é preenchido
+    const { fields, append, remove, replace } = useFieldArray({
+        control,
+        name: "gruposModificadores",
+    });
+
     useEffect(() => {
         if (produtoAtual) {
             reset({
                 nome: produtoAtual.nome,
-                preco: produtoAtual.preco,
+                precoBase: produtoAtual.precoBase,
                 categoriaId: produtoAtual.categoriaId,
                 ativo: produtoAtual.ativo,
+                gruposModificadores: produtoAtual.gruposModificadores || [],
             });
+
+            replace(produtoAtual.gruposModificadores || []);
         } else {
-            reset({nome: "", preco: 0, categoriaId: 1, ativo: true});
+            reset({nome: "", precoBase: 0, categoriaId: 1, ativo: true, gruposModificadores: []});
+            replace([]);
         }
-    }, [produtoAtual, reset]);
+    }, [produtoAtual, reset, replace]);
 
     const mutationSalvar = useMutation({
         mutationFn: (dados: FormInputs) => {
@@ -99,6 +145,36 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
         mutationSalvar.mutate(dados);
     }
 
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [novoVinculo, setNovoVinculo] = useState({
+        grupoId: 0,
+        tipoEscolha: 'MULTIPLA' as "UNICA" | "MULTIPLA",
+        minOpcoes: 0,
+        maxOpcoes: 1
+    });
+
+    const handleAdicionarVinculo = () => {
+        if (novoVinculo.grupoId === 0) {
+            toast.error("Selecione um grupo de modificadores!");
+            return;
+        }
+        
+        // Verifica se o grupo já não está vinculado para evitar duplicidade
+        if (fields.some(f => f.grupoId === novoVinculo.grupoId)) {
+            toast.error("Este grupo já está vinculado ao produto!");
+            return;
+        }
+
+        append(novoVinculo);
+        setIsPopoverOpen(false); 
+        setNovoVinculo({ grupoId: 0, tipoEscolha: 'MULTIPLA', minOpcoes: 0, maxOpcoes: 1 }); // Reseta
+    };
+
+    const { data: listaDeTodosOsGrupos } = useQuery({
+        queryKey: ['lista-modificadores'],
+        queryFn: fetchModificadores,
+    });
+
     return (
         <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
             <div className="flex justify-between items-center mb-6">
@@ -112,14 +188,35 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                 {/* Ações (Editar, Inativar, Excluir) */}
                 {produtoId && (
                 <div className="flex gap-2">
-                    <Button 
-                        variant="destructive" 
-                        onClick={() => mutationExcluir.mutate(produtoId)}
-                        disabled={mutationExcluir.isPending}
-                        className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                    <Trash2 size={16}/> Excluir
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button 
+                                variant="destructive" 
+                                className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                            >
+                                <Trash2 size={16}/> Excluir
+                            </Button>
+                        </AlertDialogTrigger>
+
+                        <AlertDialogContent className="bg-white">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Deseja excluir o produto "{watch("nome")}" ? Está ação não poderá ser desfeita.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => mutationExcluir.mutate(produtoId)}
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                    Confirmar
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    
                 </div>
                 )}
             </div>
@@ -159,13 +256,24 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     {/* Preço Base */}
                     <div className="space-y-2">
                         <Label>Preço Base (R$)</Label>
-                        <Input type="number" step="0.01" {...register("preco", { valueAsNumber: true })} />
-                        {errors.preco && <p className="text-red-500 text-sm">{errors.preco.message}</p>}
+                        <Input type="number" step="0.01" {...register("precoBase", { valueAsNumber: true })} />
+                        {errors.precoBase && <p className="text-red-500 text-sm">{errors.precoBase.message}</p>}
                     </div>
 
                     {/* Categoria */}
                     <div className="space-y-2">
-                        <Label>Categoria</Label>
+                        <div className="flex justify-between items-center">
+                            <Label>Categoria</Label>
+                            <button 
+                                type="button" 
+                                onClick={() => setIsCategoriaModalOpen(true)}
+                                className="text-xs text-primary font-medium flex items-center hover:underline cursor-pointer"
+                            >
+                                Gerenciar categorias
+                            </button>
+                        </div>
+
+
                         <Controller
                             name="categoriaId"
                             control={control}
@@ -181,14 +289,15 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                                     </SelectTrigger>
                                     
                                     <SelectContent className="bg-white">
-                                        {categoriasMock.map((cat, index) => {
-                                        if (cat === "Todos") return null; // Ignora a aba "Todos"
-                                        return (
-                                            <SelectItem key={index} value={index.toString()}>
-                                            {cat}
+                                        {isLoadingCategorias && (
+                                            <div className="p-2 text-sm text-gray-500 text-center">Carregando...</div>
+                                        )}
+                                        
+                                        {categorias?.map((cat) => (
+                                            <SelectItem key={cat.id} value={cat.id.toString()}>
+                                                {cat.nome}
                                             </SelectItem>
-                                        );
-                                        })}
+                                        ))}
                                     </SelectContent>
                                 </Select>
                         )}
@@ -198,35 +307,159 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                 </div>
 
                 {/* Status (Ativo/Inativo) */}
-                <div className="space-y-2 pt-4 border-t">
+                {/* <div className="space-y-2 pt-4 border-t">
                     <Label>Status de Venda</Label>
                     <div className="flex gap-4 mt-2">
                         <Button
                             type="button"
                             variant={isAtivo ? "default" : "outline"}
-                            className={isAtivo ? "bg-green-600 hover:bg-green-700" : ""}
+                            className={isAtivo ? "text-green-700 bg-green-100 hover:bg-green-200 hover:text-green-900 cursor-pointer" : "cursor-pointer" }
                             onClick={() => setValue("ativo", true)}
                         >
                             Ativo (Visível no PDV)
                         </Button>
                         <Button
                             type="button"
+                            className="cursor-pointer"
                             variant={!isAtivo ? "destructive" : "outline"}
                             onClick={() => setValue("ativo", false)}
                         >
                             Inativo (Oculto)
                         </Button>
                     </div>
+                </div> */}
+
+                {/* MODIFICADORES DINÂMICOS */}
+                <div className="space-y-4 pt-6 border-t">
+                    <div className="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 className="font-bold text-lg text-gray-800">Modificadores do Produto</h3>
+                            <p className="text-sm text-gray-500">Adicione tamanhos, sabores ou adicionais.</p>
+                        </div>
+
+                        {/* O NOSSO NOVO POPOVER MÁGICO */}
+                        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                            <PopoverTrigger asChild>
+                                <Button type="button" variant="outline" size="sm" className="border-dashed border-2 hover:bg-gray-50">
+                                    <Plus size={16} className="mr-2" /> Vincular Grupo
+                                </Button>
+                            </PopoverTrigger>
+                            
+                            <PopoverContent align="end" className="w-80 bg-white p-4 shadow-xl border-gray-200">
+                                <div className="space-y-4">
+                                    <h4 className="font-semibold text-gray-900 border-b pb-2">Novo Vínculo</h4>
+                                    
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Selecione o Grupo</Label>
+                                        <Select 
+                                            value={novoVinculo.grupoId.toString()} 
+                                            onValueChange={(val) => setNovoVinculo({...novoVinculo, grupoId: Number(val)})}
+                                        >
+                                            <SelectTrigger className="w-full bg-white h-9"><SelectValue placeholder="Escolha um grupo..." /></SelectTrigger>
+                                            <SelectContent className="bg-white">
+                                                {listaDeTodosOsGrupos?.map(g => (
+                                                    <SelectItem key={g.id} value={g.id.toString()}>{g.nome}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Tipo de Escolha</Label>
+                                        <Select 
+                                            value={novoVinculo.tipoEscolha} 
+                                            onValueChange={(val: "UNICA" | "MULTIPLA") => setNovoVinculo({...novoVinculo, tipoEscolha: val})}
+                                        >
+                                            <SelectTrigger className="w-full bg-white h-9"><SelectValue /></SelectTrigger>
+                                            <SelectContent className="bg-white">
+                                                <SelectItem value="UNICA">Escolha Única (Ex: Tamanho)</SelectItem>
+                                                <SelectItem value="MULTIPLA">Múltipla Escolha (Ex: Adicionais)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Mínimo</Label>
+                                            <Input 
+                                                type="number" min={0} className="h-9" 
+                                                value={novoVinculo.minOpcoes} 
+                                                onChange={(e) => setNovoVinculo({...novoVinculo, minOpcoes: Number(e.target.value)})}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Máximo</Label>
+                                            <Input 
+                                                type="number" min={1} className="h-9" 
+                                                value={novoVinculo.maxOpcoes} 
+                                                onChange={(e) => setNovoVinculo({...novoVinculo, maxOpcoes: Number(e.target.value)})}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <Button type="button" onClick={handleAdicionarVinculo} className="w-full mt-2">
+                                        Confirmar Vínculo
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    {/* LISTA DE GRUPOS JÁ VINCULADOS */}
+                    {fields.length === 0 ? (
+                        <div className="p-6 border-2 border-dashed rounded-lg text-center bg-gray-50 text-gray-400">
+                            Nenhum modificador vinculado a este produto.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {fields.map((field, index) => {
+                                // Buscamos o nome do grupo na lista global para exibir na tela
+                                const grupoInfo = listaDeTodosOsGrupos?.find(g => g.id === field.grupoId);
+                                
+                                return (
+                                    <div key={field.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:border-primary/30 transition-colors">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-800 text-sm">{grupoInfo?.nome || "Grupo Carregando..."}</h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${field.tipoEscolha === 'UNICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                                                    {field.tipoEscolha === 'UNICA' ? 'Única' : 'Múltipla'}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    (Min: {field.minOpcoes} | Máx: {field.maxOpcoes})
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => remove(index)}
+                                            className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                        >
+                                            <Trash2 size={16} />
+                                        </Button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* Rodapé: Salvar */}
                 <div className="pt-6 flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-                    <Button type="submit" disabled={mutationSalvar.isPending} className="bg-primary">
+                    <Button type="submit" disabled={mutationSalvar.isPending} className="bg-primary hover:bg-primary/80 cursor-pointer">
                         <Save size={16} className="mr-2" />
                         {mutationSalvar.isPending ? "Salvando..." : "Salvar Produto"}
                     </Button>
                 </div>
+            
+            {/* Modal de Gerencia de Categoria */}
+            <GerenciarCategoriasDialog 
+                isOpen={isCategoriaModalOpen} 
+                onClose={() => setIsCategoriaModalOpen(false)} 
+                onCategoriaCriada={(idNovo) => setValue("categoriaId", idNovo)}
+            />
 
             </form>
 
