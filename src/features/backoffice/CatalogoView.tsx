@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProdutos } from "@/services/apiProdutos";
-import { fetchCategorias } from "@/services/apiCategorias";
+import { fetchProdutos } from "../pdv/services/apiProdutos";
+import { fetchCategorias } from "./services/apiCategorias";
 
 import { Search, Plus, Package, Utensils } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/layout/Header";
 
-import {ProdutoForm} from "./ProdutoForm";
+import {ProdutoForm} from "./components/ProdutoForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from "@/components/ui/card";
 
 export function CatalogoView() {

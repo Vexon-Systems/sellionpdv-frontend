@@ -1,7 +1,5 @@
-import type { OpcaoModificadorDTO } from "@/services/apiModificadores";
-
 export interface ProdutoDTO {
-    id?: number;
+    id: number;
     nome: string;
     precoBase: number;
     ativo: boolean;
@@ -33,3 +31,17 @@ export interface ProdutoGrupoModificadorDTO {
     maxOpcoes: number;
     opcoes: OpcaoModificadorDTO[];
 }
+
+export interface GrupoModificadorDTO {
+    id: number; 
+    nome: string;
+    opcoes: OpcaoModificadorDTO[];
+}
+
+export interface OpcaoModificadorDTO {
+    id: number;
+    nome: string;
+    precoAdicional: number;
+}
+
+

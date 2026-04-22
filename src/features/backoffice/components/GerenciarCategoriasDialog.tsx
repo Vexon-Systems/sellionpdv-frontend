@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCategorias, criarCategoria, atualizarCategoria, excluirCategoria } from "@/services/apiCategorias";
+import { fetchCategorias, criarCategoria, atualizarCategoria, excluirCategoria } from "../services/apiCategorias";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

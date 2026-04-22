@@ -3,13 +3,13 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchModificadores, salvarModificador, excluirModificador } from "@/services/apiModificadores";
-import { type GrupoModificadorDTO } from "@/services/apiModificadores";
+import { fetchModificadores, salvarModificador, excluirModificador } from "./services/apiModificadores";
+import type { GrupoModificadorDTO } from "../pdv/types/pdv";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     AlertDialog,

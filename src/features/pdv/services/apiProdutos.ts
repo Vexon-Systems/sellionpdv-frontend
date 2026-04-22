@@ -1,5 +1,5 @@
-import { api } from './api';
-import type { ProdutoDTO } from '@/types/pdv';
+import { api } from '@/lib/api';
+import type { ProdutoDTO } from '../types/pdv';
 
 export const fetchProdutos = async (): Promise<ProdutoDTO[]> => {
   const response = await api.get<ProdutoDTO[]>('/api/produtos');

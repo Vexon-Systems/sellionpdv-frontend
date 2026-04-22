@@ -4,8 +4,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { extratoMock, resumoCaixaMock } from "./mockCaixa";
-import { MovimentacaoCaixaModal } from "./MovimentacaoCaixaModal";
-import { FechamentoCaixaModal } from "./FechamentoCaixaModal";
+import { MovimentacaoCaixaModal } from "./components/MovimentacaoCaixaModal";
+import { FechamentoCaixaModal } from "./components/FechamentoCaixaModal";
 import { useState } from "react";
 
 export function ControleCaixaView(){

@@ -1,5 +1,5 @@
 import { type User } from "@/types/user";
-import { api } from "./api";
+import { api } from "@/lib/api";
 
 export interface LoginResponse {
     token: string;

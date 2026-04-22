@@ -1,16 +1,5 @@
-import { api } from "./api";
-
-export interface OpcaoModificadorDTO {
-    id?: number;
-    nome: string;
-    precoAdicional: number;
-}
-
-export interface GrupoModificadorDTO {
-    id?: number; 
-    nome: string;
-    opcoes: OpcaoModificadorDTO[];
-}
+import { api } from "@/lib/api";
+import type { GrupoModificadorDTO } from "@/features/pdv/types/pdv";
 
 export const fetchModificadores = async (): Promise<GrupoModificadorDTO[]> => {
     const response = await api.get<GrupoModificadorDTO[]>('/api/modificadores');

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../store/useAuthStore";
-import { login } from "@/services/apiAuth";
+import { login } from "./services/apiAuth";
 
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ItemCarrinho, ProdutoDTO, ModificadorSelecionado } from "@/types/pdv";
+import type { ItemCarrinho, ProdutoDTO, ModificadorSelecionado } from "@/features/pdv/types/pdv";
 
 interface CartStore {
     itens: ItemCarrinho[];
@@ -38,7 +38,6 @@ export const useCartStore = create<CartStore>((set) => ({
             };
         }
 
-        // Se é um combo novo, cria nova linha
         const novoItem: ItemCarrinho = {
             idCarrinho: crypto.randomUUID(),
             produto,

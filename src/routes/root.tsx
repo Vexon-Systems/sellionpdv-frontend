@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { LoginView } from '../features/auth/LoginView';
 import { PdvView } from '../features/pdv/PdvView';
 import { SidebarProvider } from '../components/ui/sidebar';
-import { AppSidebar } from '@/components/app-sidebar';
+import { AppSidebar } from '@/components/layout/app-sidebar';
 import { CatalogoView } from '@/features/backoffice/CatalogoView';
 import { ControleCaixaView } from '@/features/caixa/ControleCaixaView';
 import { ModificadoresView } from '@/features/backoffice/ModificadoresView';
@@ -71,7 +71,7 @@ const catalogoRoute = createRoute({
         }
         
         if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            alert('Acesso negado! Apenas ADMINS podem acessar esta área.');
             throw redirect({ to: '/' }); 
         }
     },

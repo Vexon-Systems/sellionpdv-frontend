@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/store/useCartStore";
-import type { ProdutoDTO, ModificadorSelecionado } from "@/types/pdv";
+import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../types/pdv";
 import { ShoppingCart, AlertCircle } from "lucide-react";
 
 interface Props {
@@ -15,50 +15,79 @@ interface Props {
     onClose: () => void;
 }
 
+const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+})
+
 export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
     const adicionarItem = useCartStore((state) => state.adicionarItem);
     const [selecao, setSelecao] = useState<ModificadorSelecionado[]>([]);
-    const [precoTotal, setPrecoTotal] = useState(produto.precoBase);
 
-    // Recalcula o preço total sempre que a seleção muda
-    useEffect(() => {
+    // Mapa de otimização:
+    // Relaciona id_da_opcao -> id_do_grupo em tempo constante
+    const grupoPorOpcao = useMemo(() => {
+        const mapa = new Map<number, number>();
+        produto.gruposModificadores.forEach((grupo) => {
+            grupo.opcoes.forEach((opcao) => mapa.set(opcao.id, grupo.grupoId))
+        })
+        return mapa;
+    }, [produto.gruposModificadores])
+
+    // Preço total
+    const precoTotal = useMemo(() => {
         const adicional = selecao.reduce((acc, item) => acc + item.precoAdicional, 0);
-        setPrecoTotal(produto.precoBase + adicional);
-    }, [selecao, produto.precoBase]);
+        return produto.precoBase + adicional;
+    }, [selecao, produto.precoBase])
 
-    const toggleOpcao = (grupoId: number, opcao: any, tipo: 'UNICA' | 'MULTIPLA', max: number) => {
-    setSelecao(prev => {
-            // Se for ÚNICA, remove qualquer outra opção do mesmo grupo antes de adicionar a nova
-            if (tipo === 'UNICA') {
-                const outrasOpcoes = prev.filter(s => !produto.gruposModificadores.find(g => g.grupoId === grupoId)?.opcoes.find(o => o.id === s.opcaoId));
-                return [...outrasOpcoes, { opcaoId: opcao.id, nome: opcao.nome, precoAdicional: opcao.precoAdicional }];
-            }
+    // Validação otimizada
+    const isValido = useMemo(() => {
+        if (!produto || !produto.gruposModificadores) return false;
 
-            // Se for MÚLTIPLA
-            const existe = prev.find(s => s.opcaoId === opcao.id);
-            if (existe) {
+        return produto.gruposModificadores.every(grupo => {
+        const selecionadosNoGrupo = selecao.filter(s => 
+            grupo.opcoes.some(o => o.id === s.opcaoId)
+        ).length;
+        
+        return selecionadosNoGrupo >= grupo.minOpcoes;
+        });
+    }, [produto, selecao]);
+
+    const toggleOpcao = (grupoId: number, opcao: OpcaoModificadorDTO, tipo: 'UNICA' | 'MULTIPLA', max: number) => {
+        if (!opcao.id) return;
+
+        setSelecao(prev => {
+
+        const grupoAtual = produto.gruposModificadores.find(g => g.grupoId === grupoId);
+        if (!grupoAtual) return prev;
+
+        if (tipo === 'UNICA') {
+            const outrasOpcoes = prev.filter(s => !grupoAtual.opcoes.some(o => o.id === s.opcaoId));
+            return [...outrasOpcoes, { opcaoId: opcao.id, nome: opcao.nome, precoAdicional: opcao.precoAdicional }];
+        }
+
+        const isJaSelecionado = prev.some(s => s.opcaoId === opcao.id);
+            if (isJaSelecionado) {
                 return prev.filter(s => s.opcaoId !== opcao.id);
             }
 
-            // Verifica limite máximo
-            const selecionadosNoGrupo = prev.filter(s => produto.gruposModificadores.find(g => g.grupoId === grupoId)?.opcoes.find(o => o.id === s.opcaoId)).length;
-            if (selecionadosNoGrupo >= max) return prev;
+        const selecionadosNesteGrupo = prev.filter(s => 
+            grupoAtual.opcoes.some(o => o.id === s.opcaoId)
+        ).length;
 
-            return [...prev, { opcaoId: opcao.id, nome: opcao.nome, precoAdicional: opcao.precoAdicional }];
+        if (selecionadosNesteGrupo >= max) {
+            return prev; 
+        }
+
+        return [...prev, { opcaoId: opcao.id, nome: opcao.nome, precoAdicional: opcao.precoAdicional }];
         });
     };
 
     const handleConfirmar = () => {
-            adicionarItem(produto, selecao);
-            onClose();
-            setSelecao([]);
+        adicionarItem(produto, selecao);
+        setSelecao([]);
+        onClose();
     };
-
-    // Validação simples: todos os grupos com minOpcoes > 0 foram atendidos?
-    const isValido = produto.gruposModificadores.every(grupo => {
-            const selecionadosNoGrupo = selecao.filter(s => grupo.opcoes.find(o => o.id === s.opcaoId)).length;
-            return selecionadosNoGrupo >= grupo.minOpcoes;
-    });
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -66,68 +95,94 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                 <DialogHeader className="p-6 bg-gray-50 border-b">
                 <div className="flex justify-between items-start">
                     <div>
-                    <DialogTitle className="text-2xl font-bold">{produto.nome}</DialogTitle>
-                    <p className="text-sm text-gray-500">Personalize seu pedido abaixo</p>
+                        <DialogTitle className="text-2xl font-bold">{produto.nome}</DialogTitle>
+                        <p className="text-sm text-gray-500">Personalize seu pedido abaixo</p>
                     </div>
                     <div className="text-right px-5">
                         <p className="text-xs text-gray-400 uppercase font-bold">Total do Item</p>
                         <p className="text-2xl font-black text-primary">
-                            {precoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </p>
+                        {formatadorMoeda.format(precoTotal)}
+                    </p>
                     </div>
                 </div>
                 </DialogHeader>
 
                 <ScrollArea className="max-h-[60vh] p-6">
                 <div className="space-y-8">
-                    {produto.gruposModificadores.map((grupo) => (
-                    <div key={grupo.grupoId} className="space-y-4">
+                    {produto.gruposModificadores.map((grupo) => {
+                    const qtdSelecionadaNoGrupo = selecao.filter(
+                        (s) => grupoPorOpcao.get(s.opcaoId) === grupo.grupoId
+                    ).length;
+                    const atendeRequisito = qtdSelecionadaNoGrupo >= grupo.minOpcoes;
+
+                    return (
+                        <div key={grupo.grupoId} className="space-y-4">
                         <div className="flex justify-between items-center">
-                        <Label className="text-lg font-bold text-gray-800">{grupo.nome}</Label>
-                        <Badge variant={selecao.filter(s => grupo.opcoes.find(o => o.id === s.opcaoId)).length < grupo.minOpcoes ? "destructive" : "secondary"}>
+                            <Label className="text-lg font-bold text-gray-800">{grupo.nome}</Label>
+                            <Badge variant={atendeRequisito ? "secondary" : "destructive"}>
                             {grupo.minOpcoes > 0 ? `Mínimo ${grupo.minOpcoes}` : "Opcional"}
-                        </Badge>
+                            </Badge>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 gap-2">
-                        {grupo.opcoes.map((opcao) => {
-                            const isSelected = selecao.some(s => s.opcaoId === opcao.id);
+                            {grupo.opcoes.map((opcao) => {
+                            const isSelected = selecao.some((s) => s.opcaoId === opcao.id);
+
                             return (
-                            <div 
-                                key={opcao.id}
-                                onClick={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
-                                className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                                isSelected ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'
-                                }`}
-                            >
+                                <div
+                                    key={opcao.id}
+                                    onClick={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
+                                    role="button"
+                                    tabIndex={0} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes);
+                                        }
+                                    }}
+                                    className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                                        isSelected
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-gray-100 hover:border-gray-200'
+                                    }`}
+                                >
                                 <div className="flex items-center gap-3">
-                                <Checkbox checked={isSelected} className="rounded-full" />
-                                <span className="font-medium text-gray-700">{opcao.nome}</span>
+                                    <Checkbox 
+                                    checked={isSelected} 
+                                    // Evita a propagação dupla do clique (um do Checkbox e um da Div)
+                                    onClick={(e) => e.stopPropagation()} 
+                                    onCheckedChange={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
+                                    className="rounded-full" 
+                                    />
+                                    <span className="font-medium text-gray-700">{opcao.nome}</span>
                                 </div>
                                 {opcao.precoAdicional > 0 && (
-                                <span className="text-sm font-bold text-green-600">
-                                    + {opcao.precoAdicional.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                </span>
+                                    <span className="text-sm font-bold text-green-600">
+                                    + {formatadorMoeda.format(opcao.precoAdicional)}
+                                    </span>
                                 )}
-                            </div>
+                                </div>
                             );
-                        })}
+                            })}
                         </div>
-                    </div>
-                    ))}
+                        </div>
+                    );
+                    })}
                 </div>
                 </ScrollArea>
 
                 <DialogFooter className="p-6 border-t bg-gray-50">
-                <Button variant="ghost" onClick={onClose} className="cursor-pointer">Cancelar</Button>
-                <Button 
-                    disabled={!isValido} 
-                    onClick={handleConfirmar}
-                    className="bg-primary hover:bg-primary/90 px-8 cursor-pointer"
-                >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Adicionar ao Carrinho
-                </Button>
+                    <Button variant="ghost" onClick={onClose} className="cursor-pointer">
+                        Cancelar
+                    </Button>
+                    <Button
+                        disabled={!isValido}
+                        onClick={handleConfirmar}
+                        className="bg-primary hover:bg-primary/90 px-8 cursor-pointer"
+                    >
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Adicionar ao Carrinho
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

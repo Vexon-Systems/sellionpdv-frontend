@@ -3,20 +3,20 @@ import { useForm, Controller, useFieldArray} from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { fetchCategorias } from "@/services/apiCategorias"
-import { fetchModificadores } from "@/services/apiModificadores";
-import { criarCategoria } from "@/services/apiCategorias";
+import { fetchCategorias } from "../services/apiCategorias";
+import { fetchModificadores } from "../services/apiModificadores";
+import { criarCategoria } from "../services/apiCategorias";
 import { Dialog, DialogContent, DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import type { ProdutoDTO } from "@/types/pdv";
-import { salvarProduto, excluirProduto } from "@/services/apiProdutos"; 
+import type { ProdutoDTO } from "@/features/pdv/types/pdv";
+import { salvarProduto, excluirProduto } from "@/features/pdv/services/apiProdutos"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 
-import { type ProdutoGrupoModificadorDTO } from "@/types/pdv";
+import { type ProdutoGrupoModificadorDTO } from "@/features/pdv/types/pdv";
 
 import {
     Select,
