@@ -1,12 +1,12 @@
 import { createRootRoute, createRoute, createRouter, Outlet, redirect, useRouterState } from '@tanstack/react-router';
 import { useAuthStore } from '../store/useAuthStore';
-import { LoginView } from '../features/auth/LoginView';
-import { PdvView } from '../features/pdv/PdvView';
+import LoginPage from '@/features/auth/pages/LoginPage';
+import { PdvPage } from '@/features/pdv/pages/PdvPage';
+import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
+import { CatalogoPage } from '@/features/backoffice/pages/CatalogoPage';
+import { ModificadoresPage } from '@/features/backoffice/pages/ModificadoresPage';
 import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
-import { CatalogoView } from '@/features/backoffice/CatalogoView';
-import { ControleCaixaView } from '@/features/caixa/ControleCaixaView';
-import { ModificadoresView } from '@/features/backoffice/ModificadoresView';
 
 
 const rootRoute = createRootRoute({
@@ -27,13 +27,12 @@ const rootRoute = createRootRoute({
             </SidebarProvider>
         )
     }
-    
 });
 
 const loginRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/login',
-    component: LoginView,
+    component: LoginPage,
 });
 
 const pdvRoute = createRoute({
@@ -45,7 +44,7 @@ const pdvRoute = createRoute({
             throw redirect({ to: '/login' }); 
         }
     },
-    component: PdvView,
+    component: PdvPage,
 });
 
 const caixaRoute = createRoute({
@@ -57,7 +56,7 @@ const caixaRoute = createRoute({
             throw redirect({ to: '/login' }); 
         }
     },
-    component: ControleCaixaView,
+    component: ControleCaixaPage,
 });
 
 const catalogoRoute = createRoute({
@@ -75,7 +74,7 @@ const catalogoRoute = createRoute({
             throw redirect({ to: '/' }); 
         }
     },
-    component: CatalogoView,
+    component: CatalogoPage,
 });
 
 const modificadoresRoute = createRoute({
@@ -93,7 +92,7 @@ const modificadoresRoute = createRoute({
             throw redirect({ to: '/' }); 
         }
     },
-    component: ModificadoresView,
+    component: ModificadoresPage,
 });
 
 const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute]);

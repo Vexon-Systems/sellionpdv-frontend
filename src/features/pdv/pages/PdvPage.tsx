@@ -1,17 +1,16 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProdutos } from "./services/apiProdutos";
-import { fetchCategorias } from "../backoffice/services/apiCategorias";
+import { fetchProdutos } from "../services/apiProdutos";
+import { fetchCategorias } from "@/features/backoffice/services/apiCategorias";
 import { useCartStore } from "@/store/useCartStore";
-import type { ProdutoDTO } from "./types/pdv";
+import type { ProdutoDTO } from "../types/pdv";
+import { ProdutoVendaModal } from "../components/ProdutoVendaModal";
 
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/Header";
-import { ProdutoVendaModal } from "./components/ProdutoVendaModal";
-import { Button } from "@/components/ui/button";
-
 import { Search, ShoppingCart, Minus, Plus, Trash, Percent, Banknote, CreditCard, QrCode } from "lucide-react";
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
@@ -19,7 +18,7 @@ const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
 	currency: 'BRL'
 });
 
-export function PdvView() {
+export function PdvPage() {
 
 	const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoDTO | null>(null);
 	const [categoriaAtiva, setCategoriaAtiva] = useState<number>(0);
@@ -69,16 +68,15 @@ export function PdvView() {
 	};
 
 	return (
-		<div className="flex flex-col h-screen w-full bg-gray-100 overflow-hidden">
-			<Header titulo="Frente de Caixas" subtitulo="Realize vendas dos produtos." />
+		<div className="flex flex-col h-screen w-full overflow-hidden">
+			<Header titulo="Frente de Caixa"/>
 
-			<main className="flex flex-1 flex-row min-h-0 w-full bg-gray-100">
+			<main className="flex flex-1 flex-row min-h-0 w-full bg-gray-50">
 
-				{/* ESQUERDA: CATÁLOGO */}
 				<div className="flex flex-1 flex-col px-8 py-6">
 					{/* BUSCA */}
 					<div className="relative w-90">
-						<Search className="absolute left-2 top-2.5 text-gray-800" size={18}/>
+						<Search className="absolute left-2 top-1.5 text-gray-800" size={18}/>
 						<Input
 							type="text"
 							placeholder="Buscar produto por nome"
@@ -88,7 +86,7 @@ export function PdvView() {
 						/>
 					</div>
 
-					{/* CATEGORIAS */}
+					{/* Tab de Categorias */}
 					<div className="my-6 w-full">
 						{isLoadingCategorias ? (
 							<div className="h-10 w-full animate-pulse bg-white rounded-lg" />
@@ -98,15 +96,15 @@ export function PdvView() {
 								onValueChange={handleMudarCategoria} 
 								className="w-full"
 							>
-								<TabsList className="flex w-full justify-start h-auto p-1 bg-gray-200 rounded-lg overflow-x-auto shadow-md">
-									<TabsTrigger value="0" className="whitespace-nowrap px-4 py-2 rounded-md transition-all">
+								<TabsList variant="line" className="flex w-full justify-start h-auto p-1 rounded-lg overflow-x-auto">
+									<TabsTrigger value="0" className="whitespace-nowrap px-4 py-2 rounded-md transition-all cursor-pointer">
 										Todos
 									</TabsTrigger>
 									{categorias?.map((cat) => (
 										<TabsTrigger 
 											key={cat.id} 
 											value={cat.id.toString()} 
-											className="whitespace-nowrap px-4 py-2 rounded-md transition-all"
+											className="whitespace-nowrap px-4 py-2 rounded-md cursor-pointer transition-all"
 										>
 											{cat.nome}
 										</TabsTrigger>
@@ -142,7 +140,7 @@ export function PdvView() {
 												handleCliqueProduto(produto);
 											}
 										}}
-										className="cursor-pointer hover:shadow-md hover:scale-105 transition-all border-gray-200 overflow-hidden"
+										className="cursor-pointer shadow-md hover:shadow-xl hover:scale-105 transition-all border-gray-200 overflow-hidden"
 									>						
 										<div className={`h-30 w-full ${produto.imagemUrl || 'bg-gray-200'} flex items-center justify-center`}>
 											<span className="text-white font-bold opacity-50">IMAGEM</span>
@@ -169,70 +167,105 @@ export function PdvView() {
 				</div>
 				
 				{/* DIREITA: CARRINHO */}
-				<aside className="w-1/4 m-2 border-2 rounded-md shadow-md bg-white border-l border-gray-200 flex flex-col overflow-y-auto">
+				<aside className="w-1/4 border-x-2 shadow-md bg-white border-gray-200 flex flex-col overflow-y-auto">
 					<div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
 						<h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">Carrinho</h2>
 					</div>
 
 					{/* LISTA DE ITENS DO CARRINHO */}
-					<div className="flex-1 overflow-y-auto p-4 space-y-4">
+					<div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
 						{itens.map((item) => (
-							<div key={item.idCarrinho} className="bg-slate-50 border border-gray-100 p-3 rounded-lg shadow-sm">
-								<div className="flex justify-between items-start mb-2">
-									<div>
-										<h4 className="font-semibold text-gray-800 text-sm">{item.produto.nome}</h4>
+							<div 
+								key={item.idCarrinho} 
+								className="group flex flex-col gap-2 p-3 bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-colors"
+							>
+								{/* Topo: Nome do Produto e Preço */}
+								<div className="flex justify-between items-start gap-2">
+									<div className="flex-1">
+										<h4 className="font-semibold text-slate-800 text-sm leading-tight">
+											{item.produto.nome}
+										</h4>
+										
+										{/* Modificadores */}
 										{item.modificadores && item.modificadores.length > 0 && (
-											<ul className="text-xs text-gray-500 mt-1 space-y-0.5">
+											<ul className="mt-1 flex flex-col gap-0.5">
 												{item.modificadores.map((mod, i) => (
-													<li key={i}>+ {mod.nome}</li> 
+													<li key={i} className="text-[11px] text-slate-500 flex items-center">
+														<span className="text-slate-300 mr-1.5">-</span> {mod.nome}
+													</li> 
 												))}
 											</ul>
 										)}
 									</div>
-									<span className="font-bold text-gray-900 text-sm">
+									
+									<span className="font-bold text-slate-900 text-sm whitespace-nowrap">
 										{formatadorMoeda.format(item.valorUnitarioTotal)}
 									</span>
 								</div>
 
-								<div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200/50">
-									<div className="flex items-center border border-gray-200 rounded-md bg-white">
-										<button 
-											onClick={() => alterarQuantidade(item.idCarrinho, -1)} 
-											className="px-2 py-1 text-primary hover:bg-gray-100 rounded-l-md transition-colors"
+								{/* Base: Controles e Ações*/}
+								<div className="flex justify-between items-center mt-1">
+									
+									{/* Controle de Quantidade Elegante */}
+									<div className="flex items-center bg-slate-50 border border-slate-200 rounded-md h-8">
+										<Button 
+											onClick={() => alterarQuantidade(item.idCarrinho, -1)}
+											variant="ghost" 
+											size="icon" 
+											className="h-full w-8 cursor-pointer rounded-none rounded-l-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
 											aria-label="Diminuir quantidade"
 										>
 											<Minus size={14} />
-										</button>
-										<span className="px-3 font-medium text-xs w-8 text-center">{item.quantidade}</span>
-										<button 
-											onClick={() => alterarQuantidade(item.idCarrinho, 1)} 
-											className="px-2 py-1 text-white bg-primary hover:bg-primary/90 rounded-r-md transition-colors"
+										</Button>
+										
+										<span className="w-8 font-semibold text-xs text-center text-slate-800">
+											{item.quantidade}
+										</span>
+										
+										<Button 
+											onClick={() => alterarQuantidade(item.idCarrinho, 1)}
+											variant="ghost" 
+											size="icon" 
+											className="h-full w-8 cursor-pointer rounded-none rounded-r-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
 											aria-label="Aumentar quantidade"
 										>
 											<Plus size={14} />
-										</button>
-									</div>
-									<div className="flex gap-2">
-										<Button variant="outline" size="icon" className="h-7 w-7 text-green-600 hover:bg-green-50">
-											<Percent size={12} />
 										</Button>
+									</div>
+
+									{/* Botões de Ação */}
+									<div className="flex gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+										<Button 
+											variant="ghost" 
+											size="icon" 
+											className="h-8 w-8 cursor-pointer text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 bg-emerald-50/50"
+											title="Aplicar Desconto"
+										>
+											<Percent size={14} />
+										</Button>
+										
 										<Button 
 											onClick={() => removerItem(item.idCarrinho)} 
-											variant="outline" 
+											variant="ghost" 
 											size="icon" 
-											className="h-7 w-7 text-red-600 hover:bg-red-50"
+											className="h-8 w-8 cursor-pointer text-red-500 hover:bg-red-50 hover:text-red-600 bg-red-50/50"
+											title="Remover Item"
 										>
-											<Trash size={12} />
+											<Trash size={14} />
 										</Button>
 									</div>
 								</div>
 							</div>
 						))}
 
+						{/* ESTADO VAZIO (Elegante e minimalista) */}
 						{itens.length === 0 && (
-							<div className="text-center text-gray-400 mt-10">
-								<ShoppingCart size={48} className="mx-auto mb-4 opacity-20" />
-								<p className="text-sm">Seu carrinho está vazio.</p>
+							<div className="flex flex-col items-center justify-center h-full text-slate-400 mt-12 space-y-3">
+								<div className="bg-slate-100 p-4 rounded-full">
+									<ShoppingCart size={32} className="text-slate-300" />
+								</div>
+								<p className="text-sm font-medium text-slate-500">Seu carrinho está vazio</p>
+								<p className="text-xs text-slate-400">Adicione produtos para iniciar a venda</p>
 							</div>
 						)}
 					</div>
@@ -257,22 +290,22 @@ export function PdvView() {
 						<div className="space-y-3">
 							<h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Formas de Pagamento</h4>
 							<div className="grid grid-cols-3 gap-2">
-								<Button variant="outline" className="flex flex-col h-14 gap-1 text-gray-600 hover:border-primary hover:text-primary">
+								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
 									<Banknote size={18} />
 									<span className="text-[12px]">Dinheiro</span>
 								</Button>
-								<Button variant="outline" className="flex flex-col h-14 gap-1 text-gray-600 hover:border-primary hover:text-primary">
+								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
 									<CreditCard size={18} />
 									<span className="text-[12px]">Cartão</span>
 								</Button>
-								<Button variant="outline" className="flex flex-col h-14 gap-1 text-gray-600 hover:border-primary hover:text-primary">
+								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
 									<QrCode size={18} />
 									<span className="text-[12px]">PIX</span>
 								</Button>
 							</div>
 							<Button 
 								disabled={itens.length === 0} 
-								className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-white mt-2 cursor-pointer shadow-md"
+								className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white mt-2 shadow-md"
 							>
 								Processar Venda
 							</Button>

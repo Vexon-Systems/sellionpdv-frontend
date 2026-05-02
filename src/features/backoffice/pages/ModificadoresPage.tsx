@@ -3,8 +3,8 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchModificadores, salvarModificador, excluirModificador } from "./services/apiModificadores";
-import type { GrupoModificadorDTO } from "../pdv/types/pdv";
+import { fetchModificadores, salvarModificador, excluirModificador } from "../services/apiModificadores";
+import type { GrupoModificadorDTO } from "../../pdv/types/pdv";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ const modificadorSchema = z.object({
 
 type FormInputs = z.infer<typeof modificadorSchema>;
 
-export function ModificadoresView(){
+export function ModificadoresPage(){
     const queryClient = useQueryClient();
     const [grupoSelecionado, setGrupoSelecionado] = useState<GrupoModificadorDTO | null>(null);
 
@@ -91,10 +91,9 @@ export function ModificadoresView(){
     };
 
     return (
-        <div className="flex flex-col h-full w-full mx-auto bg-gray-100">
+        <div className="flex flex-col h-full w-full mx-auto bg-gray-50">
             <Header 
                 titulo="Catálogo de Modificadores" 
-                subtitulo="Gerencie os grupos e opções de modificadores dos produtos." 
             />
 
             {/* Cabeçalho */}

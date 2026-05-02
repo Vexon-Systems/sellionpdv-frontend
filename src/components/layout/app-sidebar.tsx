@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, PanelLeft, SlidersHorizontal } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
-import sellionLogoFullPos from '@/assets/logo_sellion_positiva.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 import {
   Sidebar,
@@ -34,7 +34,6 @@ export function AppSidebar(){
   return(
     <Sidebar variant="inset" collapsible="icon" className="bg-primary text-white border-none w-65">
 
-      {/* Topo do Sidebar */}
       <SidebarHeader className="h-16 flex justify-center items-center bg-primary">
         <img 
            src={sellionLogoFullNeg} 
@@ -56,30 +55,50 @@ export function AppSidebar(){
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Operação</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="flex flex-col gap-1">
 
-              {/* Item 1: PDV */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="text-white hover:bg-blue-800/70 hover:text-white py-5">
-                  <Link to="/" activeProps={{ className: "bg-blue-800 text-white font-bold"}}>
-                    <ShoppingCart size={20} color="white"/>
-                    <span className="ml-1 text-2sm">Frente de Caixa</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            <TooltipProvider delayDuration={300}>
+              <SidebarMenu className="flex flex-col gap-1">
 
-              {/* Item 3: Controle de Caixa */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="text-white hover:bg-blue-800/70 hover:text-white py-5">
-                  <Link to="/caixa" activeProps={{ className: "bg-blue-800 text-white font-medium"}}>
-                    <Inbox/>
-                    <span className="ml-1 text-2sm">Controle de Caixa</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                {/* Item 1: PDV */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-bold"}}>
+                          <ShoppingCart size={20} color="white"/>
+                          <span className="ml-1 text-2sm">Frente de Caixa</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Acesse o PDV para realizar vendas rápidas</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 3: Controle de Caixa */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/caixa" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <Inbox color="white" />
+                          <span className="ml-1 text-2sm">Controle de Caixa</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie aberturas, fechamentos e sangrias</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+              </SidebarMenu>
+            </TooltipProvider>
 
 
-            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -87,62 +106,78 @@ export function AppSidebar(){
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="flex flex-col gap-1">
 
-              {/* Item 1: Catalálo de Produtos */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="text-white hover:bg-blue-800/70 hover:text-white py-5">
-                  <Link to="/catalogo" activeProps={{ className: "bg-blue-800 text-white font-medium"}}>
-                    <ChefHat />
-                    <span className="ml-1 text-sm">Catálogo & Ficha Técnica</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+            <TooltipProvider delayDuration={300}>
+              <SidebarMenu className="flex flex-col gap-1">
 
-              {/* Item 2: Modificadores */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="text-white hover:bg-blue-800/70 hover:text-white py-5">
-                  <Link to="/modificadores" activeProps={{ className: "bg-blue-800 text-white font-medium"}}>
-                    <SlidersHorizontal />
-                    <span className="ml-1 text-sm">Modificadores</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                {/* Item 1: Catalálo de Produtos */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/catalogo" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <ChefHat />
+                          <span className="ml-1 text-sm">Catálogo & Ficha Técnica</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie o catálogo de produtos</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 2: Modificadores */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/modificadores" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <SlidersHorizontal />
+                          <span className="ml-1 text-sm">Modificadores</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie os grupos de modificadores</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
               
+              </SidebarMenu>
+            </TooltipProvider>
 
-            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
       {/* Rodapé */}
-      <SidebarFooter className="bg-primary">
+      <SidebarFooter className="bg-primary w-full">
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="flex flex-col gap-1">  
-
+            <TooltipProvider>
+              <SidebarMenu className="flex flex-col gap-1 w-full">
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={toggleSidebar} 
-                    className="text-white hover:bg-white/10 hover:text-white py-5 cursor-pointer"
-                  >
-                    <PanelLeft size={20} />
-                    <span className="ml-1 text-sm font-semibold">Recolher Menu</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>        
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="text-white hover:bg-red-500/20 hover:text-red-200 py-5">
-                  <Link to="/" activeProps={{ className: 'font-semibold' }}>
-                    <LogOut className="text-red-400"/>
-                    <span className="ml-1 text-sm">Sair</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-            </SidebarMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className=" text-white hover:bg-red-500/20 hover:text-red-200 py-5">
+                        <Link to="/login" activeProps={{ className: 'font-semibold' }}>
+                          <LogOut className="text-red-400"/>
+                          <span className="ml-1 text-sm">Sair</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-black text-red-400 border-none shadow-lg">
+                        <p className="text-sm">Sair do SellionPDV</p>
+                      </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </TooltipProvider>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarFooter>

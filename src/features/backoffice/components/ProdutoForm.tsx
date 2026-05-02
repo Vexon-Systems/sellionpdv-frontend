@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { fetchCategorias } from "../services/apiCategorias";
 import { fetchModificadores } from "../services/apiModificadores";
-import { criarCategoria } from "../services/apiCategorias";
-import { Dialog, DialogContent, DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import type { ProdutoDTO } from "@/features/pdv/types/pdv";
 import { salvarProduto, excluirProduto } from "@/features/pdv/services/apiProdutos"; 
@@ -14,9 +12,6 @@ import { salvarProduto, excluirProduto } from "@/features/pdv/services/apiProdut
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-
-import { type ProdutoGrupoModificadorDTO } from "@/features/pdv/types/pdv";
 
 import {
     Select,
@@ -93,10 +88,9 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
 
 
     const precoAtual = watch("precoBase") || 0;
-
     const custoEstimado = precoAtual * 0.4;
     const margemBruta = precoAtual > 0 ? ((precoAtual - custoEstimado) / precoAtual) * 100 : 0;
-    
+
     const isAtivo = watch("ativo");
 
     const { fields, append, remove, replace } = useFieldArray({
@@ -281,7 +275,7 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                                 <Select
                                 value={field.value?.toString()} 
                                 onValueChange={(valorEmTexto) => {
-                                    field.onChange(Number(valorEmTexto)); // Volta para número ao salvar no Zod
+                                    field.onChange(Number(valorEmTexto));
                                 }}
                                 >
                                     <SelectTrigger className="w-full bg-white">
@@ -306,29 +300,6 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     </div>
                 </div>
 
-                {/* Status (Ativo/Inativo) */}
-                {/* <div className="space-y-2 pt-4 border-t">
-                    <Label>Status de Venda</Label>
-                    <div className="flex gap-4 mt-2">
-                        <Button
-                            type="button"
-                            variant={isAtivo ? "default" : "outline"}
-                            className={isAtivo ? "text-green-700 bg-green-100 hover:bg-green-200 hover:text-green-900 cursor-pointer" : "cursor-pointer" }
-                            onClick={() => setValue("ativo", true)}
-                        >
-                            Ativo (Visível no PDV)
-                        </Button>
-                        <Button
-                            type="button"
-                            className="cursor-pointer"
-                            variant={!isAtivo ? "destructive" : "outline"}
-                            onClick={() => setValue("ativo", false)}
-                        >
-                            Inativo (Oculto)
-                        </Button>
-                    </div>
-                </div> */}
-
                 {/* MODIFICADORES DINÂMICOS */}
                 <div className="space-y-4 pt-6 border-t">
                     <div className="flex justify-between items-center mb-4">
@@ -337,7 +308,6 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                             <p className="text-sm text-gray-500">Adicione tamanhos, sabores ou adicionais.</p>
                         </div>
 
-                        {/* O NOSSO NOVO POPOVER MÁGICO */}
                         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                             <PopoverTrigger asChild>
                                 <Button type="button" variant="outline" size="sm" className="border-dashed border-2 hover:bg-gray-50">
@@ -462,8 +432,6 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
             />
 
             </form>
-
-
         </div>
     )
 }

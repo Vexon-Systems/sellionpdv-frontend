@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProdutos } from "../pdv/services/apiProdutos";
-import { fetchCategorias } from "./services/apiCategorias";
+import { fetchProdutos } from "@/features/pdv/services/apiProdutos";
+import { fetchCategorias } from "../services/apiCategorias";
+import { ProdutoForm } from "../components/ProdutoForm";
 
 import { Search, Plus, Package, Utensils } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
-import {ProdutoForm} from "./components/ProdutoForm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle  } from "@/components/ui/card";
-
-export function CatalogoView() {
+export function CatalogoPage() {
     const [produtoSelecionadoId, setProdutoSelecionadoId] = useState<number | null>(null);
     const [termoBusca, setTermoBusca] = useState(""); 
 
@@ -34,10 +33,9 @@ export function CatalogoView() {
     const handleLimparSelecao = () => setProdutoSelecionadoId(null);
 
     return (
-        <div className="flex flex-col h-screen w-full bg-gray-100 overflow-hidden">
+        <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden">
             <Header 
                 titulo="Catálogo de Produtos" 
-                subtitulo="Gerencie o portfólio e preços." 
             />
 
             {/* Cabeçalho */}
@@ -64,7 +62,7 @@ export function CatalogoView() {
             <div className="flex flex-row ml-8 overflow-y-auto">
 
                 {/* Coluna de Listagem (Esquerda)*/}
-                <Card className="w-90 bg-white border-2 rounded-md border-gray-200 flex flex-col overflow-y-auto">
+                <Card className="w-100 h-screen bg-white border-2 rounded-md border-gray-200 flex flex-col overflow-y-auto">
                     {/* Topo da Listagem: Título e Pesquisa */}
                     <div className="space-y-4 px-2">
 
@@ -120,23 +118,23 @@ export function CatalogoView() {
                 </Card>
 
                 {/* Coluna de detalhes do Produto (Direita) */}
-                <main className="flex-1 flex flex-col bg-gray-100 overflow-y-auto">
+                <main className="flex-1 flex flex-col bg-gray-50">
                     
                     {/* Área de Detalhes do Produto */}
-                    <div className="px-8 pb-10">
+                    <div className="px-8 pb-10 h-full">
                     
-                    {produtoSelecionadoId === null ? (
-                        <div className="border-2 border-dashed border-gray-300 rounded-md h-96 flex flex-col items-center justify-center text-gray-400 bg-white">
-                            <Package size={48} className="mb-4 opacity-20" />
-                            <p>Selecione um produto na lista ou crie um novo.</p>
-                        </div>
-                    ) : (
-                        <ProdutoForm 
-                            produtoId={produtoSelecionadoId === 0 ? null : produtoSelecionadoId} 
-                            produtoAtual={produtoClicado} 
-                            onClose={handleLimparSelecao}
-                        />
-                    )}
+                        {produtoSelecionadoId === null ? (
+                            <div className="border-2 border-dashed border-gray-300 rounded-md h-full flex flex-col items-center justify-center text-gray-400 bg-white">
+                                <Package size={48} className="mb-4 opacity-20" />
+                                <p>Selecione um produto na lista ou crie um novo.</p>
+                            </div>
+                        ) : (
+                            <ProdutoForm 
+                                produtoId={produtoSelecionadoId === 0 ? null : produtoSelecionadoId} 
+                                produtoAtual={produtoClicado} 
+                                onClose={handleLimparSelecao}
+                            />
+                        )}
 
                     </div>
                 </main>
