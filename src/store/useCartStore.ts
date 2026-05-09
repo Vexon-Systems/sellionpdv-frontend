@@ -13,7 +13,6 @@ export const useCartStore = create<CartStore>((set) => ({
     itens: [],
 
     adicionarItem: (produto, modificadores = []) => set((state) => {
-        // Calcula o preço total deste item específico
         const somaModificadores = modificadores.reduce((acc, mod) => acc + mod.precoAdicional, 0);
         const valorUnitarioTotal = produto.precoBase + somaModificadores;
 

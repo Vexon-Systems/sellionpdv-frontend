@@ -19,7 +19,7 @@ export interface ItemCarrinho{
     produto: ProdutoDTO;
     quantidade: number;
     modificadores: ModificadorSelecionado[];
-    valorUnitarioTotal: number; // Preço base + soma dos modificadores
+    valorUnitarioTotal: number;
     subtotal: number;
 }
 

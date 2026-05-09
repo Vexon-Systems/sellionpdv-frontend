@@ -7,7 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar, ChevronDown, Store, PanelLeft } from "lucide-react";
+import { PanelLeft, Bell } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "../ui/button";
 import { useSidebar } from "../ui/sidebar";
@@ -51,29 +51,18 @@ export function Header({ titulo}: HeaderProps){
                 <h1 className="text-xl font-semibold text-gray-900">{titulo}</h1>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
         
                 {/* Data */}
-                <div className="flex items-center gap-2 border border-gray-200 bg-white px-3 py-2 rounded-md text-sm text-gray-600 shadow-sm">
+                {/* <div className="flex items-center gap-2 border border-gray-200 bg-white px-3 py-2 rounded-md text-sm text-gray-600 shadow-sm">
                     <Calendar size={16} className="text-gray-400" />
                     <span className="font-medium capitalize">{dataAtual}</span>
-                </div>
+                </div> */}
 
-                {/* Dropdown de Loja/Franquia */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center gap-2 border border-gray-200 bg-white px-3 py-2 rounded-md text-sm text-gray-700 shadow-sm hover:bg-gray-50 outline-none">
-                        <Store size={16} className="text-gray-400" />
-                            <span className="font-medium">Nome da Franquia</span>
-                        <ChevronDown size={14} className="text-gray-400 ml-1" />
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent align="end" className="w-48 bg-white">
-                        <DropdownMenuLabel>Minhas Lojas</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                            <DropdownMenuItem className="cursor-pointer">MySorvetes ITBA</DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">MySorvetes Centro</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Sino de Notificações */}
+                <Button className="w-9 h-9 rounded-full bg-gray-100 border-accent cursor-pointer hover:bg-gray-300 transition-all">
+                    <Bell className="text-gray-600"/>
+                </Button>
 
                 {/* Avatar do Usuário */}
                 <Avatar className="h-10 w-10 border-2 border-primary/10">

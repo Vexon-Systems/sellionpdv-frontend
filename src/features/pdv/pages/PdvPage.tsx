@@ -5,6 +5,7 @@ import { fetchCategorias } from "@/features/backoffice/services/apiCategorias";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProdutoDTO } from "../types/pdv";
 import { ProdutoVendaModal } from "../components/ProdutoVendaModal";
+import { CheckoutModalProps } from "../components/CheckoutModal";
 
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export function PdvPage() {
 	const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoDTO | null>(null);
 	const [categoriaAtiva, setCategoriaAtiva] = useState<number>(0);
 	const [termoBusca, setTermoBusca] = useState("");
+	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
 	const { itens, adicionarItem, removerItem, alterarQuantidade } = useCartStore();
 
@@ -68,7 +70,7 @@ export function PdvPage() {
 	};
 
 	return (
-		<div className="flex flex-col h-screen w-full overflow-hidden">
+		<div className="flex flex-col h-screen w-full overflow-y-auto">
 			<Header titulo="Frente de Caixa"/>
 
 			<main className="flex flex-1 flex-row min-h-0 w-full bg-gray-50">
@@ -142,8 +144,8 @@ export function PdvPage() {
 										}}
 										className="cursor-pointer shadow-md hover:shadow-xl hover:scale-105 transition-all border-gray-200 overflow-hidden"
 									>						
-										<div className={`h-30 w-full ${produto.imagemUrl || 'bg-gray-200'} flex items-center justify-center`}>
-											<span className="text-white font-bold opacity-50">IMAGEM</span>
+										<div className={`h-30 w-full ${produto.imagemUrl || 'bg-gray-300'} flex items-center justify-center`}>
+											<span className="text-white font-bold opacity-50">Imagens Em breve...</span>
 										</div>
 										<CardContent className="px-4">
 											<h3 className="font-medium text-gray-800 line-clamp-1" title={produto.nome}>
@@ -167,7 +169,7 @@ export function PdvPage() {
 				</div>
 				
 				{/* DIREITA: CARRINHO */}
-				<aside className="w-1/4 border-x-2 shadow-md bg-white border-gray-200 flex flex-col overflow-y-auto">
+				<aside className="w-1/4 h-full border-x-2 shadow-md bg-white border-gray-200 flex flex-col overflow-y-auto">
 					<div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
 						<h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">Carrinho</h2>
 					</div>
@@ -287,27 +289,13 @@ export function PdvPage() {
 							</div>
 						</div>
 
-						<div className="space-y-3">
-							<h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Formas de Pagamento</h4>
-							<div className="grid grid-cols-3 gap-2">
-								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
-									<Banknote size={18} />
-									<span className="text-[12px]">Dinheiro</span>
-								</Button>
-								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
-									<CreditCard size={18} />
-									<span className="text-[12px]">Cartão</span>
-								</Button>
-								<Button variant="outline" className="cursor-pointer flex flex-col h-14 gap-1 text-gray-600 hover:-translate-y-0.5 hover:bg-linear-to-br from-blue-950 to-blue-900 transition-all duration-300 hover:text-white">
-									<QrCode size={18} />
-									<span className="text-[12px]">PIX</span>
-								</Button>
-							</div>
+						<div className="space-y-2">
 							<Button 
-								disabled={itens.length === 0} 
-								className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white mt-2 shadow-md"
+								disabled={itens.length === 0}
+								onClick={() => setIsCheckoutOpen(true)} 
+								className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md"
 							>
-								Processar Venda
+								Confirmar Venda
 							</Button>
 						</div>
 					</div>
@@ -322,6 +310,11 @@ export function PdvPage() {
 					onClose={() => setProdutoSelecionado(null)}
 				/>
 			)}
+			<CheckoutModalProps
+				isOpen={isCheckoutOpen}
+				onClose={() => setIsCheckoutOpen(false)}
+				subtotal={subtotal}
+			/>
 		</div>
 	);
 }

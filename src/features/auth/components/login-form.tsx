@@ -64,7 +64,6 @@ export function LoginForm({
       <Card className="overflow-hidden p-0 border-none shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
           
-          {/* --- 4. FORMULÁRIO COM ONSUBMIT --- */}
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8 flex flex-col justify-center bg-white">
             <FieldGroup>
                 <div className="items-center justify-center text-center">
@@ -72,9 +71,9 @@ export function LoginForm({
                 </div>
 
                 <div className="flex flex-col items-center gap-2 text-center mb-4">
-                    <h1 className="text-2xl font-bold">Olá, seja bem-vindo!</h1>
+                    <h1 className="text-2xl font-bold">Olá, seja bem-vindo(a)!</h1>
                     <p className="text-balance text-muted-foreground">
-                      Faça Login com seu email e senha
+                      Faça login com seu email e senha
                     </p>
                 </div>
               
@@ -87,7 +86,6 @@ export function LoginForm({
                   {...register("email")} 
                   disabled={isSubmitting}
                 />
-                {/* MENSAGEM DE ERRO ZOD */}
                 {errors.email && <span className="text-sm font-medium text-red-500">{errors.email.message}</span>}
               </Field>
               
@@ -104,7 +102,7 @@ export function LoginForm({
                   {...register("senha")} 
                   disabled={isSubmitting} 
                 />
-                {/* MENSAGEM DE ERRO ZOD */}
+
                 {errors.senha && <span className="text-sm font-medium text-red-500">{errors.senha.message}</span>}
               </Field>
               
