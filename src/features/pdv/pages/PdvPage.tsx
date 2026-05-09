@@ -142,16 +142,17 @@ export function PdvPage() {
 												handleCliqueProduto(produto);
 											}
 										}}
-										className="cursor-pointer shadow-md hover:shadow-xl hover:scale-105 transition-all border-gray-200 overflow-hidden"
-									>						
-										<div className={`h-30 w-full ${produto.imagemUrl || 'bg-gray-300'} flex items-center justify-center`}>
-											<span className="text-white font-bold opacity-50">Imagens Em breve...</span>
+										className="cursor-pointer shadow-md hover:shadow-xl hover:scale-105 transition-all border-gray-200 overflow-hidden p-0 flex flex-col"
+									>                       
+										<div className={`h-32 w-full ${produto.imagemUrl || 'bg-gray-300'} flex items-center justify-center m-0`}>
+											<span className="text-white text-sm font-bold opacity-50">Imagens Em breve...</span>
 										</div>
-										<CardContent className="px-4">
+										
+										<CardContent className="px-4 pb-4 pt-0 flex flex-col justify-between flex-1">
 											<h3 className="font-medium text-gray-800 line-clamp-1" title={produto.nome}>
 												{produto.nome}
 											</h3>
-											<p className="font-bold text-primary">
+											<p className="font-bold text-primary mt-1 text-base">
 												{formatadorMoeda.format(produto.precoBase)}
 											</p>
 										</CardContent>
