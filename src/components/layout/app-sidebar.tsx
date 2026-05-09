@@ -6,6 +6,18 @@ import sellionSimbolo from '@/assets/simbolo_sellion.png';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -154,27 +166,55 @@ export function AppSidebar(){
       </SidebarContent>
 
       {/* Rodapé */}
-      <SidebarFooter className="bg-primary w-full">
-
+      <SidebarFooter className="bg-primary mt-auto">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
           <SidebarGroupContent>
             <TooltipProvider>
-              <SidebarMenu className="flex flex-col gap-1 w-full">
+              <SidebarMenu className="flex flex-col gap-1">
                 <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className=" text-white hover:bg-red-500/20 hover:text-red-200 py-5">
-                        <Link to="/login" activeProps={{ className: 'font-semibold' }}>
-                          <LogOut className="text-red-400"/>
-                          <span className="ml-1 text-sm">Sair</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-black text-red-400 border-none shadow-lg">
+                  
+                  <AlertDialog>
+                    <Tooltip>
+                      <AlertDialogTrigger asChild>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton 
+                            className="text-white hover:bg-red-500/20 hover:text-red-200 py-5 cursor-pointer"
+                          >
+                            <LogOut className="text-red-400" size={20} />
+                            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                              Sair
+                            </span>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                      </AlertDialogTrigger>
+                      
+                      <TooltipContent side="right" className="bg-black text-red-400 border-none shadow-lg">
                         <p className="text-sm">Sair do SellionPDV</p>
                       </TooltipContent>
-                  </Tooltip>
+                    </Tooltip>
+
+                    <AlertDialogContent className="bg-white border-none">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-slate-900">Deseja mesmo sair?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-600">
+                          Sua sessão atual será encerrada e você precisará fazer login novamente para acessar o sistema.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="border-slate-200 text-slate-600 hover:bg-slate-100">
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleLogout}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Confirmar Saída
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
                 </SidebarMenuItem>
               </SidebarMenu>
             </TooltipProvider>
@@ -186,4 +226,3 @@ export function AppSidebar(){
   )
 
 }
-
