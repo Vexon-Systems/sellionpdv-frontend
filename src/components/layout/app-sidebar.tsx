@@ -171,7 +171,7 @@ export function AppSidebar(){
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
           <SidebarGroupContent>
             <TooltipProvider>
-              <SidebarMenu className="flex flex-col gap-1">
+              <SidebarMenu className="flex flex-col gap-1 w-full">
                 <SidebarMenuItem>
                   
                   <AlertDialog>
@@ -179,9 +179,9 @@ export function AppSidebar(){
                       <AlertDialogTrigger asChild>
                         <TooltipTrigger asChild>
                           <SidebarMenuButton 
-                            className="text-white hover:bg-red-500/20 hover:text-red-200 py-5 cursor-pointer"
+                            className="text-white hover:bg-red-500/20 hover:text-red-200 py-5 cursor-pointer w-full flex justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                           >
-                            <LogOut className="text-red-400" size={20} />
+                            <LogOut className="text-red-400 shrink-0" size={20} />
                             <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
                               Sair
                             </span>
