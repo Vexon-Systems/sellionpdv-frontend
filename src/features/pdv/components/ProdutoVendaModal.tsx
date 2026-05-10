@@ -91,100 +91,113 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-125 p-0 overflow-hidden bg-white">
-                <DialogHeader className="p-6 bg-gray-50 border-b">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <DialogTitle className="text-2xl font-bold">{produto.nome}</DialogTitle>
-                        <p className="text-sm text-gray-500">Personalize seu pedido abaixo</p>
-                    </div>
-                    <div className="text-right px-5">
-                        <p className="text-xs text-gray-400 uppercase font-bold">Total do Item</p>
-                        <p className="text-2xl font-black text-primary">
-                        {formatadorMoeda.format(precoTotal)}
+            <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-white">
+                <DialogHeader className="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                    <DialogTitle className="text-2xl font-bold text-slate-800">
+                        {produto.nome}
+                    </DialogTitle>
+                    <p className="text-sm text-slate-500">
+                        Personalize seu pedido abaixo
                     </p>
-                    </div>
-                </div>
                 </DialogHeader>
 
-                <ScrollArea className="max-h-[60vh] p-6">
-                <div className="space-y-8">
-                    {produto.gruposModificadores.map((grupo) => {
-                    const qtdSelecionadaNoGrupo = selecao.filter(
-                        (s) => grupoPorOpcao.get(s.opcaoId) === grupo.grupoId
-                    ).length;
-                    const atendeRequisito = qtdSelecionadaNoGrupo >= grupo.minOpcoes;
-
-                    return (
-                        <div key={grupo.grupoId} className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <Label className="text-lg font-bold text-gray-800">{grupo.nome}</Label>
-                            <Badge variant={atendeRequisito ? "secondary" : "destructive"}>
-                            {grupo.minOpcoes > 0 ? `Mínimo ${grupo.minOpcoes}` : "Opcional"}
-                            </Badge>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-2">
-                            {grupo.opcoes.map((opcao) => {
-                            const isSelected = selecao.some((s) => s.opcaoId === opcao.id);
+                <ScrollArea className="max-h-[60vh] px-6 py-2">
+                    <div className="space-y-4">
+                        {produto.gruposModificadores.map((grupo) => {
+                            const qtdSelecionadaNoGrupo = selecao.filter(
+                                (s) => grupoPorOpcao.get(s.opcaoId) === grupo.grupoId
+                            ).length;
+                            const atendeRequisito = qtdSelecionadaNoGrupo >= grupo.minOpcoes;
 
                             return (
-                                <div
-                                    key={opcao.id}
-                                    onClick={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
-                                    role="button"
-                                    tabIndex={0} 
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes);
-                                        }
-                                    }}
-                                    className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                                        isSelected
-                                        ? 'border-primary bg-primary/5'
-                                        : 'border-gray-100 hover:border-gray-200'
-                                    }`}
-                                >
-                                <div className="flex items-center gap-3">
-                                    <Checkbox 
-                                    checked={isSelected} 
-                                    // Evita a propagação dupla do clique (um do Checkbox e um da Div)
-                                    onClick={(e) => e.stopPropagation()} 
-                                    onCheckedChange={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
-                                    className="rounded-full" 
-                                    />
-                                    <span className="font-medium text-gray-700">{opcao.nome}</span>
-                                </div>
-                                {opcao.precoAdicional > 0 && (
-                                    <span className="text-sm font-bold text-green-600">
-                                    + {formatadorMoeda.format(opcao.precoAdicional)}
-                                    </span>
-                                )}
+                                <div key={grupo.grupoId} className="space-y-4">
+                                    
+                                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                                        <Label className="text-lg font-bold text-slate-800">
+                                            {grupo.nome}
+                                        </Label>
+                                        <Badge variant={atendeRequisito ? "secondary" : "destructive"}>
+                                            {grupo.minOpcoes > 0 ? `Mínimo ${grupo.minOpcoes}` : "Opcional"}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {grupo.opcoes.map((opcao) => {
+                                            const isSelected = selecao.some((s) => s.opcaoId === opcao.id);
+
+                                            return (
+                                                <div
+                                                    key={opcao.id}
+                                                    onClick={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
+                                                    role="button"
+                                                    tabIndex={0} 
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes);
+                                                        }
+                                                    }}
+                                                    className={`
+                                                        flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer 
+                                                        shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300
+                                                        ${isSelected
+                                                            ? 'border-blue-900 bg-blue-50/50'
+                                                            : 'border-slate-100 hover:border-slate-200 bg-white'
+                                                        }
+                                                    `}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <Checkbox 
+                                                            checked={isSelected} 
+                                                            onClick={(e) => e.stopPropagation()} 
+                                                            onCheckedChange={() => toggleOpcao(grupo.grupoId, opcao, grupo.tipoEscolha, grupo.maxOpcoes)}
+                                                            className={grupo.maxOpcoes === 1 ? "rounded-full" : "rounded-sm"} 
+                                                        />
+                                                        <span className="font-semibold text-slate-700">
+                                                            {opcao.nome}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {opcao.precoAdicional > 0 && (
+                                                        <span className="text-sm font-bold text-white p-1 rounded-md bg-emerald-500">
+                                                            + {formatadorMoeda.format(opcao.precoAdicional)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             );
-                            })}
-                        </div>
-                        </div>
-                    );
-                    })}
-                </div>
+                        })}
+                    </div>
                 </ScrollArea>
+                     
+                <div className="px-6">
+                    <div className="bg-slate-100 px-4 py-2 rounded-lg flex justify-between items-center border border-slate-100">
+                        <span className="text-slate-600 font-medium">Total do Item:</span>
+                        <span className="text-xl font-bold text-blue-900">
+                            {formatadorMoeda.format(precoTotal)}
+                        </span>
+                    </div>
+                </div>
 
-                <DialogFooter className="p-6 border-t bg-gray-50">
-                    <Button variant="ghost" onClick={onClose} className="cursor-pointer">
+                <DialogFooter className="px-6 pb-8">
+                    <Button variant="outline" onClick={onClose} className="cursor-pointer" size={"lg"}>
                         Cancelar
                     </Button>
                     <Button
                         disabled={!isValido}
                         onClick={handleConfirmar}
-                        className="bg-primary hover:bg-primary/90 px-8 cursor-pointer"
+                        size={"lg"}
+                        className="bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md cursor-pointer px-8"
                     >
-                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        <ShoppingCart className="mr-2 h-5 w-5" />
                         Adicionar ao Carrinho
                     </Button>
                 </DialogFooter>
+                
             </DialogContent>
         </Dialog>
-    );
+);
 }

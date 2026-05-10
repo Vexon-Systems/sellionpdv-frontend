@@ -5,19 +5,26 @@ import { fetchCategorias } from "@/features/backoffice/services/apiCategorias";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProdutoDTO } from "../types/pdv";
 import { ProdutoVendaModal } from "../components/ProdutoVendaModal";
-import { CheckoutModalProps } from "../components/CheckoutModal";
+import { CheckoutModal } from "../components/CheckoutModal";
+import { SuccessView } from "../components/SuccessView";
 
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/Header";
-import { Search, ShoppingCart, Minus, Plus, Trash, Percent, Banknote, CreditCard, QrCode } from "lucide-react";
+import { Search, ShoppingCart, Minus, Plus, Trash, Percent } from "lucide-react";
 
 const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
 	style: 'currency',
 	currency: 'BRL'
 });
+
+interface DadosSucesso {
+	id: number;
+	itens: any[]; 
+	total: number;
+}
 
 export function PdvPage() {
 
@@ -26,7 +33,7 @@ export function PdvPage() {
 	const [termoBusca, setTermoBusca] = useState("");
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-	const { itens, adicionarItem, removerItem, alterarQuantidade } = useCartStore();
+	const { itens, adicionarItem, removerItem, alterarQuantidade, limparCarrinho } = useCartStore();
 
 	const { data: produtos, isLoading: isLoadingProdutos, isError: isErrorProdutos } = useQuery({
 		queryKey: ['lista-produtos'],
@@ -69,6 +76,10 @@ export function PdvPage() {
 		setCategoriaAtiva(Number(valorAba));
 	};
 
+	const [vendaConcluida, setVendaConcluida]= useState<any | null>(null);
+
+	const hasItem = itens.length > 0;
+
 	return (
 		<div className="flex flex-col h-screen w-full overflow-y-auto">
 			<Header titulo="Frente de Caixa"/>
@@ -76,7 +87,8 @@ export function PdvPage() {
 			<main className="flex flex-1 flex-row min-h-0 w-full bg-gray-50">
 
 				<div className="flex flex-1 flex-col px-8 py-6">
-					{/* BUSCA */}
+                    
+					{/* Busca */}
 					<div className="relative w-90">
 						<Search className="absolute left-2 top-1.5 text-gray-800" size={18}/>
 						<Input
@@ -115,7 +127,7 @@ export function PdvPage() {
 							</Tabs>
 						)}
 
-						{/* VITRINE */}
+						{/* Vitrine */}
 						{isLoadingProdutos && (
 							<div className="flex justify-center items-center h-64">
 								<p className="text-gray-500 animate-pulse">Carregando catálogo...</p>
@@ -167,10 +179,17 @@ export function PdvPage() {
 							</div>
 						)}
 					</div>
-				</div>
+                </div>
 				
 				{/* DIREITA: CARRINHO */}
-				<aside className="w-1/4 h-full border-x-2 shadow-md bg-white border-gray-200 flex flex-col overflow-y-auto">
+				<aside className={`
+					h-full bg-white flex flex-col border-gray-200 shadow-md
+					transition-all duration-500 ease-in-out overflow-hidden
+					${hasItem 
+						? "w-1/4 opacity-100 border-l-2" 
+						: "w-0 opacity-0 border-l-0"     
+					}
+				`}>
 					<div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
 						<h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">Carrinho</h2>
 					</div>
@@ -261,7 +280,6 @@ export function PdvPage() {
 							</div>
 						))}
 
-						{/* ESTADO VAZIO (Elegante e minimalista) */}
 						{itens.length === 0 && (
 							<div className="flex flex-col items-center justify-center h-full text-slate-400 mt-12 space-y-3">
 								<div className="bg-slate-100 p-4 rounded-full">
@@ -311,11 +329,20 @@ export function PdvPage() {
 					onClose={() => setProdutoSelecionado(null)}
 				/>
 			)}
-			<CheckoutModalProps
-				isOpen={isCheckoutOpen}
-				onClose={() => setIsCheckoutOpen(false)}
-				subtotal={subtotal}
-			/>
+			<CheckoutModal
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
+                subtotal={subtotal}
+                onSuccessCallback={(dados) => setVendaConcluida(dados)} 
+            />
+
+			<SuccessView 
+                dadosVenda={vendaConcluida}
+                onNovaVenda={() => {
+                    limparCarrinho();        
+                    setVendaConcluida(null); 
+                }}
+            />
 		</div>
 	);
 }
