@@ -42,66 +42,74 @@ export function ControleCaixaPage(){
                 </div>
 
                 {/* 2 - Cards de Resumo */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 my-6 w-full">
+                    
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0 overflow-hidden">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800">Saldo Físico (Gaveta)</h3>
-                            <Box size={20} className="text-gray-400" />
+                            <h3 className="font-semibold text-gray-800 text-sm truncate" title="Saldo Físico (Gaveta)">
+                                Saldo Físico (Gaveta)
+                            </h3>
+                            <Box size={20} className="text-gray-400 shrink-0 ml-2" />
                         </div>
-                        <p className="text-3xl font-bold text-primary mb-1">
+                        <p className="text-2xl font-bold text-primary mb-1 truncate w-full" title={resumoCaixaMock.saldoFisico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}>
                             {resumoCaixaMock.saldoFisico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
-                        <p className="text-xs text-gray-500">Dinheiro na gaveta.</p>
+                        <p className="text-xs text-gray-500 truncate">Dinheiro na gaveta.</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0 overflow-hidden">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800">Fundo de Troco</h3>
-                            <Coins size={20} className="text-gray-400" />
+                            <h3 className="font-semibold text-gray-800 text-sm truncate" title="Fundo de Troco">
+                                Fundo de Troco
+                            </h3>
+                            <Coins size={20} className="text-gray-400 shrink-0 ml-2" />
                         </div>
-                        <p className="text-3xl font-bold text-gray-900 mb-1">
+                        <p className="text-2xl font-bold text-gray-900 mb-1 truncate w-full" title={resumoCaixaMock.fundoTroco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}>
                             {resumoCaixaMock.fundoTroco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
-                        <p className="text-xs text-gray-500">Lançado na abertura.</p>
+                        <p className="text-xs text-gray-500 truncate">Lançado na abertura.</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0 overflow-hidden">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800">Vendas em Dinheiro</h3>
-                            <DollarSign size={20} className="text-gray-400" />
+                            <h3 className="font-semibold text-gray-800 text-sm truncate" title="Vendas em Dinheiro">
+                                Vendas em Dinheiro
+                            </h3>
+                            <DollarSign size={20} className="text-gray-400 shrink-0 ml-2" />
                         </div>
-                        <p className="text-3xl font-bold text-green-600 mb-1">
+                        <p className="text-2xl font-bold text-green-600 mb-1 truncate w-full" title={resumoCaixaMock.vendasDinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}>
                             {resumoCaixaMock.vendasDinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
-                        <p className="text-xs text-gray-500">Apenas em espécie.</p>
+                        <p className="text-xs text-gray-500 truncate">Apenas em espécie.</p>
                     </div>
+
                 </div>
 
                 {/* 3 - Barra de ações */}
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
+                    <div className="flex flex-wrap gap-3 w-full sm:w-auto">
                         <Button
                             onClick={() => setModalAtivo('SANGRIA')} 
                             variant="outline" 
-                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer">
-                            <ArrowDownToLine size={16} className="mr-2" /> Sangria (Retirada)
+                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer flex-1 sm:flex-none">
+                            <ArrowDownToLine size={16} className="mr-2 shrink-0" /> <span className="truncate">Sangria (Retirada)</span>
                         </Button>
 
                         <Button 
                             onClick={() => setModalAtivo('REFORCO')}
                             variant="outline" 
-                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer"
+                            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer flex-1 sm:flex-none"
                             >
-                            <ArrowUpFromLine size={16} className="mr-2" /> Reforço (Entrada)
+                            <ArrowUpFromLine size={16} className="mr-2 shrink-0" /> <span className="truncate">Reforço (Entrada)</span>
                         </Button>
-                        </div>
+                    </div>
 
-                        <Button 
-                            onClick={() => setIsFechamentoOpen(true)}
-                            className="bg-primary hover:bg-primary/90 text-white cursor-pointer"
-                        >
-                            <Lock size={16} className="mr-2" /> Iniciar Fechamento
-                        </Button>
+                    <Button 
+                        onClick={() => setIsFechamentoOpen(true)}
+                        className="bg-primary hover:bg-primary/90 text-white cursor-pointer w-full sm:w-auto mt-2 sm:mt-0"
+                    >
+                        <Lock size={16} className="mr-2 shrink-0" /> <span className="truncate">Iniciar Fechamento</span>
+                    </Button>
                 </div>
 
                 {/* 4 - Extrato de Movimentação */}
