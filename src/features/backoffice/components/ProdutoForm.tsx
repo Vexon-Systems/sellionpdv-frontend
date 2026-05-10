@@ -153,7 +153,6 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
             return;
         }
         
-        // Verifica se o grupo já não está vinculado para evitar duplicidade
         if (fields.some(f => f.grupoId === novoVinculo.grupoId)) {
             toast.error("Este grupo já está vinculado ao produto!");
             return;
@@ -389,7 +388,6 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {fields.map((field, index) => {
-                                // Buscamos o nome do grupo na lista global para exibir na tela
                                 const grupoInfo = listaDeTodosOsGrupos?.find(g => g.id === field.grupoId);
                                 
                                 return (

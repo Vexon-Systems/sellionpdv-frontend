@@ -105,9 +105,10 @@ export function ModificadoresPage(){
                 </div>
             </div>
         
-            <div className="flex flex-row ml-8 overflow-y-auto">
+            <div className="flex flex-col lg:flex-row gap-6 px-4 md:px-8 pb-8 flex-1 overflow-y-auto lg:overflow-hidden">
+                
                 {/* Grupo de Modificadores*/}
-                <Card className="w-90 bg-white border-2 rounded-md border-gray-200 flex flex-col overflow-y-auto">
+                <Card className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white border-2 rounded-md border-gray-200 flex flex-col max-h-[350px] lg:max-h-full lg:overflow-y-auto">
 
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b px-6">
                         <CardTitle className="text-lg flex items-center gap-2">
@@ -135,7 +136,7 @@ export function ModificadoresPage(){
                 </Card>
 
                 {/* Formulário */}
-                <Card className="flex-1 flex flex-col overflow-y-auto mx-8 border-2">
+                <Card className="flex-1 flex flex-col border-2 lg:overflow-y-auto">
                     <CardHeader className="border-b bg-gray-50/50 flex flex-row items-start justify-between">
                         <div>
                             <CardTitle className="text-xl text-gray-900">
@@ -188,49 +189,54 @@ export function ModificadoresPage(){
                             {/* Lista dinamica de opcoes */}
                             <div className="space-y-4">
 
-                            <div className="flex gap-4 px-1 border-b border-gray-100 pb-2">
-                                <div className="flex-1">
-                                    <Label className="text-xs font-semibold uppercase tracking-wider">Nome da Opção</Label>
-                                </div>
-                                <div className="w-30">
-                                    <Label className="text-xs font-semibold uppercase tracking-wider">Preço Adicional</Label>
-                                </div>
-                                <div className="w-10"></div> {/* Espaço do botão remover */}
-                            </div>
-                    
-                            <div className="space-y-3">
-                                {fields.map((field, index) => (
-                                <div key={field.id} className="flex gap-4 items-start group">
-                    
-                                    <div className="flex-1 space-y-1">
-                                        <Input {...register(`opcoes.${index}.nome` as const)} placeholder="Ex: Copo 300ml, Nutella" />
-                                        {errors.opcoes?.[index]?.nome && <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>}
+                                <div className="hidden sm:flex gap-4 px-1 border-b border-gray-100 pb-2">
+                                    <div className="flex-1">
+                                        <Label className="text-xs font-semibold uppercase tracking-wider">Nome da Opção</Label>
                                     </div>
-                                    
-                                    <div className="w-32 space-y-1 relative">
-                                        <span className="absolute left-2.5 top-[6px] text-gray-500 text-sm">R$</span>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            className="pl-8"
-                                            {...register(`opcoes.${index}.precoAdicional` as const, { valueAsNumber: true })}
-                                        />
-                                        {errors.opcoes?.[index]?.precoAdicional && <p className="text-red-500 text-xs">{errors.opcoes[index]?.precoAdicional?.message}</p>}
+                                    <div className="w-32">
+                                        <Label className="text-xs font-semibold uppercase tracking-wider">Preço Adicional</Label>
                                     </div>
+                                    <div className="w-10"></div> {/* Espaço do botão remover */}
+                                </div>
+                        
+                                <div className="space-y-4 sm:space-y-3">
+                                    {fields.map((field, index) => (
+                                    <div key={field.id} className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 items-end sm:items-start group bg-gray-50 sm:bg-transparent p-3 sm:p-0 rounded-md border sm:border-none">
+                                        
+                                        <div className="w-full sm:flex-1 space-y-1">
+                                            <Label className="text-xs sm:hidden">Nome da Opção</Label>
+                                            <Input {...register(`opcoes.${index}.nome` as const)} placeholder="Ex: Copo 300ml, Nutella" />
+                                            {errors.opcoes?.[index]?.nome && <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>}
+                                        </div>
+                                        
+                                        <div className="flex-1 sm:w-32 space-y-1">
+                                            <Label className="text-xs sm:hidden">Preço</Label>
+                                            <div className="relative">
+                                                <span className="absolute left-2.5 top-[9px] sm:top-[6px] text-gray-500 text-sm">R$</span>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="pl-8"
+                                                    {...register(`opcoes.${index}.precoAdicional` as const, { valueAsNumber: true })}
+                                                />
+                                            </div>
+                                            {errors.opcoes?.[index]?.precoAdicional && <p className="text-red-500 text-xs">{errors.opcoes[index]?.precoAdicional?.message}</p>}
+                                        </div>
 
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                        onClick={() => remove(index)}
-                                        disabled={fields.length === 1}
-                                        >
-                                        <X size={20} />
-                                    </Button>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
+                                            onClick={() => remove(index)}
+                                            disabled={fields.length === 1}
+                                            >
+                                            <X size={20} />
+                                        </Button>
+                                    </div>
+                                    ))}
                                 </div>
-                                ))}
-                            </div>
+                                
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -243,7 +249,7 @@ export function ModificadoresPage(){
                             </div>
                             {/* AÇÕES SALVAR */}
                             <div className="flex justify-end pt-6 border-t">
-                                <Button type="submit" className="px-8" disabled={mutationSalvar.isPending}>
+                                <Button type="submit" className="w-full sm:w-auto px-8" disabled={mutationSalvar.isPending}>
                                     <Save size={16} className="mr-2" /> {mutationSalvar.isPending ? "Salvando..." : "Salvar Grupo"}
                                 </Button>
                             </div>
