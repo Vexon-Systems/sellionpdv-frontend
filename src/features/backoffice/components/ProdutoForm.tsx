@@ -218,22 +218,28 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                 {/* CARDS DE MÉTRICAS*/}
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center">
-                        <p className="text-sm text-gray-500 mb-1">Preço Base (PDV)</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
+                        <p className="text-xs xl:text-sm text-gray-500 mb-1 whitespace-nowrap truncate" title="Preço Base (PDV)">
+                            Preço Base (PDV)
+                        </p>
+                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-gray-900 truncate" title={precoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}>
                             {precoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
                     </div>
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center">
-                        <p className="text-sm text-gray-500 mb-1">Custo Estimado</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
+                        <p className="text-xs xl:text-sm text-gray-500 mb-1 whitespace-nowrap truncate" title="Custo Estimado">
+                            Custo Estimado
+                        </p>
+                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-gray-900 truncate" title={custoEstimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}>
                             {custoEstimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
                     </div>
-                    <div className="bg-green-50 p-4 rounded-xl border border-green-100 shadow-sm flex flex-col justify-center">
-                        <p className="text-sm text-green-700 mb-1">Margem Bruta</p>
-                        <p className="text-2xl font-bold text-green-700">
+                    <div className="bg-green-50 p-4 rounded-xl border border-green-100 shadow-sm flex flex-col justify-center overflow-hidden">
+                        <p className="text-xs xl:text-sm text-green-700 mb-1 whitespace-nowrap truncate" title="Margem Bruta">
+                            Margem Bruta
+                        </p>
+                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-green-700 truncate" title={`${margemBruta.toFixed(0)}%`}>
                             {margemBruta.toFixed(0)}%
                         </p>
                     </div>
@@ -246,7 +252,7 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     {errors.nome && <p className="text-red-500 text-sm">{errors.nome.message}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* Preço Base */}
                     <div className="space-y-2">
                         <Label>Preço Base (R$)</Label>
@@ -256,12 +262,12 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
 
                     {/* Categoria */}
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-wrap justify-between items-center gap-1">
                             <Label>Categoria</Label>
                             <button 
                                 type="button" 
                                 onClick={() => setIsCategoriaModalOpen(true)}
-                                className="text-xs text-primary font-medium flex items-center hover:underline cursor-pointer"
+                                className="text-xs text-primary font-medium hover:underline cursor-pointer"
                             >
                                 Gerenciar categorias
                             </button>
@@ -302,7 +308,7 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
 
                 {/* MODIFICADORES DINÂMICOS */}
                 <div className="space-y-4 pt-6 border-t">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                         <div>
                             <h3 className="font-bold text-lg text-gray-800">Modificadores do Produto</h3>
                             <p className="text-sm text-gray-500">Adicione tamanhos, sabores ou adicionais.</p>
@@ -390,11 +396,11 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                                     <div key={field.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:border-primary/30 transition-colors">
                                         <div>
                                             <h4 className="font-semibold text-gray-800 text-sm">{grupoInfo?.nome || "Grupo Carregando..."}</h4>
-                                            <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex flex-wrap items-center gap-2 mt-1">
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${field.tipoEscolha === 'UNICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                                                     {field.tipoEscolha === 'UNICA' ? 'Única' : 'Múltipla'}
                                                 </span>
-                                                <span className="text-xs text-gray-500">
+                                                <span className="text-xs text-gray-500 whitespace-nowrap">
                                                     (Min: {field.minOpcoes} | Máx: {field.maxOpcoes})
                                                 </span>
                                             </div>
