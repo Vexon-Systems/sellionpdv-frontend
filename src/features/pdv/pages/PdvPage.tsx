@@ -84,21 +84,20 @@ export function PdvPage() {
 		<div className="flex flex-col h-screen w-full overflow-y-auto">
 			<Header titulo="Frente de Caixa"/>
 
-			<main className="flex flex-1 flex-row min-h-0 w-full bg-gray-50">
+            <main className="flex flex-1 flex-col lg:flex-row min-h-0 w-full bg-gray-50 overflow-hidden">
 
-				<div className="flex flex-1 flex-col px-8 py-6">
+                <div className="flex flex-1 flex-col px-4 md:px-8 py-6 min-w-0 overflow-y-auto">
                     
-					{/* Busca */}
-					<div className="relative w-90">
-						<Search className="absolute left-2 top-1.5 text-gray-800" size={18}/>
-						<Input
-							type="text"
-							placeholder="Buscar produto por nome"
-							className="pl-10 w-full bg-white border-gray-200 shadow-md"
-							value={termoBusca}
-							onChange={(e) => setTermoBusca(e.target.value)}
-						/>
-					</div>
+                    <div className="relative w-full max-w-md shrink-0">
+                        <Search className="absolute left-2 top-1.5 text-gray-800" size={18}/>
+                        <Input
+                            type="text"
+                            placeholder="Buscar produto por nome"
+                            className="pl-10 w-full bg-white border-gray-200 shadow-md"
+                            value={termoBusca}
+                            onChange={(e) => setTermoBusca(e.target.value)}
+                        />
+                    </div>
 
 					{/* Tab de Categorias */}
 					<div className="my-6 w-full">
@@ -141,8 +140,8 @@ export function PdvPage() {
 						)}
 
 						{!isLoadingProdutos && !isErrorProdutos && (
-							<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-6 my-6">
-								{produtosFiltrados.map((produto) => (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-6 my-6">
+                                {produtosFiltrados.map((produto) => (
 									<Card 
 										key={produto.id} 
 										onClick={() => handleCliqueProduto(produto)}
@@ -182,14 +181,14 @@ export function PdvPage() {
                 </div>
 				
 				{/* DIREITA: CARRINHO */}
-				<aside className={`
-					h-full bg-white flex flex-col border-gray-200 shadow-md
-					transition-all duration-500 ease-in-out overflow-hidden
-					${hasItem 
-						? "w-1/4 opacity-100 border-l-2" 
-						: "w-0 opacity-0 border-l-0"     
-					}
-				`}>
+                <aside className={`
+                    bg-white flex flex-col border-gray-200 shadow-md shrink-0
+                    transition-all duration-500 ease-in-out overflow-hidden
+                    ${hasItem 
+                        ? "w-full lg:w-[320px] xl:w-[400px] h-[45vh] lg:h-full opacity-100 border-t-2 lg:border-t-0 lg:border-l-2" 
+                        : "w-full lg:w-0 h-0 opacity-0 border-0"    
+                    }
+                `}>
 					<div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
 						<h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">Carrinho</h2>
 					</div>

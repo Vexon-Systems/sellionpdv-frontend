@@ -39,39 +39,36 @@ export function CatalogoPage() {
             />
 
             {/* Cabeçalho */}
-            <div className="flex justify-between items-start mx-8 my-6">
-                <div className="flex justify-center items-center gap-5">
-                    <Button size="lg" onClick={() => setProdutoSelecionadoId(0)} className="cursor-pointer shadow-md">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 md:px-8 my-6 gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+                    <Button size="lg" onClick={() => setProdutoSelecionadoId(0)} className="cursor-pointer shadow-md w-full sm:w-auto">
                         <Plus size={16} className="mr-2" />
                         Novo Produto
                     </Button>
 
-                    <div className="relative bg-white rounded-md">
+                    <div className="relative bg-white rounded-md w-full sm:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <Input
                             placeholder="Buscar produtos..."
-                            className="pl-10 py-4 shadow-md"
+                            className="pl-10 py-4 shadow-md w-full sm:w-64"
                             value={termoBusca}
                             onChange={(e) => setTermoBusca(e.target.value)}
                         />
                     </div>
                 </div>
-                
             </div>
         
-            <div className="flex flex-row ml-8 overflow-y-auto">
+            <div className="flex flex-col lg:flex-row gap-6 px-4 md:px-8 pb-8 flex-1 overflow-y-auto lg:overflow-hidden">
 
                 {/* Coluna de Listagem (Esquerda)*/}
-                <Card className="w-100 h-screen bg-white border-2 rounded-md border-gray-200 flex flex-col overflow-y-auto">
+                <Card className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white border-2 rounded-md border-gray-200 flex flex-col max-h-[350px] lg:max-h-full overflow-y-auto">
                     {/* Topo da Listagem: Título e Pesquisa */}
                     <div className="space-y-4 px-2">
-
                         <CardHeader className="flex flex-col items-start gap-3 justify-between space-y-0 border-b">
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Utensils className="h-5 w-5" />
                                 Produtos
                             </CardTitle>
-
                         </CardHeader>
                     </div>
 
@@ -118,15 +115,15 @@ export function CatalogoPage() {
                 </Card>
 
                 {/* Coluna de detalhes do Produto (Direita) */}
-                <main className="flex-1 flex flex-col bg-gray-50">
+                <main className="flex-1 flex flex-col bg-gray-50 lg:overflow-y-auto">
                     
                     {/* Área de Detalhes do Produto */}
-                    <div className="px-8 pb-10 h-full">
+                    <div className="pb-10 h-full">
                     
                         {produtoSelecionadoId === null ? (
-                            <div className="border-2 border-dashed border-gray-300 rounded-md h-full flex flex-col items-center justify-center text-gray-400 bg-white">
+                            <div className="border-2 border-dashed border-gray-300 rounded-md h-full flex flex-col items-center justify-center text-gray-400 bg-white min-h-[300px]">
                                 <Package size={48} className="mb-4 opacity-20" />
-                                <p>Selecione um produto na lista ou crie um novo.</p>
+                                <p className="text-center px-4">Selecione um produto na lista ou crie um novo.</p>
                             </div>
                         ) : (
                             <ProdutoForm 
