@@ -13,6 +13,7 @@ import { useCartStore } from "@/store/useCartStore";
 import type { FormaPagamento } from "../types/venda";
 import { useFinalizarVenda } from "../hooks/useFinalizarVenda";
 import { toast } from "sonner";
+import pix from "../../../assets/pix.png"
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -46,60 +47,41 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
             return;
         }
         
-        const itensFormatados = itens.map((item) => {
-            return {
-                produtoId: item.produto.id,
-                quantidade: item.quantidade,
-
-                modificadores: item.modificadores ? item.modificadores.map((mod) => ({
-                    opcaoId: mod.opcaoId
-                })) : []
-            };
-        });
+        const itensFormatados = itens.map((item) => ({
+            produtoId: item.produto.id,
+            quantidade: item.quantidade,
+            modificadores: item.modificadores ? item.modificadores.map((mod) => ({
+                opcaoId: mod.opcaoId
+            })) : []
+        }));
+        
+        const exigeMaquininha = formaPagamento === 'CREDITO' || formaPagamento === 'DEBITO';
+        const maquininhaSelecionada = exigeMaquininha ? 1 : null; 
         
         const payload = {
-                itens: itensFormatados,
-                formaPagamento: formaPagamento,
-                maquininhaId: null,
-                descontoAplicado: 0.00
-            };
+            itens: itensFormatados,
+            formaPagamento: formaPagamento,
+            maquininhaId: maquininhaSelecionada,
+            descontoAplicado: 0.00
+        };
 
         mutate(payload, {
             onSuccess: (respostaDaApi: any) => {
                 const dadosCongelados = {
-                    id: respostaDaApi?.id || Math.floor(Math.random() * 10000), 
+                    id: respostaDaApi?.id, 
                     itens: [...itens], 
                     total: subtotal
                 };
                 
                 onSuccessCallback(dadosCongelados);
-                
                 toast.success("Venda finalizada com sucesso!");
                 onClose();
             },
-            onError: (error) => {
-                console.error(error);
-                toast.error("Erro na Venda", {
-                    description: "Não foi possível processar. Tente novamente."
-                });
+            onError: (error: any) => {
+                const mensagem = error.response?.data?.detail || "Não foi possível processar. Tente novamente.";
+                toast.error("Erro na Venda", { description: mensagem });
             }
         });
-        
-        // mutate(payload, {
-        //     onSuccess: () => {
-        //         limparCarrinho();
-        //         onClose();
-        //         toast.success("Sucesso!", {
-        //             description: "Venda finalizada com sucesso."
-        //         });
-        //     },
-        //     onError: (error) => {
-        //         console.error(error);
-        //         toast.error("Erro na Venda", {
-        //             description: "Não foi possível processar. Tente novamente."
-        //         });
-        //     }
-        // })
     }
 
     return (
@@ -127,7 +109,7 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
                             className="flex flex-col gap-4"
                         >
 
-                            <FieldLabel className="shadow-sm hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
+                            <FieldLabel className="hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
                                 <Field orientation={"horizontal"}>
                                     <FieldContent className="flex flex-row gap-3">
                                         <div className="flex w-6 h-full">
@@ -139,7 +121,19 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
                                 </Field>
                             </FieldLabel>
 
-                            <FieldLabel className="shadow-sm hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
+                            <FieldLabel className="hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
+                                <Field orientation={"horizontal"}>
+                                    <FieldContent className="flex flex-row gap-3">
+                                        <div className="flex w-6 h-full">
+                                            <img src={pix} alt="Logo do PIX" className=""/>
+                                        </div>
+                                        <FieldTitle className="font-semibold">PIX</FieldTitle>
+                                    </FieldContent>
+                                    <RadioGroupItem value="PIX"/>
+                                </Field>
+                            </FieldLabel>
+                            
+                            <FieldLabel className="hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
                                 <Field orientation={"horizontal"}>
                                     <FieldContent className="flex flex-row gap-3">
                                         <div className="flex w-6 h-full">
@@ -151,11 +145,11 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
                                 </Field>
                             </FieldLabel>
 
-                            <FieldLabel className="shadow-sm hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
+                            <FieldLabel className="hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
                                 <Field orientation={"horizontal"}>
                                     <FieldContent className="flex flex-row gap-3">
                                         <div className="flex w-6 h-full">
-                                            <Landmark className="text-gray-500"/>
+                                            <CreditCard className="text-gray-500"/>
                                         </div>
                                         <FieldTitle className="font-semibold">Débito</FieldTitle>
                                     </FieldContent>
@@ -163,17 +157,6 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
                                 </Field>
                             </FieldLabel>
 
-                            <FieldLabel className="shadow-sm hover:-translate-y-1 hover:transition-all duration-300 cursor-pointer hover:shadow-md">
-                                <Field orientation={"horizontal"}>
-                                    <FieldContent className="flex flex-row gap-3">
-                                        <div className="flex w-6 h-full">
-                                            <QrCode className="text-teal-400"/>
-                                        </div>
-                                        <FieldTitle className="font-semibold">PIX</FieldTitle>
-                                    </FieldContent>
-                                    <RadioGroupItem value="PIX"/>
-                                </Field>
-                            </FieldLabel>
                         </RadioGroup>
                     </>
                 )}

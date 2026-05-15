@@ -44,4 +44,10 @@ export interface OpcaoModificadorDTO {
     precoAdicional: number;
 }
 
+export interface DadosSucesso {
+  id: number;
+  itens: ItemCarrinho[]; 
+  total: number;
+}
+
 

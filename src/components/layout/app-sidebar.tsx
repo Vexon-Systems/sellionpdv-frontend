@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
@@ -154,6 +154,60 @@ export function AppSidebar(){
 
                     <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
                       <p className="text-sm">Gerencie os grupos de modificadores</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 3: Dashboard */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/dashboard" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <BarChart />
+                          <span className="ml-1 text-sm">Dashboard</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Visualize gráficos</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 4: Relatórios */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/relatorios" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <ClipboardList />
+                          <span className="ml-1 text-sm">Relatórios</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie e exporte seus relaórios</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 5: Equipe */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/equipe" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <Users />
+                          <span className="ml-1 text-sm">Equipe</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
                     </TooltipContent>
                   </Tooltip>
                 </SidebarMenuItem>

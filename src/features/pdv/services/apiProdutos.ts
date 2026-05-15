@@ -36,3 +36,16 @@ export const excluirProduto = async (id: number): Promise<void> => {
       }
     }
 };
+
+export const uploadImagemProduto = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file); 
+
+    const response = await api.post('/api/produtos/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+
+    return typeof response.data === 'string' ? response.data : response.data.imagemUrl || response.data.url;
+};

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../types/pdv";
-import { ShoppingCart, AlertCircle } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 interface Props {
     produto: ProdutoDTO;
@@ -92,13 +92,13 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-white">
-                <DialogHeader className="px-6 py-4 bg-slate-50 border-b border-slate-100">
+                <DialogHeader className="px-6 py-3 bg-slate-50 border-b border-slate-100">
                     <DialogTitle className="text-2xl font-bold text-slate-800">
                         {produto.nome}
+                        <p className="text-sm font-normal text-slate-500">
+                            Personalize seu pedido abaixo
+                        </p>
                     </DialogTitle>
-                    <p className="text-sm text-slate-500">
-                        Personalize seu pedido abaixo
-                    </p>
                 </DialogHeader>
 
                 <ScrollArea className="max-h-[60vh] px-6 py-2">
@@ -117,7 +117,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                                             {grupo.nome}
                                         </Label>
                                         <Badge variant={atendeRequisito ? "secondary" : "destructive"}>
-                                            {grupo.minOpcoes > 0 ? `Mínimo ${grupo.minOpcoes}` : "Opcional"}
+                                            {grupo.minOpcoes > 0 ? `Mínimo ${grupo.minOpcoes}` : `Escolha até ${grupo.maxOpcoes}`}
                                         </Badge>
                                     </div>
 
@@ -138,8 +138,8 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                                                         }
                                                     }}
                                                     className={`
-                                                        flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer 
-                                                        shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300
+                                                        flex items-center justify-between p-2 rounded-xl border-2 cursor-pointer 
+                                                        hover:-translate-y-1 hover:shadow-sm transition-all duration-300
                                                         ${isSelected
                                                             ? 'border-blue-900 bg-blue-50/50'
                                                             : 'border-slate-100 hover:border-slate-200 bg-white'
@@ -159,7 +159,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                                                     </div>
                                                     
                                                     {opcao.precoAdicional > 0 && (
-                                                        <span className="text-sm font-bold text-white p-1 rounded-md bg-emerald-500">
+                                                        <span className="text-sm font-bold text-emerald-500 p-1 rounded-md">
                                                             + {formatadorMoeda.format(opcao.precoAdicional)}
                                                         </span>
                                                     )}

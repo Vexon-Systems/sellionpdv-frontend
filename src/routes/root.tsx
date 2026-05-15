@@ -5,8 +5,11 @@ import { PdvPage } from '@/features/pdv/pages/PdvPage';
 import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
 import { CatalogoPage } from '@/features/backoffice/pages/CatalogoPage';
 import { ModificadoresPage } from '@/features/backoffice/pages/ModificadoresPage';
+import { DashboardPage } from '@/features/backoffice/pages/DashboardPage';
 import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { RelatoriosPage } from '@/features/backoffice/pages/RelatoriosPage';
+import { EquipePage } from '@/features/backoffice/pages/EquipePage';
 
 
 const rootRoute = createRootRoute({
@@ -95,7 +98,61 @@ const modificadoresRoute = createRoute({
     component: ModificadoresPage,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute]);
+const dashboardRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/dashboard',
+    beforeLoad: () => {
+        const { isAuthenticated, user } = useAuthStore.getState();
+        
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' });
+        }
+        
+        if (user?.role !== 'ROLE_ADMIN') {
+            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            throw redirect({ to: '/' }); 
+        }
+    },
+    component: DashboardPage,
+});
+
+const relatoriosRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/relatorios',
+    beforeLoad: () => {
+        const { isAuthenticated, user } = useAuthStore.getState();
+        
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' });
+        }
+        
+        if (user?.role !== 'ROLE_ADMIN') {
+            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            throw redirect({ to: '/' }); 
+        }
+    },
+    component: RelatoriosPage,
+});
+
+const equipeRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/equipe',
+    beforeLoad: () => {
+        const { isAuthenticated, user } = useAuthStore.getState();
+        
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' });
+        }
+        
+        if (user?.role !== 'ROLE_ADMIN') {
+            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            throw redirect({ to: '/' }); 
+        }
+    },
+    component: EquipePage,
+});
+
+const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute]);
 
 export const router = createRouter({ routeTree });
 

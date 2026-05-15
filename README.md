@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# SellionPDV
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um sistema de Frente de Caixa (PDV) moderno, escalável e seguro, focado na experiência do operador e na integridade rigorosa de dados. 
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tecnologias Utilizadas
 
-## React Compiler
+**Frontend:**
+* React + Vite
+* React Hook Form + Zod
+* Zustand (Gerenciamento de Estado)
+* TanStack Query (Sincronização de Dados)
+* TailwindCSS & shadcn/ui (Estilização e Componentes)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Backend:**
+* Java 17+
+* Spring Boot 3+ (REST API)
+* Spring Security + JWT (Autenticação e Autorização)
+* Spring Data JPA / Hibernate (Persistência)
+* Spring Web
+* Lombok
 
-## Expanding the ESLint configuration
+**Infraestrutura:**
+* PostgreSQL (Hospedado no Supabase)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Destaques Arquiteturais
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* **Confiança Zero (Zero Trust):** O backend nunca confia em valores financeiros enviados no payload do frontend. Todos os cálculos de totais e descontos são refeitos na camada de *Service* buscando os valores base diretamente do banco de dados.
+* **Isolamento Multi-Tenant:** Preparado para múltiplas lojas. O sistema extrai o `tenant_id` do token JWT e aplica filtros automáticos no Hibernate, garantindo que uma franquia nunca acesse os dados de outra.
+* **Integridade via Soft Delete:** A exclusão de produtos ou modificadores no catálogo não apaga o registro do banco, apenas altera a flag para `ativo = false`. Isso garante que recibos e o histórico de vendas antigas nunca percam suas referências ou sejam corrompidos.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Guia de Instalação e Execução
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Pré-requisitos
+* Node.js (v18+)
+* Java 17+ e Maven
+* Banco de Dados PostgreSQL configurado
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Configurando e Rodando o Backend
+1. Navegue até o diretório do backend.
+2. Configure as variáveis de ambiente necessárias no arquivo `application.properties` ou `.env` (URL do banco, chaves do Supabase, Secret do JWT).
+3. Instale as dependências e compile o projeto:
+    ```bash
+    mvn clean install
+4. Inicie o servidor:
+    ```bash
+    mvn spring-boot:run
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 2. Configurando e Rodando o Frontend
+1. Navegue até o diretório do frontend
+2. Clone o repositório em sua máquina
+    ```bash
+    git clone "link_do_repositorio"
+3. Instale as dependências via NPM ou Yarn
+    ```bash
+    npm install
+4. Inicie o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+
+Acesse a aplicação no navegador através da URL fornecida no terminal (geralmente *http://localhost:5173*)

@@ -129,7 +129,7 @@
     }
 }
 
-/* Animação Pulse do Login */
+/* Animação Pulsar do Login */
 @keyframes light-pulse {
   0% {
     transform: scale(0.9); 
