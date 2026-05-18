@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
@@ -202,6 +202,24 @@ export function AppSidebar(){
                         <Link to="/equipe" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
                           <Users />
                           <span className="ml-1 text-sm">Equipe</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                {/* Item 6: Maquininhas */}
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/maquininhas" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <CreditCard />
+                          <span className="ml-1 text-sm">Maquininhas</span>
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>

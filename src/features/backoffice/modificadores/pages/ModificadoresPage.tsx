@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchModificadores, salvarModificador, excluirModificador } from "../services/apiModificadores";
-import type { GrupoModificadorDTO } from "../../pdv/types/pdv";
+import type { GrupoModificadorDTO } from "@/features/pdv/types/pdv";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

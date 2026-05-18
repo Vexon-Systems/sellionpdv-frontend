@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProdutos } from "../services/apiProdutos";
-import { fetchCategorias } from "@/features/backoffice/services/apiCategorias";
+import { fetchCategorias } from "@/features/backoffice/catalogo/services/apiCategorias";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { ProdutoDTO, DadosSucesso } from "../types/pdv";

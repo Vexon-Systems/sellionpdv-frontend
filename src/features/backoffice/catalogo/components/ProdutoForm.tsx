@@ -4,7 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { fetchCategorias } from "../services/apiCategorias";
-import { fetchModificadores } from "../services/apiModificadores";
+import { fetchModificadores } from "../../modificadores/services/apiModificadores";
 
 import type { ProdutoDTO } from "@/features/pdv/types/pdv";
 import { salvarProduto, excluirProduto, uploadImagemProduto } from "@/features/pdv/services/apiProdutos"; 

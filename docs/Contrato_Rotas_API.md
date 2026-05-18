@@ -269,3 +269,57 @@
         }
         ```
     *   **Retorno (200 OK):** Status indicando o sucesso do cancelamento.
+
+### 7. Maquininhas
+*Todas as rotas a seguir devem ser protegidas pelo SecurityFilter e aplicar isolamento de dados pelo @TenantID do Hibernate*
+
+* **`GET /api/maquininhas`**
+    *   **Descrição:** Retorna a lista de todas as maquininhas cadastradas para a franquia.
+        
+    *   **Retorno (200 OK):** Status indicando o sucesso.
+        ```json
+        [
+          {
+            "id": 1,
+            "nome": "Cielo Balcão Principal",
+            "marca": "Cielo",
+            "taxaDebito": 1.99,
+            "taxaCredito": 4.99,
+            "ativo": true
+          }
+        ]
+        ```
+* **`POST /api/maquininhas/`**
+    *   **Descrição:** Cadastra um novo terminal de pagamento (Maquininha)
+        
+    *   **Payload (Frontend):**
+        ```json
+          {
+            "nome": "Stone Sem Fio",
+            "marca": "Stone",
+            "taxaDebito": 1.20,
+            "taxaCredito": 3.50,
+            "ativo": true
+          }
+        ```
+    *   **Retorno (201 Created):** Retorna o objeto da maquininha recém-criada com seu respectivo `id`.
+
+* **`PUT /api/maquininhas{id}`**
+    *   **Descrição:** Atualiza os dados de uma maquininha existente
+        
+    *   **Payload (Frontend):** 
+        ```json
+          {
+            "nome": "Stone Sem Fio",
+            "marca": "Stone",
+            "taxaDebito": 1.20,
+            "taxaCredito": 3.50,
+            "ativo": true
+          }
+        ```
+    *   **Retorno (200 OK):** Retorna o objeto atualizado.
+
+* **`DELETE /api/maquininhas/{id}`**
+    *   **Descrição:** Realiza a exclusão lógica alterando a coluna ativo para false. É vital que seja Soft-Delete, pois vendas passadas (histórico e DRE) estarão atreladas ao ID desta maquininha.
+        
+    *   **Retorno (200 OK ou 204 No Content):** Confirmação de inativação.
