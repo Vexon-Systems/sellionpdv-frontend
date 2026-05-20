@@ -1,9 +1,5 @@
 import { api } from "@/lib/api";
-
-export interface CategoriaDTO {
-    id: number;
-    nome: string;
-}
+import type { CategoriaDTO, NovaCategoriaDTO } from "../types/categoria";
 
 export const fetchCategorias = async (): Promise<CategoriaDTO[]> => {
     const response = await api.get<CategoriaDTO[]>('/api/categorias');

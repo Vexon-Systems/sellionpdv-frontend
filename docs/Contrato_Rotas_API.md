@@ -323,3 +323,166 @@
     *   **Descrição:** Realiza a exclusão lógica alterando a coluna ativo para false. É vital que seja Soft-Delete, pois vendas passadas (histórico e DRE) estarão atreladas ao ID desta maquininha.
         
     *   **Retorno (200 OK ou 204 No Content):** Confirmação de inativação.
+
+### 8. Dashboard (Estatísticas)
+*Todas as rotas a seguir devem receber ?dataInicial=YYYY-MM-DD e ?dataFinal=YYYY-MM-DD como parâmetros de query (@RequestParam). Devem ser protegidas pelo SecurityFilter e filtrar as vendas concluídas (ignorar vendas com status cancelada)*
+
+
+* **`GET /api/dashboard/kpis`**
+    *   **Descrição:** Retorna os indicadores macro de faturamento para os cards do topo do Dashboard.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "faturamentoTotal": 1250.75,
+            "quantidadeVendas": 42,
+            "ticketMedio": 29.77,
+            "comparativoPeriodoAnterior": {
+              "faturamentoPercentual": 15.5,
+              "vendasPercentual": 8.2,
+              "ticketMedioPercentual": -2.1
+            }
+          }
+        ```
+
+* **`GET /api/dashboard/pagamentos`**
+    *   **Descrição:** Agrupa o faturamento pelas formas de pagamento (PIX, Crédito, Débito, Dinheiro). Essencial para a conciliação financeira.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "formaPagamento": "PIX",
+              "valorTotal": 600.00,
+              "quantidadeTransacoes": 20,
+              "percentualFaturamento": 48.0
+            },
+            {
+              "formaPagamento": "CREDITO",
+              "valorTotal": 450.75,
+              "quantidadeTransacoes": 12,
+              "percentualFaturamento": 20.0
+            },
+            {
+              "formaPagamento": "DEBITO",
+              "valorTotal": 300.75,
+              "quantidadeTransacoes": 10,
+              "percentualFaturamento": 26.0
+            },
+            {
+              "formaPagamento": "DINHEIRO",
+              "valorTotal": 200.00,
+              "quantidadeTransacoes": 10,
+              "percentualFaturamento": 12.0
+            }
+          ]
+        ```
+        
+* **`GET /api/dashboard/produtos/top`**
+    *   **Descrição:** Retorna os produtos mais vendidos no período, ordenados pela quantidade ou pelo valor gerado. Ajuda na gestão do estoque.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "produtoId": 5,
+              "nomeProduto": "Milkshake Básico",
+              "quantidadeVendida": 18,
+              "valorGerado": 180.00
+            },
+            {
+              "produtoId": 2,
+              "nomeProduto": "Casquinha Trufada",
+              "quantidadeVendida": 15,
+              "valorGerado": 105.00
+            }
+          ]
+        ```
+
+* **`GET /api/dashboard/faturamento/serie-temporal`**
+    *   **Descrição:** Se o filtro for de apenas 1 dia (Hoje), o backend devolve o faturamento agrupado por hora (ex: 10h, 11h, 12h). Se o filtro for de uma semana ou mês, devolve agrupado por dia (ex: 01/05, 02/05).
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "label": "10:00",
+              "valor": 150.00
+            },
+            {
+              "label": "11:00",
+              "valor": 320.50
+            },
+            {
+              "label": "12:00",
+              "valor": 45.00
+            }
+          ]
+        ```
+
+* **`GET /api/dashboard/categorias`**
+    *   **Descrição:** Agrupa o volume de vendas e o faturamento pelas categorias de produtos (ex: Sorvetes, Bebidas, Sobremesas). Excelente para identificar o carro-chefe da loja.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "categoriaId": 1,
+              "nomeCategoria": "Milkshakes",
+              "quantidadeVendida": 85,
+              "valorGerado": 1250.00,
+              "percentualFaturamento": 45.5
+            },
+            {
+              "categoriaId": 2,
+              "nomeCategoria": "Casquinhas e Sundaes",
+              "quantidadeVendida": 120,
+              "valorGerado": 800.00,
+              "percentualFaturamento": 29.1
+            },
+            {
+              "categoriaId": 3,
+              "nomeCategoria": "Bebidas",
+              "quantidadeVendida": 40,
+              "valorGerado": 200.00,
+              "percentualFaturamento": 7.3
+            }
+          ]
+        ```
+
+* **`GET /api/dashboard/caixa`**
+    *   **Descrição:** Retorna um consolidado das operações de caixa no período selecionado. Permite ao gerente visualizar rapidamente se está havendo muita retirada (Sangria) ou se há um acúmulo de quebras de caixa (furo/diferença).
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "quantidadeTurnosAbertos": 7,
+              "totalSangrias": 450.00,
+              "totalReforcos": 100.00,
+              "saldoInicialMedio": 150.00,
+              "diferencaCaixaTotal": -12.50 
+            }
+          ]
+        ```
+
+* **`GET /api/dashboard/adicionais/top`**
+    *   **Descrição:** Identifica quais opções de modificadores (ex: Adicional de Nutella, Borda Recheada) estão gerando mais receita extra.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          [
+            {
+              "opcaoId": 12,
+              "nomeOpcao": "Cobertura de Nutella",
+              "quantidadeVendida": 45,
+              "valorGerado": 225.00
+            },
+            {
+              "opcaoId": 8,
+              "nomeOpcao": "Adicional de Morango",
+              "quantidadeVendida": 30,
+              "valorGerado": 90.00
+            },
+          ]
+        ```
