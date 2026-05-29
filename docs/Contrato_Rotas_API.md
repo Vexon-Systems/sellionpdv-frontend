@@ -270,6 +270,8 @@
         ```
     *   **Retorno (200 OK):** Status indicando o sucesso do cancelamento.
 
+---
+
 ### 7. Maquininhas
 *Todas as rotas a seguir devem ser protegidas pelo SecurityFilter e aplicar isolamento de dados pelo @TenantID do Hibernate*
 
@@ -324,6 +326,7 @@
         
     *   **Retorno (200 OK ou 204 No Content):** Confirmação de inativação.
 
+---
 ### 8. Dashboard (Estatísticas)
 *Todas as rotas a seguir devem receber ?dataInicial=YYYY-MM-DD e ?dataFinal=YYYY-MM-DD como parâmetros de query (@RequestParam). Devem ser protegidas pelo SecurityFilter e filtrar as vendas concluídas (ignorar vendas com status cancelada)*
 
@@ -355,7 +358,7 @@
               "formaPagamento": "PIX",
               "valorTotal": 600.00,
               "quantidadeTransacoes": 20,
-              "percentualFaturamento": 48.0
+              "percentualFaturamento": 42.0
             },
             {
               "formaPagamento": "CREDITO",
@@ -485,4 +488,306 @@
               "valorGerado": 90.00
             },
           ]
+        ```
+
+---
+
+### 9. Relatórios
+
+* **`GET /api/relatorios/vendas`**
+    *   **Descrição:** Retorna a listagem de vendas realizadas em um determinado período. Suporta paginação e filtros opcionais por status (ex: CONCLUIDA, CANCELADA) para facilitar a auditoria.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "content": [
+              {
+                "vendaId": 1045,
+                "dataVenda": "2026-05-24T14:30:00Z",
+                "valorTotal": 45.90,
+                "formaPagamento": "PIX",
+                "status": "CONCLUIDA",
+                "nomeOperador": "João Silva"
+              },
+              {
+                "vendaId": 1044,
+                "dataVenda": "2026-05-24T14:15:00Z",
+                "valorTotal": 12.00,
+                "formaPagamento": "CREDITO",
+                "status": "CANCELADA",
+                "nomeOperador": "Maria Oliveira"
+              }
+            ],
+            "page": 0,
+            "size": 20,
+            "totalElements": 150,
+            "totalPages": 8
+          }
+        ```
+
+* **`GET /api/relatorios/vendas/{id}`**
+    *   **Descrição:** Retorna o "recibo" detalhado de uma venda específica. É fundamental para analisar exatamente quais itens e modificadores foram vendidos, ou para visualizar a justificativa de um estorno/cancelamento.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "vendaId": 1044,
+            "dataVenda": "2026-05-24T14:15:00Z",
+            "caixaId": 12,
+            "nomeOperador": "Maria Oliveira",
+            "valorTotal": 12.00,
+            "formaPagamento": "CREDITO",
+            "status": "CANCELADA",
+            "justificativaCancelamento": "Cliente desistiu da compra após o pagamento. Estorno realizado na maquineta.",
+            "dataCancelamento": "2026-05-24T14:18:00Z",
+            "itens": [
+              {
+                "produtoId": 5,
+                "nomeProduto": "Casquinha Trufada",
+                "quantidade": 1,
+                "valorUnitario": 8.00,
+                "subtotalItem": 12.00,
+                "modificadores": [
+                  {
+                    "nomeOpcao": "Borda de Nutella",
+                    "valorAdicional": 4.00
+                  }
+                ]
+              }
+            ]
+          }
+        ```
+
+* **`GET /api/relatorios/caixas`**
+    *   **Descrição:** Retorna a listagem de turnos (caixas) passados. Ideal para conferência de saldos, sangrias e furos de caixa de dias anteriores.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "content": [
+              {
+                "caixaId": 12,
+                "status": "FECHADO",
+                "operadorAbertura": "Maria Oliveira",
+                "operadorFechamento": "João Silva",
+                "dataAbertura": "2026-05-23T08:00:00Z",
+                "dataFechamento": "2026-05-23T18:00:00Z",
+                "saldoInicial": 150.00,
+                "totalVendasDinheiro": 300.00,
+                "totalSangrias": 200.00,
+                "totalReforcos": 0.00,
+                "saldoFinalCalculado": 250.00,
+                "saldoFinalInformado": 240.00,
+                "furoCaixa": -10.00
+              }
+            ],
+            "page": 0,
+            "size": 20,
+            "totalElements": 30,
+            "totalPages": 2
+          }
+        ```
+
+* **`GET /api/relatorios/dre`**
+    *   **Descrição:** Diferente do comparativo, este endpoint retorna a estrutura contábil completa (em cascata) do período selecionado. Desconta taxas de maquininhas e custo de produtos para mostrar a margem real.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "periodo": "01/05/2026 a 24/05/2026",
+            "receitaBruta": 15250.00,
+            "deducoes": {
+              "totalCancelamentos": 150.00,
+              "taxasMaquininhas": 380.50
+            },
+            "receitaLiquida": 14719.50,
+            "custos": {
+              "custoMercadoriaVendida": 5569.50
+            },
+            "lucroBrutoEstimado": 9150.00,
+            "margemBrutaPercentual": 60.0
+          }
+        ```
+
+* **`GET /api/relatorios/auditoria`**
+    *   **Descrição:** Endpoint de segurança (Insert-Only) para listar as ações sensíveis realizadas no sistema (ex: alterações de preço, sangrias, cancelamentos de vendas).
+
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "content": [
+              {
+                "logId": 9982,
+                "dataHora": "2026-05-24T10:15:00Z",
+                "usuarioId": 2,
+                "nomeUsuario": "João Silva",
+                "tipoAcao": "SANGRIA",
+                "entidadeAfetada": "CAIXA",
+                "entidadeId": 13,
+                "detalhes": "Sangria registrada no valor de R$ 100.00. Motivo: Pagamento de fornecedor (Gelo)."
+              },
+              {
+                "logId": 9981,
+                "dataHora": "2026-05-23T20:00:00Z",
+                "usuarioId": 1,
+                "nomeUsuario": "Admin",
+                "tipoAcao": "ALTERACAO_PRECO",
+                "entidadeAfetada": "PRODUTO",
+                "entidadeId": 5,
+                "detalhes": "Preço base do produto 'Casquinha Trufada' alterado de R$ 6.00 para R$ 8.00."
+              }
+            ],
+            "page": 0,
+            "size": 50,
+            "totalElements": 412,
+            "totalPages": 9
+          }
+        ```
+
+* **`GET /api/relatorios/comparativo`**
+    *   **Descrição:** Devolve o balanço financeiro e operacional contrapondo o período selecionado ao seu intervalo imediatamente anterior equivalente para fins de auditoria e monitoramento de crescimento. Aceita o parâmetro de query escala com os tokens mapeados (HOJE, SEMANA, MES).
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "escalaSelecionada": "MES",
+            "periodoAtual": {
+              "rotulo": "Este Mês (01/05 a 24/05)",
+              "faturamentoTotal": 15250.00,
+              "quantidadeVendas": 510,
+              "ticketMedio": 29.90,
+              "lucroEstimado": 9150.00
+            },
+            "periodoAnterior": {
+              "rotulo": "Mês Passado (01/04 a 24/04)",
+              "faturamentoTotal": 13400.00,
+              "quantidadeVendas": 480,
+              "ticketMedio": 27.91,
+              "lucroEstimado": 8040.00
+            },
+            "variacaoPercentual": {
+              "faturamentoPercentual": 13.8,
+              "vendasPercentual": 6.2,
+              "ticketMedioPercentual": 7.1,
+              "lucroPercentual": 13.8
+            }
+          }
+        ```
+
+---
+
+### 10. Usuários e Preferências
+
+* **`GET /api/auth/me`**
+    *   **Descrição:** Rota crítica de inicialização do sistema. Valida o Token JWT no cabeçalho, identifica o usuário e retorna os seus dados de identidade combinados com o objeto de preferências da tabela satélite.
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "id": 2,
+            "tenantId": 1,
+            "nome": "Eduardo Silva",
+            "email": "eduardo@sellion.com",
+            "telefone": "34999999999",
+            "role": "GERENTE",
+            "avatarUrl": "https://url-do-supabase.com/avatar-eduardo.png",
+            "preferencias": {
+              "tema": "DARK",
+              "sonsAtivos": true,
+              "tamanhoInterface": "PADRAO",
+              "usaPin": true
+            }
+          }
+        ```
+
+* **`PUT /api/usuarios/me`**
+    *   **Descrição:** Modifica os dados cadastrais contidos estritamente na tabela usuarios.
+
+    * **Payload (Frontend):**
+        ```json
+          {
+            "nome": "Eduardo Gonçalves Silva",
+            "telefone": "34988888888"
+          }
+        ```
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "id": 2,
+            "nome": "Eduardo Silva",
+            "email": "eduardo@sellion.com",
+            "telefone": "34999999999",
+            "role": "GERENTE",
+            "avatarUrl": "https://url-do-supabase.com/avatar.png",
+            "preferencias": {
+              "tema": "DARK",
+              "sonsAtivos": true,
+              "tamanhoInterface": "PADRAO",
+              "usaPin": true
+            }
+          }
+        ```
+
+* **`PUT /api/usuarios/me/avatar`**
+    *   **Descrição:** Realiza o upload do arquivo de imagem para o Storage do Supabase e atualiza a coluna avatar_url na tabela usuarios.
+
+    * **Payload (Frontend):** Arquivo binário (file)
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "avatarUrl": "https://url-do-supabase.com/storage/v1/object/public/avatars/user_2.png"
+          }
+        ```
+
+* **`PUT /api/usuarios/me/senha`**
+    *   **Descrição:** Atualiza a credencial de acesso na tabela usuarios. O backend deve validar a senhaAtual usando Argon2id antes de computar o hash da nova senha.
+
+    * **Payload (Frontend):**
+        ```json
+          {
+            "senhaAtual": "minha_senha_antiga",
+            "novaSenha": "nova_senha_ultra_segura"
+          }
+        ```
+        
+    *   **Retorno (204 No Content):** Sucesso sem corpo de retorno.
+
+* **`PUT /api/usuarios/me/preferencias`**
+    *   **Descrição:** Atualiza as propriedades de comportamento visual e de áudio da interface na tabela satélite usuario_preferencias.
+
+    * **Payload (Frontend):**
+        ```json
+          {
+            "tema": "DARK",
+            "sonsAtivos": false,
+            "tamanhoInterface": "PADRAO"
+          }
+        ```
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "tema": "DARK",
+            "sonsAtivos": false,
+            "tamanhoInterface": "PADRAO"
+          }
+        ```
+
+* **`PUT /api/usuarios/me/pin`**
+    *   **Descrição:** Cadastra ou altera o PIN numérico de acesso rápido ao PDV. Atualiza as colunas usa_pin para true e gera o pin_hash na tabela usuario_preferencias. Passar um PIN vazio ou nulo desativa a funcionalidade (usa_pin = false).
+
+    * **Payload (Frontend):**
+        ```json
+          {
+            "pin": "4815"
+          }
+        ```
+        
+    *   **Retorno (200 OK):**
+        ```json
+          {
+            "usaPin": true
+          }
         ```

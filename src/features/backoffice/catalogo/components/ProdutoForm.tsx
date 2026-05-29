@@ -1,21 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { useForm, Controller, useFieldArray} from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { fetchCategorias } from "../services/apiCategorias";
-import { fetchModificadores } from "../../modificadores/services/apiModificadores";
-
-import type { ProdutoDTO } from "@/features/pdv/types/pdv";
-import { salvarProduto, excluirProduto, uploadImagemProduto } from "@/features/pdv/services/apiProdutos"; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import {
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -27,13 +18,27 @@ import { GerenciarCategoriasDialog } from "./GerenciarCategoriasDialog";
 import { Pen, Save, Trash2, Plus, ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import type { ProdutoDTO, GrupoModificadorDTO } from "@/types/pdv";
+import type { CategoriaDTO } from "../types/categoria";
+
+interface ProdutoFormProps {
+    produtoInicial: ProdutoDTO | null;
+    categorias: CategoriaDTO[];
+    gruposDisponiveis: GrupoModificadorDTO[];
+    onSave: (dados: any) => void;
+    onDelete: (id: number) => void;
+    onUploadImagem: (file: File) => Promise<string>;
+    onCancel: () => void;
+    isSalvando: boolean;
+    isUploading: boolean;
+}
+
 const formSchema = z.object({
     nome: z.string().min(3, "O nome deve ter pelo menos 3 letras"),
     precoBase: z.number().min(0.01, "O preço deve ser maior que zero."),
     categoriaId: z.number(),
     ativo: z.boolean(),
     imagemUrl: z.string().optional(),
-
     gruposModificadores: z.array(
         z.object({
             grupoId: z.number().min(1, "Selecione um grupo válido"),
@@ -47,33 +52,31 @@ const formSchema = z.object({
 
 type FormInputs = z.input<typeof formSchema>;
 
-interface ProdutoFormProps {
-    produtoId: number | null,
-    produtoAtual: ProdutoDTO | undefined;
-    onClose: () => void;
-}
-
-export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps){
-    const queryClient = useQueryClient();
+export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onSave, onDelete, onCancel, onUploadImagem, isSalvando, isUploading }: ProdutoFormProps) {
     const [isCategoriaModalOpen, setIsCategoriaModalOpen] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null); 
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { data: categorias, isLoading: isLoadingCategorias } = useQuery({
-        queryKey: ['lista-categorias'],
-        queryFn: fetchCategorias,
+    const [novoVinculo, setNovoVinculo] = useState({
+        grupoId: 0, tipoEscolha: 'MULTIPLA' as "UNICA" | "MULTIPLA", minOpcoes: 0, maxOpcoes: 1
     });
-    
-    const {register, handleSubmit, reset, watch, setValue, control, formState: {errors}} = useForm<FormInputs>({
+
+    const { register, handleSubmit, reset, watch, setValue, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            nome: "",
-            precoBase: 0,
-            categoriaId: 1,
-            ativo: true,
-            imagemUrl: "",
-            gruposModificadores: [],
-        }
+        defaultValues: produtoInicial || { nome: "", precoBase: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] }
     });
+
+    const { fields, append, remove, replace } = useFieldArray({ control, name: "gruposModificadores" });
+
+    useEffect(() => {
+        if (produtoInicial) {
+            reset({ ...produtoInicial, gruposModificadores: produtoInicial.gruposModificadores || [] });
+            replace(produtoInicial.gruposModificadores || []);
+        } else {
+            reset({ nome: "", precoBase: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] });
+            replace([]);
+        }
+    }, [produtoInicial, reset, replace]);
 
     const precoAtual = watch("precoBase") || 0;
     const custoEstimado = precoAtual * 0.4;
@@ -81,185 +84,83 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
     const isAtivo = watch("ativo");
     const imagemAtual = watch("imagemUrl");
 
-    const { fields, append, remove, replace } = useFieldArray({
-        control,
-        name: "gruposModificadores",
-    });
-
-    useEffect(() => {
-        if (produtoAtual) {
-            reset({
-                nome: produtoAtual.nome,
-                precoBase: produtoAtual.precoBase,
-                categoriaId: produtoAtual.categoriaId,
-                ativo: produtoAtual.ativo,
-                imagemUrl: produtoAtual.imagemUrl || "",
-                gruposModificadores: produtoAtual.gruposModificadores || [],
-            });
-            replace(produtoAtual.gruposModificadores || []);
-        } else {
-            reset({nome: "", precoBase: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: []});
-            replace([]);
-        }
-    }, [produtoAtual, reset, replace]);
-
-    const mutationUpload = useMutation({
-        mutationFn: uploadImagemProduto,
-        onSuccess: (url) => {
-            setValue("imagemUrl", url);
-            toast.success("Imagem enviada com sucesso!");
-        },
-        onError: (error: any) => {
-            console.error("Erro no upload", error);
-            toast.error("Erro no upload", { description: "Verifique se a API está aceitando multipart/form-data."});
-        }
-    });
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            mutationUpload.mutate(file);
+            try {
+                const url = await onUploadImagem(file);
+                setValue("imagemUrl", url);
+                toast.success("Imagem enviada com sucesso!");
+            } catch {
+                toast.error("Erro no upload", { description: "Verifique se a API está aceitando multipart/form-data." });
+            }
         }
     };
-
-    const mutationSalvar = useMutation({
-        mutationFn: (dados: FormInputs) => {
-            return salvarProduto({ ...dados, id: produtoId || undefined });
-        },
-        onSuccess: () => {
-            toast.success(`Produto salvo com sucesso!`)
-            queryClient.invalidateQueries({queryKey: ['lista-produtos']});
-            onClose();
-        }
-    });
-
-    const mutationExcluir = useMutation({
-        mutationFn: excluirProduto,
-        onSuccess: () => {
-            toast.success(`Produto deletado com sucesso!`)
-            queryClient.invalidateQueries({queryKey: ['lista-produtos']});
-            onClose();
-        }
-    });
-
-    const onSubmit = (dados: FormInputs) => {
-        mutationSalvar.mutate(dados);
-    }
-
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [novoVinculo, setNovoVinculo] = useState({
-        grupoId: 0, tipoEscolha: 'MULTIPLA' as "UNICA" | "MULTIPLA", minOpcoes: 0, maxOpcoes: 1
-    });
 
     const handleAdicionarVinculo = () => {
         if (novoVinculo.grupoId === 0) { toast.error("Selecione um grupo!"); return; }
         if (fields.some(f => f.grupoId === novoVinculo.grupoId)) { toast.error("Este grupo já está vinculado!"); return; }
         append(novoVinculo);
-        setIsPopoverOpen(false); 
+        setIsPopoverOpen(false);
         setNovoVinculo({ grupoId: 0, tipoEscolha: 'MULTIPLA', minOpcoes: 0, maxOpcoes: 1 });
     };
 
-    const { data: listaDeTodosOsGrupos } = useQuery({
-        queryKey: ['lista-modificadores'],
-        queryFn: fetchModificadores,
-    });
-
     return (
-        <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+        <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm overflow-y-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
-                
-                {/* CABEÇALHO COM UPLOAD DE IMAGEM */}
                 <div className="flex items-center gap-5">
-                    
-                    {/* Área de Upload */}
-                    <div 
-                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 overflow-hidden relative group shrink-0"
-                        onClick={() => fileInputRef.current?.click()}
-                    >
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 overflow-hidden relative group shrink-0" onClick={() => fileInputRef.current?.click()}>
                         {imagemAtual ? (
-                            <>
-                                <img src={imagemAtual} alt="Produto" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                    <Pen className="text-white w-6 h-6" />
-                                </div>
-                            </>
+                            <><img src={imagemAtual} alt="Produto" className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Pen className="text-white w-6 h-6" /></div></>
                         ) : (
                             <div className="flex flex-col items-center text-gray-400">
-                                {mutationUpload.isPending ? (
-                                    <Loader2 className="animate-spin w-8 h-8" />
-                                ) : (
-                                    <>
-                                        <ImagePlus className="w-8 h-8 mb-1" />
-                                        <span className="text-[10px] font-medium uppercase tracking-wider">Adicionar</span>
-                                    </>
-                                )}
+                                {isUploading ? <Loader2 className="animate-spin w-8 h-8" /> : <><ImagePlus className="w-8 h-8 mb-1" /><span className="text-[10px] font-medium uppercase tracking-wider">Adicionar</span></>}
                             </div>
                         )}
                     </div>
-                    {/* Input Oculto */}
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
 
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                {produtoId ? watch("nome") || "Sem Nome" : "Novo Produto"}
-                            </h2>
+                            <h2 className="text-2xl font-bold text-gray-900">{produtoInicial?.id ? watch("nome") || "Sem Nome" : "Novo Produto"}</h2>
                             {isAtivo && <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">Ativo</span>}
                         </div>
                         <p className="text-sm text-gray-500">Preencha os detalhes e a precificação do produto.</p>
                     </div>
                 </div>
-                
-                {/* Ações (Editar, Inativar, Excluir) */}
-                {produtoId && (
-                <div className="flex gap-2">
+
+                {produtoInicial?.id && (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white cursor-pointer">
-                                <Trash2 size={16}/> Excluir
-                            </Button>
+                            <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"><Trash2 size={16} className="mr-2" /> Excluir</Button>
                         </AlertDialogTrigger>
-
                         <AlertDialogContent className="bg-white">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Deseja excluir o produto "{watch("nome")}" ? Está ação não poderá ser desfeita.
-                                </AlertDialogDescription>
+                                <AlertDialogDescription>Deseja excluir o produto "{watch("nome")}" ?</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => mutationExcluir.mutate(produtoId)} className="bg-red-600 hover:bg-red-700 text-white">
-                                    Confirmar
-                                </AlertDialogAction>
+                                <AlertDialogAction onClick={() => onDelete(produtoInicial.id!)} className="bg-red-600 hover:bg-red-700 text-white">Confirmar</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                </div>
                 )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
-
-                {/* CARDS DE MÉTRICAS*/}
+            <form onSubmit={handleSubmit((dados) => onSave({ ...dados, id: produtoInicial?.id || undefined }))} className="space-y-6 mt-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-gray-500 mb-1 whitespace-nowrap truncate">Preço Base (PDV)</p>
-                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-gray-900 truncate">
-                            {precoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </p>
+                        <p className="text-xs xl:text-sm text-gray-500 mb-1">Preço Base (PDV)</p>
+                        <p className="text-lg xl:text-xl font-bold text-gray-900">{precoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-gray-500 mb-1 whitespace-nowrap truncate">Custo Estimado</p>
-                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-gray-900 truncate">
-                            {custoEstimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </p>
+                        <p className="text-xs xl:text-sm text-gray-500 mb-1">Custo Estimado</p>
+                        <p className="text-lg xl:text-xl font-bold text-gray-900">{custoEstimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-green-50 p-4 rounded-xl border border-green-100 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-green-700 mb-1 whitespace-nowrap truncate">Margem Bruta</p>
-                        <p className="text-lg xl:text-xl 2xl:text-2xl font-bold text-green-700 truncate">
-                            {margemBruta.toFixed(0)}%
-                        </p>
+                        <p className="text-xs xl:text-sm text-green-700 mb-1">Margem Bruta</p>
+                        <p className="text-lg xl:text-xl font-bold text-green-700">{margemBruta.toFixed(0)}%</p>
                     </div>
                 </div>
 
@@ -277,118 +178,73 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex flex-wrap justify-between items-center gap-1">
+                        <div className="flex justify-between items-center">
                             <Label>Categoria</Label>
-                            <button type="button" onClick={() => setIsCategoriaModalOpen(true)} className="text-xs text-primary font-medium hover:underline cursor-pointer">
-                                Gerenciar categorias
-                            </button>
+                            <button type="button" onClick={() => setIsCategoriaModalOpen(true)} className="text-xs text-primary font-medium hover:underline cursor-pointer">Gerenciar categorias</button>
                         </div>
-
-                        <Controller
-                            name="categoriaId"
-                            control={control}
-                            render={({ field }) => (
-                                <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))}>
-                                    <SelectTrigger className="w-full bg-white"><SelectValue placeholder="Selecione uma categoria" /></SelectTrigger>
-                                    <SelectContent className="bg-white">
-                                        {isLoadingCategorias && <div className="p-2 text-sm text-gray-500 text-center">Carregando...</div>}
-                                        {categorias?.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.id.toString()}>{cat.nome}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                        )}
-                        />
-                        {errors.categoriaId && <p className="text-red-500 text-sm">{errors.categoriaId.message}</p>}
+                        <Controller name="categoriaId" control={control} render={({ field }) => (
+                            <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))}>
+                                <SelectTrigger className="w-full bg-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    {categorias.map((cat) => <SelectItem key={cat.id} value={cat.id.toString()}>{cat.nome}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )} />
                     </div>
                 </div>
 
-                {/* MODIFICADORES DINÂMICOS */}
                 <div className="space-y-4 pt-6 border-t">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                        <div>
-                            <h3 className="font-bold text-lg text-gray-800">Modificadores do Produto</h3>
-                            <p className="text-sm text-gray-500">Adicione tamanhos, sabores ou adicionais.</p>
-                        </div>
-
+                        <div><h3 className="font-bold text-lg text-gray-800">Modificadores</h3><p className="text-sm text-gray-500">Tamanhos, sabores ou adicionais.</p></div>
                         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                             <PopoverTrigger asChild>
-                                <Button type="button" variant="outline" size="sm" className="border-dashed border-2 hover:bg-gray-50 cursor-pointer">
-                                    <Plus size={16} className="mr-2" /> Vincular Grupo
-                                </Button>
+                                <Button type="button" variant="outline" size="sm" className="border-dashed border-2 cursor-pointer"><Plus size={16} className="mr-2" /> Vincular Grupo</Button>
                             </PopoverTrigger>
-                            
-                            <PopoverContent align="end" className="w-80 bg-white p-4 shadow-xl border-gray-200">
+                            <PopoverContent align="end" className="w-80 bg-white p-4 shadow-xl">
                                 <div className="space-y-4">
                                     <h4 className="font-semibold text-gray-900 border-b pb-2">Novo Vínculo</h4>
-                                    
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Selecione o Grupo</Label>
-                                        <Select value={novoVinculo.grupoId.toString()} onValueChange={(val) => setNovoVinculo({...novoVinculo, grupoId: Number(val)})}>
-                                            <SelectTrigger className="w-full bg-white h-9"><SelectValue placeholder="Escolha um grupo..." /></SelectTrigger>
+                                        <Label className="text-xs">Grupo</Label>
+                                        <Select value={novoVinculo.grupoId.toString()} onValueChange={(val) => setNovoVinculo({ ...novoVinculo, grupoId: Number(val) })}>
+                                            <SelectTrigger className="h-9"><SelectValue placeholder="Escolha..." /></SelectTrigger>
                                             <SelectContent className="bg-white">
-                                                {listaDeTodosOsGrupos?.map(g => (
-                                                    <SelectItem key={g.id} value={g.id.toString()}>{g.nome}</SelectItem>
-                                                ))}
+                                                {gruposDisponiveis.map(g => <SelectItem key={g.id} value={g.id.toString()}>{g.nome}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                     </div>
-
                                     <div className="space-y-2">
                                         <Label className="text-xs">Tipo de Escolha</Label>
-                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val: "UNICA" | "MULTIPLA") => setNovoVinculo({...novoVinculo, tipoEscolha: val})}>
-                                            <SelectTrigger className="w-full bg-white h-9"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="bg-white">
-                                                <SelectItem value="UNICA">Escolha Única (Ex: Tamanho)</SelectItem>
-                                                <SelectItem value="MULTIPLA">Múltipla Escolha (Ex: Adicionais)</SelectItem>
-                                            </SelectContent>
+                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val: any) => setNovoVinculo({ ...novoVinculo, tipoEscolha: val })}>
+                                            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                            <SelectContent className="bg-white"><SelectItem value="UNICA">Única</SelectItem><SelectItem value="MULTIPLA">Múltipla</SelectItem></SelectContent>
                                         </Select>
                                     </div>
-
                                     <div className="grid grid-cols-2 gap-2">
-                                        <div className="space-y-2">
-                                            <Label className="text-xs">Mínimo</Label>
-                                            <Input type="number" min={0} className="h-9" value={novoVinculo.minOpcoes} onChange={(e) => setNovoVinculo({...novoVinculo, minOpcoes: Number(e.target.value)})} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-xs">Máximo</Label>
-                                            <Input type="number" min={1} className="h-9" value={novoVinculo.maxOpcoes} onChange={(e) => setNovoVinculo({...novoVinculo, maxOpcoes: Number(e.target.value)})} />
-                                        </div>
+                                        <div className="space-y-2"><Label className="text-xs">Mínimo</Label><Input type="number" min={0} className="h-9" value={novoVinculo.minOpcoes} onChange={(e) => setNovoVinculo({ ...novoVinculo, minOpcoes: Number(e.target.value) })} /></div>
+                                        <div className="space-y-2"><Label className="text-xs">Máximo</Label><Input type="number" min={1} className="h-9" value={novoVinculo.maxOpcoes} onChange={(e) => setNovoVinculo({ ...novoVinculo, maxOpcoes: Number(e.target.value) })} /></div>
                                     </div>
-
-                                    <Button type="button" onClick={handleAdicionarVinculo} className="w-full mt-2 cursor-pointer">
-                                        Confirmar Vínculo
-                                    </Button>
+                                    <Button type="button" onClick={handleAdicionarVinculo} className="w-full mt-2">Confirmar</Button>
                                 </div>
                             </PopoverContent>
                         </Popover>
                     </div>
 
-                    {/* LISTA DE GRUPOS */}
                     {fields.length === 0 ? (
-                        <div className="p-6 border-2 border-dashed rounded-lg text-center bg-gray-50 text-gray-400">
-                            Nenhum modificador vinculado a este produto.
-                        </div>
+                        <div className="p-6 border-2 border-dashed rounded-lg text-center bg-gray-50 text-gray-400">Nenhum modificador vinculado.</div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {fields.map((field, index) => {
-                                const grupoInfo = listaDeTodosOsGrupos?.find(g => g.id === field.grupoId);
+                                const grupoInfo = gruposDisponiveis.find(g => g.id === field.grupoId);
                                 return (
-                                    <div key={field.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:border-primary/30 transition-colors">
+                                    <div key={field.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm">
                                         <div>
-                                            <h4 className="font-semibold text-gray-800 text-sm">{grupoInfo?.nome || "Grupo Carregando..."}</h4>
-                                            <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${field.tipoEscolha === 'UNICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
-                                                    {field.tipoEscolha === 'UNICA' ? 'Única' : 'Múltipla'}
-                                                </span>
-                                                <span className="text-xs text-gray-500 whitespace-nowrap">
-                                                    (Min: {field.minOpcoes} | Máx: {field.maxOpcoes})
-                                                </span>
+                                            <h4 className="font-semibold text-gray-800 text-sm">{grupoInfo?.nome || "Carregando..."}</h4>
+                                            <div className="flex gap-2 mt-1">
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${field.tipoEscolha === 'UNICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{field.tipoEscolha}</span>
+                                                <span className="text-xs text-gray-500">(Min: {field.minOpcoes} | Máx: {field.maxOpcoes})</span>
                                             </div>
                                         </div>
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-gray-400 hover:text-red-600 hover:bg-red-50 cursor-pointer">
-                                            <Trash2 size={16} />
-                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-red-500"><Trash2 size={16} /></Button>
                                     </div>
                                 );
                             })}
@@ -397,15 +253,12 @@ export function ProdutoForm({produtoId, produtoAtual, onClose}: ProdutoFormProps
                 </div>
 
                 <div className="pt-6 flex justify-end gap-2 border-t">
-                    <Button type="button" variant="outline" onClick={onClose} className="cursor-pointer">Cancelar</Button>
-                    <Button type="submit" disabled={mutationSalvar.isPending} className="bg-primary hover:bg-primary/80 cursor-pointer text-white">
-                        <Save size={16} className="mr-2" />
-                        {mutationSalvar.isPending ? "Salvando..." : "Salvar Produto"}
-                    </Button>
+                    <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
+                    <Button type="submit" disabled={isSalvando} className="bg-primary text-white"><Save size={16} className="mr-2" /> {isSalvando ? "Salvando..." : "Salvar Produto"}</Button>
                 </div>
-            
-            <GerenciarCategoriasDialog isOpen={isCategoriaModalOpen} onClose={() => setIsCategoriaModalOpen(false)} onCategoriaCriada={(idNovo) => setValue("categoriaId", idNovo)} />
+
+                <GerenciarCategoriasDialog isOpen={isCategoriaModalOpen} onClose={() => setIsCategoriaModalOpen(false)} onCategoriaCriada={(idNovo) => setValue("categoriaId", idNovo)} />
             </form>
         </div>
-    )
+    );
 }

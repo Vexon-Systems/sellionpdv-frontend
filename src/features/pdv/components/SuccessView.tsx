@@ -2,7 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Printer, PlusCircle } from "lucide-react";
-import type { ItemCarrinho } from "../types/pdv";
+import type { ItemCarrinho } from "../../../types/pdv";
 import img_pgm_sucesso from "../../../assets/Img_Pagamento_Sucesso.png"
 
 interface SuccessViewProps {

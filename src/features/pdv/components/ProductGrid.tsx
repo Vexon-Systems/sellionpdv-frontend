@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatarMoeda } from "@/lib/utils";
-import type { ProdutoDTO } from "../types/pdv";
+import type { ProdutoDTO } from "../../../types/pdv";
 
 interface ProductGridProps {
   produtos: ProdutoDTO[];

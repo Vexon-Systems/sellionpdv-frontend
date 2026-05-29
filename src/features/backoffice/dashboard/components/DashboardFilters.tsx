@@ -23,7 +23,7 @@ export function DashboardFilters({
     onCalendarChange
 }: DashboardFiltersProps) {
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+        <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
             <div>
                 <h2 className="font-bold text-gray-800 text-lg">Visão Geral</h2>
                 <p className="text-gray-500 text-sm">Acompanhe o desempenho da sua loja em tempo real.</p>

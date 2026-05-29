@@ -2,7 +2,7 @@
 import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatarMoeda } from "@/lib/utils";
-import type { ItemCarrinho } from "../types/pdv";
+import type { ItemCarrinho } from "../../../types/pdv";
 
 interface CartSidebarProps {
   itens: ItemCarrinho[];

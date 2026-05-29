@@ -1,144 +1,69 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchProdutos } from "@/features/pdv/services/apiProdutos";
-import { fetchCategorias } from "../services/apiCategorias";
-import { ProdutoForm } from "../components/ProdutoForm";
-
-import { Search, Plus, Package, Utensils } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Package } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useProdutos } from "../hooks/useProdutos.ts";
+import { useCategorias } from "../hooks/useCategorias";
+import { useModificadores } from "../../modificadores/hooks/useModificadores.ts";
+
+import { ProdutoSidebar } from "../components/ProdutoSidebar";
+import { ProdutoForm } from "../components/ProdutoForm";
+import type { ProdutoDTO } from "@/types/pdv";
 
 export function CatalogoPage() {
-    const [produtoSelecionadoId, setProdutoSelecionadoId] = useState<number | null>(null);
-    const [termoBusca, setTermoBusca] = useState(""); 
+    const [produtoSelecionado, setProdutoSelecionado] = useState<ProdutoDTO | null>(null);
+    const [isCriandoNovo, setIsCriandoNovo] = useState(false);
 
-    const { data: produtos, isLoading} = useQuery({
-        queryKey: ['lista-produtos'],
-        queryFn: fetchProdutos,
-    });
+    const resetSelection = () => {
+        setProdutoSelecionado(null);
+        setIsCriandoNovo(false);
+    };
 
-    const { data: categorias } = useQuery({
-        queryKey: ['lista-categorias'],
-        queryFn: fetchCategorias,
-    });
-
-    const produtosFiltrados = produtos?.filter((produto) =>
-        produto.nome.toLowerCase().includes(termoBusca.toLowerCase())
-    );
-
-    const produtoClicado = produtos?.find(p => p.id === produtoSelecionadoId);
-
-    const handleLimparSelecao = () => setProdutoSelecionadoId(null);
+    const { produtos, isLoading, salvar, isSalvando, excluir, upload, isUploading } = useProdutos(resetSelection);
+    const { categorias, isLoading: loadingCategorias } = useCategorias();
+    const { grupos: gruposDisponiveis } = useModificadores();
 
     return (
         <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden">
-            <Header 
-                titulo="Catálogo de Produtos" 
-            />
+            <Header titulo="Catálogo de Produtos" />
 
-            {/* Cabeçalho */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 md:px-8 my-6 gap-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-                    <Button size="lg" onClick={() => setProdutoSelecionadoId(0)} className="cursor-pointer shadow-md w-full sm:w-auto">
-                        <Plus size={16} className="mr-2" />
-                        Novo Produto
-                    </Button>
+            <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-8 flex-1 overflow-y-auto lg:overflow-hidden">
+                <ProdutoSidebar 
+                    produtos={produtos}
+                    categorias={categorias}
+                    isLoading={isLoading || loadingCategorias}
+                    produtoSelecionado={produtoSelecionado}
+                    isCriandoNovo={isCriandoNovo}
+                    onSelect={(p) => { setProdutoSelecionado(p); setIsCriandoNovo(false); }}
+                    onNovo={() => { setProdutoSelecionado(null); setIsCriandoNovo(true); }}
+                />
 
-                    <div className="relative bg-white rounded-md w-full sm:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                        <Input
-                            placeholder="Buscar produtos..."
-                            className="pl-10 py-4 shadow-md w-full sm:w-64"
-                            value={termoBusca}
-                            onChange={(e) => setTermoBusca(e.target.value)}
+                <main className="flex-1 flex flex-col h-full lg:overflow-hidden">
+                    {produtoSelecionado || isCriandoNovo ? (
+                        <ProdutoForm 
+                            produtoInicial={produtoSelecionado}
+                            categorias={categorias}
+                            gruposDisponiveis={gruposDisponiveis}
+                            onSave={salvar}
+                            onDelete={excluir}
+                            onUploadImagem={upload}
+                            onCancel={resetSelection}
+                            isSalvando={isSalvando}
+                            isUploading={isUploading}
                         />
-                    </div>
-                </div>
-            </div>
-        
-            <div className="flex flex-col lg:flex-row gap-6 px-4 md:px-8 pb-8 flex-1 overflow-y-auto lg:overflow-hidden">
-
-                {/* Coluna de Listagem (Esquerda)*/}
-                <Card className="w-full lg:w-[320px] xl:w-[380px] shrink-0 bg-white border-2 rounded-md border-gray-200 flex flex-col max-h-[350px] lg:max-h-full overflow-y-auto">
-                    {/* Topo da Listagem: Título e Pesquisa */}
-                    <div className="space-y-4 px-2">
-                        <CardHeader className="flex flex-col items-start gap-3 justify-between space-y-0 border-b">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Utensils className="h-5 w-5" />
-                                Produtos
-                            </CardTitle>
-                        </CardHeader>
-                    </div>
-
-                    {/* Lista de Itens */}
-                    <div className="flex-1 overflow-y-auto">
-                
-                        {isLoading && <p className="text-center text-gray-400 mt-10 animate-pulse">Carregando...</p>}
-                        {produtosFiltrados?.map((produto) => {
-                            const isSelected = produtoSelecionadoId === produto.id;
-                
-                            return (
-                            <div
-                                key={produto.id}
-                                onClick={() => setProdutoSelecionadoId(produto.id)}
-                                className={`group cursor-pointer py-3 px-4 transition-all flex flex-col gap-1
-                                ${isSelected
-                                    ? 'border-l-4 border-primary bg-primary/5'
-                                    : 'border-l-4 border-transparent hover:bg-gray-50'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between">
-                                <p className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-gray-800'}`}>
-                                    {produto.nome}
-                                </p>
-                
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium
-                                    ${produto.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
-                                `}>
-                                    {produto.ativo ? 'Ativo' : 'Inativo'}
-                                </span>
-                                </div>
-                
-                                <p className="text-xs text-gray-500">
-                                    {categorias?.find(cat => cat.id === produto.categoriaId)?.nome || "Sem Categoria"}
-                                </p>
-                                <p className={`text-sm font-bold mt-1 ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
-                                {produto.precoBase.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                </p>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                            <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                                <Package size={32} />
                             </div>
-                            );
-                        })}
-                
-                    </div>
-                </Card>
-
-                {/* Coluna de detalhes do Produto (Direita) */}
-                <main className="flex-1 flex flex-col bg-gray-50 lg:overflow-y-auto">
-                    
-                    {/* Área de Detalhes do Produto */}
-                    <div className="pb-10 h-full">
-                    
-                        {produtoSelecionadoId === null ? (
-                            <div className="border-2 border-dashed border-gray-300 rounded-md h-full flex flex-col items-center justify-center text-gray-400 bg-white min-h-[300px]">
-                                <Package size={48} className="mb-4 opacity-20" />
-                                <p className="text-center px-4">Selecione um produto na lista ou crie um novo.</p>
-                            </div>
-                        ) : (
-                            <ProdutoForm 
-                                produtoId={produtoSelecionadoId === 0 ? null : produtoSelecionadoId} 
-                                produtoAtual={produtoClicado} 
-                                onClose={handleLimparSelecao}
-                            />
-                        )}
-
-                    </div>
+                            <h3 className="text-xl font-semibold text-gray-800">Nenhum produto selecionado</h3>
+                            <p className="text-gray-500 mt-2 max-w-sm text-center">
+                                Selecione um produto na lista ou clique em "Novo Produto" para cadastrar.
+                            </p>
+                        </div>
+                    )}
                 </main>
             </div>
-
-            
-
         </div>
     );
 }

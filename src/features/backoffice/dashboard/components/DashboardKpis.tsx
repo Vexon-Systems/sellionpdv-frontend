@@ -54,7 +54,7 @@ export function DashboardKpis({ data, isLoading }: DashboardKpisProps) {
                     <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Receipt size={20} /></div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-bold text-gray-900">
+                    <div className="text-3xl font-bold text-blue-950">
                         {isLoading ? "..." : formatarMoeda(data?.ticketMedio || 0)}
                     </div>
                     {renderPercentual(data?.comparativoPeriodoAnterior?.ticketMedioPercentual)}

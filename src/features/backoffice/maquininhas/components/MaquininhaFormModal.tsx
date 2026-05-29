@@ -1,18 +1,14 @@
-// src/features/maquininhas/components/MaquininhaFormModal.tsx
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"; 
-import { toast } from "sonner";
 
-import { apiMaquininhas } from "../services/apiMaquininhas";
 import type { MaquininhaDTO } from "../types/maquininha";
 
 const formSchema = z.object({
@@ -29,11 +25,12 @@ interface MaquininhaFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     maquininhaEdicao?: MaquininhaDTO | null; 
+    onSave: (dados: Partial<MaquininhaDTO>) => void;
+    isSalvando: boolean;
 }
 
-export function MaquininhaFormModal({ isOpen, onClose, maquininhaEdicao }: MaquininhaFormModalProps) {
-    const queryClient = useQueryClient();
-
+export function MaquininhaFormModal({ isOpen, onClose, maquininhaEdicao, onSave, isSalvando }: MaquininhaFormModalProps) {
+    
     const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: { nome: "", marca: "", taxaDebito: 0, taxaCredito: 0, ativo: true }
@@ -45,32 +42,18 @@ export function MaquininhaFormModal({ isOpen, onClose, maquininhaEdicao }: Maqui
         if (maquininhaEdicao) {
             reset({
                 nome: maquininhaEdicao.nome,
+                marca: maquininhaEdicao.marca,
                 taxaDebito: maquininhaEdicao.taxaDebito,
                 taxaCredito: maquininhaEdicao.taxaCredito,
                 ativo: maquininhaEdicao.ativo
             });
         } else {
-            reset({ nome: "", taxaDebito: 0, taxaCredito: 0, ativo: true });
+            reset({ nome: "", marca: "", taxaDebito: 0, taxaCredito: 0, ativo: true });
         }
     }, [maquininhaEdicao, isOpen, reset]);
 
-    const mutationSalvar = useMutation({
-        mutationFn: (dados: FormInputs) => {
-            return apiMaquininhas.salvar({ ...dados, id: maquininhaEdicao?.id });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['lista-maquininhas'] });
-            toast.success(maquininhaEdicao ? "Maquininha atualizada!" : "Maquininha cadastrada com sucesso!");
-            onClose();
-        },
-        onError: (error: any) => {
-            const msg = error.response?.data?.detail || "Erro ao salvar a maquininha.";
-            toast.error("Falha na operação", { description: msg });
-        }
-    });
-
     const onSubmit = (dados: FormInputs) => {
-        mutationSalvar.mutate(dados);
+        onSave({ ...dados, id: maquininhaEdicao?.id });
     };
 
     return (
@@ -89,25 +72,25 @@ export function MaquininhaFormModal({ isOpen, onClose, maquininhaEdicao }: Maqui
                     
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Identificação (Nome)</Label>
-                        <Input placeholder="Ex: Stone Balcão 1, PagSeguro..." {...register("nome")} disabled={mutationSalvar.isPending} />
+                        <Input placeholder="Ex: Stone Balcão 1, PagSeguro..." {...register("nome")} disabled={isSalvando} />
                         {errors.nome && <p className="text-red-500 text-sm">{errors.nome.message}</p>}
                     </div>
 
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Marca</Label>
-                        <Input placeholder="Ex: Stone, Cielo, PagSeguro, ..." {...register("marca")} disabled={mutationSalvar.isPending} />
+                        <Input placeholder="Ex: Stone, Cielo, PagSeguro, ..." {...register("marca")} disabled={isSalvando} />
                         {errors.marca && <p className="text-red-500 text-sm">{errors.marca.message}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className="font-semibold text-gray-800">Taxa Débito (%)</Label>
-                            <Input type="number" step="0.01" {...register("taxaDebito", { valueAsNumber: true })} disabled={mutationSalvar.isPending} />
+                            <Input type="number" step="0.01" {...register("taxaDebito", { valueAsNumber: true })} disabled={isSalvando} />
                             {errors.taxaDebito && <p className="text-red-500 text-sm">{errors.taxaDebito.message}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label className="font-semibold text-gray-800">Taxa Crédito (%)</Label>
-                            <Input type="number" step="0.01" {...register("taxaCredito", { valueAsNumber: true })} disabled={mutationSalvar.isPending} />
+                            <Input type="number" step="0.01" {...register("taxaCredito", { valueAsNumber: true })} disabled={isSalvando} />
                             {errors.taxaCredito && <p className="text-red-500 text-sm">{errors.taxaCredito.message}</p>}
                         </div>
                     </div>
@@ -120,14 +103,14 @@ export function MaquininhaFormModal({ isOpen, onClose, maquininhaEdicao }: Maqui
                         <Switch 
                             checked={isAtivo} 
                             onCheckedChange={(val) => setValue("ativo", val)}
-                            disabled={mutationSalvar.isPending}
+                            disabled={isSalvando}
                         />
                     </div>
 
                     <div className="pt-4 flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={mutationSalvar.isPending}>Cancelar</Button>
-                        <Button type="submit" disabled={mutationSalvar.isPending} className="bg-primary hover:bg-primary/90 text-white">
-                            {mutationSalvar.isPending ? "Salvando..." : "Salvar Configuração"}
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isSalvando}>Cancelar</Button>
+                        <Button type="submit" disabled={isSalvando} className="bg-primary hover:bg-primary/90 text-white">
+                            {isSalvando ? "Salvando..." : "Salvar Configuração"}
                         </Button>
                     </div>
                 </form>

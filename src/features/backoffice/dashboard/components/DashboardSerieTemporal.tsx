@@ -21,8 +21,8 @@ export function DashboardSerieTemporal({ data, isLoading }: DashboardSerieTempor
     return (
         <Card className="shadow-sm border-gray-200 mb-6">
             <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
-                    <Activity className="h-5 w-5 text-blue-600" />
+                <CardTitle className="flex gap-2 text-lg font-bold text-gray-800 items-center">
+                    <Activity className="h-5 w-5 text-gray-500" />
                     Evolução do Faturamento
                 </CardTitle>
             </CardHeader>

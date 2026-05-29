@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
@@ -238,14 +238,32 @@ export function AppSidebar(){
       </SidebarContent>
 
       {/* Rodapé */}
-      <SidebarFooter className="bg-primary mt-auto">
+      <SidebarFooter className="bg-primary mt-auto w-full">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
           <SidebarGroupContent>
             <TooltipProvider>
-              <SidebarMenu className="flex flex-col gap-1 w-full">
+              <SidebarMenu className="w-full">
+
+                {/* Item 7: Configurações */}
                 <SidebarMenuItem>
-                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                        <Link to="/configuracoes" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                          <Settings />
+                          <span className="ml-1 text-sm">Configurações</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
                   <AlertDialog>
                     <Tooltip>
                       <AlertDialogTrigger asChild>

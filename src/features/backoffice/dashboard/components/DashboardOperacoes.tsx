@@ -20,10 +20,10 @@ export function DashboardOperacoes({
 }: DashboardOperacoesProps) {
     
     const CORES_PAGAMENTO: Record<string, string> = {
-        'PIX': '#10b981',
+        'PIX': '#77B6A8',
         'CREDITO': '#3b82f6',
         'DEBITO': '#8b5cf6',
-        'DINHEIRO': '#f59e0b'
+        'DINHEIRO': '#10b900'
     };
 
     const pagamentosFormatados = pagamentosData?.map((pag) => ({
@@ -48,18 +48,18 @@ export function DashboardOperacoes({
             
             <Card className="shadow-sm border-gray-200">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
+                    <CardTitle className="flex gap-2 text-lg font-bold text-gray-800 items-center">
                         <Wallet className="h-5 w-5 text-gray-600" />
                         Formas de Pagamento
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoadingPagamentos ? (
-                        <div className="h-75 flex items-center justify-center text-gray-400 animate-pulse">A carregar...</div>
+                        <div className="h-70 flex items-center justify-center text-gray-400 animate-pulse">A carregar...</div>
                     ) : pagamentosFormatados.length === 0 ? (
-                        <div className="h-75 flex items-center justify-center text-gray-400">Sem transações.</div>
+                        <div className="h-70 flex items-center justify-center text-gray-400">Sem transações.</div>
                     ) : (
-                        <ChartContainer config={chartConfigPagamentos} className="min-h-75 w-full">
+                        <ChartContainer config={chartConfigPagamentos} className="h-70 w-full">
                             <PieChart>
                                 <Pie
                                     data={pagamentosFormatados}
@@ -85,7 +85,7 @@ export function DashboardOperacoes({
 
             <Card className="shadow-sm border-gray-200 flex flex-col">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2 mb-4 text-gray-800">
+                    <CardTitle className="flex gap-2 text-lg font-bold text-gray-800 items-center">
                         <Calculator className="h-5 w-5 text-gray-600" />
                         Auditoria de Caixa
                     </CardTitle>

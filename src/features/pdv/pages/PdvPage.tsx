@@ -9,8 +9,7 @@ import { ProductGrid } from "../components/ProductGrid";
 import { ProdutoVendaModal } from "../components/ProdutoVendaModal";
 import { CheckoutModal } from "../components/CheckoutModal";
 import { SuccessView } from "../components/SuccessView";
-import { useCaixaStore } from "@/store/useCaixaStore";
-import { Lock } from "lucide-react";
+
 
 export function PdvPage() {
   const {

@@ -11,6 +11,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { RelatoriosPage } from '@/features/backoffice/relatorios/pages/RelatoriosPage';
 import { EquipePage } from '@/features/backoffice/equipe/pages/EquipePage';
 import { MaquininhasPage } from '@/features/backoffice/maquininhas/pages/MaquininhaPage';
+import { ConfiguracoesPage } from '@/features/usuarios/pages/ConfiguracoesPage';
 
 
 const rootRoute = createRootRoute({
@@ -171,7 +172,25 @@ const maquininhaRoute = createRoute({
     component: MaquininhasPage,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute, maquininhaRoute]);
+const configuracoesRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/configuracoes',
+    beforeLoad: () => {
+        const { isAuthenticated, user } = useAuthStore.getState();
+        
+        if (!isAuthenticated) {
+            throw redirect({ to: '/login' });
+        }
+        
+        if (user?.role !== 'ROLE_ADMIN') {
+            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
+            throw redirect({ to: '/' }); 
+        }
+    },
+    component: ConfiguracoesPage,
+});
+
+const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute, maquininhaRoute, configuracoesRoute]);
 
 export const router = createRouter({ routeTree });
 

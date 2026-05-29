@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/store/useCartStore";
-import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../types/pdv";
+import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../../../types/pdv";
 import { ShoppingCart } from "lucide-react";
 
 interface Props {

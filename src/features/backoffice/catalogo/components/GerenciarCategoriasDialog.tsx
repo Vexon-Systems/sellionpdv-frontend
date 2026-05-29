@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCategorias, criarCategoria, atualizarCategoria, excluirCategoria } from "../services/apiCategorias";
+import { apiCategorias } from "../services/apiCategorias";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,30 +24,31 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
 
     const { data: categorias, isLoading } = useQuery({
         queryKey: ['lista-categorias'],
-        queryFn: fetchCategorias,
+        queryFn: apiCategorias.listar,
     });
 
     const mutationCriar = useMutation({
-        mutationFn: criarCategoria,
+        mutationFn: apiCategorias.criar,
         onSuccess: (dados) => {
-        setNovaCategoria("");
-        queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
-        toast.success("Categoria criada!");
-        if (onCategoriaCriada) onCategoriaCriada(dados.id);
+            setNovaCategoria("");
+            queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
+            toast.success("Categoria criada!");
+            if (onCategoriaCriada) onCategoriaCriada(dados.id);
         }
     });
 
     const mutationAtualizar = useMutation({
-        mutationFn: ({ id, nome }: { id: number, nome: string }) => atualizarCategoria(id, nome),
+        // CORREÇÃO: Passando o nome envelopado num objeto para respeitar o NovaCategoriaDTO
+        mutationFn: ({ id, nome }: { id: number, nome: string }) => apiCategorias.atualizar(id, { nome }),
         onSuccess: () => {
-        setEditandoId(null);
-        queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
-        toast.success("Categoria atualizada!");
+            setEditandoId(null);
+            queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
+            toast.success("Categoria atualizada!");
         }
     });
 
     const mutationExcluir = useMutation({
-        mutationFn: excluirCategoria,
+        mutationFn: apiCategorias.excluir,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
             toast.success("Categoria excluída!");
@@ -70,7 +71,9 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
     const handleCriar = (e: React.FormEvent) => {
         e.preventDefault();
         if (novaCategoria.trim().length < 3) return;
-        mutationCriar.mutate(novaCategoria);
+        
+        // CORREÇÃO: Enviando o objeto { nome } exigido pelo NovaCategoriaDTO
+        mutationCriar.mutate({ nome: novaCategoria });
     };
 
     return (
@@ -150,7 +153,6 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
                         ))
                         )}
                     </div>
-
 
                 </div>
             </DialogContent>

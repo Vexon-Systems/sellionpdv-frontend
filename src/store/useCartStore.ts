@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ItemCarrinho, ProdutoDTO, ModificadorSelecionado } from "@/features/pdv/types/pdv";
+import type { ItemCarrinho, ProdutoDTO, ModificadorSelecionado } from "@/types/pdv";
 
 interface CartStore {
     itens: ItemCarrinho[];
