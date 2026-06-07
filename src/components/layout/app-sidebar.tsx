@@ -238,7 +238,7 @@ export function AppSidebar(){
       </SidebarContent>
 
       {/* Rodapé */}
-      <SidebarFooter className="bg-primary mt-auto w-full">
+      <SidebarFooter className="bg-primary mt-auto w-full p-0">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
           <SidebarGroupContent>

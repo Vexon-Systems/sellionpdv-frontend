@@ -2,7 +2,6 @@ import { PanelLeft, Bell } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSidebar } from "../ui/sidebar";
 import { Separator } from "../ui/separator";
-
 import { UserAvatarDropdown } from "@/features/usuarios/components/UserAvatarDropdown";
 
 interface HeaderProps {

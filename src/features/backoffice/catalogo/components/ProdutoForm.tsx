@@ -17,6 +17,7 @@ import {
 import { GerenciarCategoriasDialog } from "./GerenciarCategoriasDialog";
 import { Pen, Save, Trash2, Plus, ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { NumericFormat } from 'react-number-format';
 
 import type { ProdutoDTO, GrupoModificadorDTO } from "@/types/pdv";
 import type { CategoriaDTO } from "../types/categoria";
@@ -36,6 +37,8 @@ interface ProdutoFormProps {
 const formSchema = z.object({
     nome: z.string().min(3, "O nome deve ter pelo menos 3 letras"),
     precoBase: z.number().min(0.01, "O preço deve ser maior que zero."),
+    custoEstimado: z.number().min(0, "O custo não pode ser negativo").default(0),
+    margemBruta: z.number().default(0), 
     categoriaId: z.number(),
     ativo: z.boolean(),
     imagemUrl: z.string().optional(),
@@ -63,26 +66,65 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
 
     const { register, handleSubmit, reset, watch, setValue, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
-        defaultValues: produtoInicial || { nome: "", precoBase: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] }
+        defaultValues: { nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] }
     });
 
     const { fields, append, remove, replace } = useFieldArray({ control, name: "gruposModificadores" });
 
+    // Sincroniza dados quando um produto é selecionado
     useEffect(() => {
         if (produtoInicial) {
-            reset({ ...produtoInicial, gruposModificadores: produtoInicial.gruposModificadores || [] });
+            reset({ 
+                ...produtoInicial, 
+                custoEstimado: produtoInicial.custoEstimado || 0,
+                margemBruta: produtoInicial.margemBruta || 0,
+                gruposModificadores: produtoInicial.gruposModificadores || [] 
+            });
             replace(produtoInicial.gruposModificadores || []);
         } else {
-            reset({ nome: "", precoBase: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] });
+            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] });
             replace([]);
         }
     }, [produtoInicial, reset, replace]);
 
-    const precoAtual = watch("precoBase") || 0;
-    const custoEstimado = precoAtual * 0.4;
-    const margemBruta = precoAtual > 0 ? ((precoAtual - custoEstimado) / precoAtual) * 100 : 0;
+    // Observadores para reatividade
     const isAtivo = watch("ativo");
     const imagemAtual = watch("imagemUrl");
+    const precoBase = watch("precoBase") || 0;
+    const custoEstimado = watch("custoEstimado") || 0;
+    const margemBruta = watch("margemBruta") || 0;
+
+    // Lógicas de Cálculo Bidirecional
+    const handlePrecoChange = (val: number) => {
+        setValue("precoBase", val, { shouldValidate: true });
+        if (val > 0) {
+            const novaMargem = ((val - custoEstimado) / val) * 100;
+            setValue("margemBruta", Number(novaMargem.toFixed(2)));
+        } else {
+            setValue("margemBruta", 0);
+        }
+    };
+
+    const handleCustoChange = (val: number) => {
+        setValue("custoEstimado", val, { shouldValidate: true });
+        if (precoBase > 0) {
+            const novaMargem = ((precoBase - val) / precoBase) * 100;
+            setValue("margemBruta", Number(novaMargem.toFixed(2)));
+        }
+    };
+
+    const handleMargemChange = (val: number) => {
+        setValue("margemBruta", val, { shouldValidate: true });
+        if (precoBase > 0) {
+            const novoCusto = precoBase - (precoBase * (val / 100));
+            setValue("custoEstimado", Number(novoCusto.toFixed(2)), { shouldValidate: true });
+        }
+    };
+
+    const onSubmit = (dados: FormInputs) => {
+        const { margemBruta, ...payloadLimpo } = dados;
+        onSave({ ...payloadLimpo, id: produtoInicial?.id || undefined });
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -148,48 +190,127 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                 )}
             </div>
 
-            <form onSubmit={handleSubmit((dados) => onSave({ ...dados, id: produtoInicial?.id || undefined }))} className="space-y-6 mt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-gray-500 mb-1">Preço Base (PDV)</p>
-                        <p className="text-lg xl:text-xl font-bold text-gray-900">{precoAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
+                
+                {/* SEÇÃO DE PRECIFICAÇÃO */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    
+                    {/* Input de Preço Base (Moeda) */}
+                    <div className="space-y-2">
+                        <Label>Preço Base (PDV)</Label>
+                        <Controller
+                            name="precoBase"
+                            control={control}
+                            render={({ field: { ref } }) => (
+                                <NumericFormat
+                                    getInputRef={ref}
+                                    value={precoBase}
+                                    onValueChange={(values) => {
+                                        const numLimpo = values.floatValue || 0;
+                                        handlePrecoChange(numLimpo);
+                                    }}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    prefix="R$ "
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                    allowNegative={false}
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                />
+                            )}
+                        />
+                        {errors.precoBase && <p className="text-red-500 text-xs">{errors.precoBase.message}</p>}
                     </div>
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-gray-500 mb-1">Custo Estimado</p>
-                        <p className="text-lg xl:text-xl font-bold text-gray-900">{custoEstimado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-xl border border-green-100 shadow-sm flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs xl:text-sm text-green-700 mb-1">Margem Bruta</p>
-                        <p className="text-lg xl:text-xl font-bold text-green-700">{margemBruta.toFixed(0)}%</p>
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <Label>Nome do Produto</Label>
-                    <Input {...register("nome")} placeholder="Ex: Casquinha Trufada" />
-                    {errors.nome && <p className="text-red-500 text-sm">{errors.nome.message}</p>}
+                    {/* Input de Custo Estimado (Moeda) */}
+                    <div className="space-y-2">
+                        <Label>Custo Estimado</Label>
+                        <Controller
+                            name="custoEstimado"
+                            control={control}
+                            render={({ field: { ref } }) => (
+                                <NumericFormat
+                                    getInputRef={ref}
+                                    value={custoEstimado}
+                                    onValueChange={(values) => {
+                                        const numLimpo = values.floatValue || 0;
+                                        handleCustoChange(numLimpo);
+                                    }}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    prefix="R$ "
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                    allowNegative={false}
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                />
+                            )}
+                        />
+                        {errors.custoEstimado && <p className="text-red-500 text-xs">{errors.custoEstimado.message}</p>}
+                    </div>
+
+                    {/* Input de Margem Bruta (Porcentagem) */}
+                    <div className="space-y-2">
+                        <Label className="text-green-700 font-semibold">Margem Bruta</Label>
+                        <Controller
+                            name="margemBruta"
+                            control={control}
+                            render={({ field: { ref } }) => (
+                                <NumericFormat
+                                    getInputRef={ref}
+                                    value={margemBruta}
+                                    onValueChange={(values) => {
+                                        const numLimpo = values.floatValue || 0;
+                                        handleMargemChange(numLimpo);
+                                    }}
+                                    decimalSeparator=","
+                                    suffix=" %"
+                                    decimalScale={2}
+                                    allowNegative={true} // Permite margem negativa (prejuízo)
+                                    className="flex h-9 w-full rounded-md border border-green-200 bg-green-50 text-green-800 font-medium px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-green-500"
+                                />
+                            )}
+                        />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label>Preço Base (R$)</Label>
-                        <Input type="number" step="0.01" {...register("precoBase", { valueAsNumber: true })} />
-                        {errors.precoBase && <p className="text-red-500 text-sm">{errors.precoBase.message}</p>}
+                        <Label>Nome do Produto</Label>
+                        <Input {...register("nome")} placeholder="Ex: Casquinha Trufada" />
+                        {errors.nome && <p className="text-red-500 text-sm">{errors.nome.message}</p>}
                     </div>
 
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <Label>Categoria</Label>
-                            <button type="button" onClick={() => setIsCategoriaModalOpen(true)} className="text-xs text-primary font-medium hover:underline cursor-pointer">Gerenciar categorias</button>
+                            <button type="button" onClick={() => setIsCategoriaModalOpen(true)} className="text-xs text-primary font-medium hover:underline cursor-pointer">
+                                Gerenciar categorias
+                            </button>
                         </div>
-                        <Controller name="categoriaId" control={control} render={({ field }) => (
-                            <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))}>
-                                <SelectTrigger className="w-full bg-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                                <SelectContent className="bg-white">
-                                    {categorias.map((cat) => <SelectItem key={cat.id} value={cat.id.toString()}>{cat.nome}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        )} />
+                        <Controller 
+                            name="categoriaId" 
+                            control={control} 
+                            render={({ field }) => (
+                                <Select 
+                                    key={categorias.length} 
+                                    value={field.value ? String(field.value) : undefined} 
+                                    onValueChange={(v) => field.onChange(Number(v))}
+                                    disabled={categorias.length === 0}
+                                >
+                                    <SelectTrigger className="w-full bg-white">
+                                        <SelectValue placeholder={categorias.length === 0 ? "Carregando..." : "Selecione..."} />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                        {categorias.map((cat) => (
+                                            <SelectItem key={cat.id} value={String(cat.id)}>
+                                                {cat.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )} 
+                        />
                     </div>
                 </div>
 

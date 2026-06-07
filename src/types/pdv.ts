@@ -2,6 +2,8 @@ export interface ProdutoDTO {
     id: number;
     nome: string;
     precoBase: number;
+    custoEstimado?: number; 
+    margemBruta?: number;   
     ativo: boolean;
     categoriaId: number;
     imagemUrl?: string;

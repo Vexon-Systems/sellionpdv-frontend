@@ -142,7 +142,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                                                         hover:-translate-y-1 hover:shadow-sm transition-all duration-300
                                                         ${isSelected
                                                             ? 'border-blue-900 bg-blue-50/50'
-                                                            : 'border-slate-100 hover:border-slate-200 bg-white'
+                                                            : 'border-slate-200 hover:border-slate-300 bg-white'
                                                         }
                                                     `}
                                                 >

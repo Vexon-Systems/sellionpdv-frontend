@@ -1,15 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
-import { fetchVendas, fetchVendaDetalhes } from "../services/apiRelatorios";
-import { type VendaResumo, type VendaDetalhes } from "../types/relatorios";
+import { useVendas } from "../hooks/useVendas";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Eye, Receipt, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
+// 1. Importações do Pagination do Shadcn
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
+
+import { Loader2, Eye, Receipt, AlertCircle, Ban, MoreHorizontal } from "lucide-react";
 
 const formatarMoeda = (valor: number) => 
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
@@ -18,53 +30,38 @@ const formatarDataHora = (dataIso: string) =>
   format(new Date(dataIso), "dd/MM/yyyy 'às' HH:mm");
 
 export function VendasView() {
-  const [vendas, setVendas] = useState<VendaResumo[]>([]);
-  const [statusFiltro, setStatusFiltro] = useState<string>("TODAS");
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    vendas, isLoading, paginaAtual, setPaginaAtual, totalPaginas,
+    statusFiltro, setStatusFiltro, isSheetOpen, setIsSheetOpen,
+    detalhesVenda, isLoadingDetalhes, abrirDetalhes,
+    isCancelDialogOpen, setIsCancelDialogOpen, abrirModalCancelamento,
+    vendaSelecionadaParaCancelamento, cancelarVenda
+  } = useVendas();
 
-  // Estados do Modal Lateral (Sheet)
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [detalhesVenda, setDetalhesVenda] = useState<VendaDetalhes | null>(null);
-  const [isLoadingDetalhes, setIsLoadingDetalhes] = useState(false);
+  const [justificativa, setJustificativa] = useState("");
+  const [isCancelando, setIsCancelando] = useState(false);
 
-  const carregarVendas = async () => {
-    setIsLoading(true);
+  const handleConfirmarCancelamento = async () => {
+    if (!justificativa.trim()) return;
+    
+    setIsCancelando(true);
     try {
-      const statusParam = statusFiltro === "TODAS" ? undefined : statusFiltro;
-      const response = await fetchVendas(0, 50, statusParam); 
-      setVendas(response.content);
+      await cancelarVenda(justificativa);
+      setJustificativa(""); 
     } catch (error) {
-      console.error("Erro ao carregar vendas", error);
+      alert("Não foi possível cancelar a venda. Verifique se o caixa já foi fechado.");
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    carregarVendas();
-  }, [statusFiltro]);
-
-  const abrirDetalhes = async (id: number) => {
-    setIsSheetOpen(true);
-    setIsLoadingDetalhes(true);
-    try {
-      const detalhes = await fetchVendaDetalhes(id);
-      setDetalhesVenda(detalhes);
-    } catch (error) {
-      console.error("Erro ao carregar detalhes", error);
-    } finally {
-      setIsLoadingDetalhes(false);
+      setIsCancelando(false);
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Filtro e Tabela */}
-      <Card className="bg-white">
+      <Card className="bg-white shadow-sm border-gray-200">
         <CardContent className="p-0">
-          <div className="px-4 pb-3 border-b flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">Últimas Transações</h3>
-            <div className="w-45">
+          <div className="pb-4 px-4 border-b flex flex-row items-center justify-between bg-white rounded-t-xl">
+            <h3 className="font-semibold text-gray-700 w-full md:w-auto">Últimas Transações</h3>
+            <div className="w-full md:w-64">
               <Select value={statusFiltro} onValueChange={setStatusFiltro}>
                 <SelectTrigger className="bg-white">
                   <SelectValue placeholder="Filtrar por Status" />
@@ -78,12 +75,12 @@ export function VendasView() {
             </div>
           </div>
 
-          <div className="relative w-full overflow-auto max-h-150">
+          <div className="relative w-full overflow-auto min-h-[400px]">
             {isLoading ? (
-              <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+              <div className="flex justify-center p-12"><Loader2 className="animate-spin text-blue-900 h-8 w-8" /></div>
             ) : (
               <Table>
-                <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
+                <TableHeader className="bg-gray-50/50">
                   <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Data e Hora</TableHead>
@@ -91,32 +88,57 @@ export function VendasView() {
                     <TableHead>Pagamento</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="w-[80px]"></TableHead>
+                    <TableHead className="w-12.5"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {vendas.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma venda encontrada para este filtro.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma venda encontrada.</TableCell></TableRow>
                   ) : (
                     vendas.map((venda) => (
-                      <TableRow key={venda.vendaId} className={venda.status === 'CANCELADA' ? 'bg-red-50/30' : ''}>
-                        <TableCell className="font-medium text-gray-500">#{venda.vendaId}</TableCell>
-                        <TableCell>{formatarDataHora(venda.dataVenda)}</TableCell>
-                        <TableCell>{venda.nomeOperador}</TableCell>
-                        <TableCell>{venda.formaPagamento}</TableCell>
+                      <TableRow key={venda.vendaId} className={venda.status === 'CANCELADA' ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50/50'}>
+                        <TableCell className="font-medium text-gray-500 pl-2">#{venda.vendaId}</TableCell>
+                        <TableCell className="text-sm">{formatarDataHora(venda.dataVenda)}</TableCell>
+                        <TableCell className="text-sm">{venda.nomeOperador}</TableCell>
+                        <TableCell className="text-sm">{venda.formaPagamento}</TableCell>
                         <TableCell>
-                          <Badge variant={venda.status === 'CONCLUIDA' ? 'default' : 'destructive'} 
-                                 className={venda.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700 hover:bg-green-100' : ''}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            venda.status === 'CONCLUIDA' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                          }`}>
                             {venda.status}
-                          </Badge>
+                          </span>
                         </TableCell>
-                        <TableCell className={`text-right font-bold ${venda.status === 'CANCELADA' ? 'line-through text-red-400' : 'text-gray-900'}`}>
+                        <TableCell className={`text-right font-bold text-sm ${venda.status === 'CANCELADA' ? 'line-through text-red-400' : 'text-gray-900'}`}>
                           {formatarMoeda(venda.valorTotal)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => abrirDetalhes(venda.vendaId)}>
-                            <Eye size={18} className="text-muted-foreground" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Abrir menu</span>
+                                <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => abrirDetalhes(venda.vendaId)} className="cursor-pointer">
+                                <Eye className="mr-2 h-4 w-4 text-gray-500" />
+                                <span>Ver Detalhes do Pedido</span>
+                              </DropdownMenuItem>
+                              
+                              {venda.status === 'CONCLUIDA' && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    onClick={() => abrirModalCancelamento(venda.vendaId)}
+                                    className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
+                                  >
+                                    <Ban className="mr-2 h-4 w-4" />
+                                    <span>Estornar Venda</span>
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
@@ -125,39 +147,104 @@ export function VendasView() {
               </Table>
             )}
           </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4 border-t rounded-b-lg gap-4 sm:gap-0">
+            <span className="text-sm text-gray-500 font-medium">
+              Mostrando página {paginaAtual + 1} de {totalPaginas}
+            </span>
+            
+            <Pagination className="w-auto mx-0">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (paginaAtual > 0 && !isLoading) setPaginaAtual(p => p - 1);
+                    }}
+                    className={paginaAtual === 0 || isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                <PaginationItem>
+                  <PaginationLink href="#" isActive className="pointer-events-none">
+                    {paginaAtual + 1}
+                  </PaginationLink>
+                </PaginationItem>
+
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (paginaAtual < totalPaginas - 1 && !isLoading) setPaginaAtual(p => p + 1);
+                    }}
+                    className={paginaAtual >= totalPaginas - 1 || isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+
         </CardContent>
       </Card>
 
-      {/* Slide-out (Sheet) para Detalhes da Venda */}
+      {/* MODAL ISOLADO: Estorno da Venda */}
+      <Dialog open={isCancelDialogOpen} onOpenChange={(open) => { setIsCancelDialogOpen(open); if(!open) setJustificativa(""); }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" /> Confirmar Estorno
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-gray-600">
+              Você está prestes a cancelar a Venda <strong>#{vendaSelecionadaParaCancelamento}</strong>. Esta ação anulará a entrada financeira. E não poderá ser desfeita!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Justificativa da Auditoria</label>
+              <Input 
+                placeholder="Ex: Cliente desistiu antes do preparo" 
+                value={justificativa}
+                onChange={(e) => setJustificativa(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">Motivo será registrado para auditoria de caixas.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)} disabled={isCancelando}>
+              Voltar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmarCancelamento} disabled={!justificativa.trim() || isCancelando}>
+              {isCancelando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Confirmar Estorno
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ABA LATERAL ISOLADA: Recibo Apenas Leitura */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto bg-gray-50 p-4">
           <SheetHeader className="mb-6 border-b pb-4">
             <div className="flex items-center gap-2">
-              <Receipt className="text-primary" />
+              <Receipt className="text-blue-900" />
               <SheetTitle>Recibo da Venda</SheetTitle>
             </div>
-            <SheetDescription>
-              Detalhes completos da transação.
-            </SheetDescription>
           </SheetHeader>
 
           {isLoadingDetalhes || !detalhesVenda ? (
-            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-900" /></div>
           ) : (
             <div className="space-y-6">
-              {/* Header do Recibo */}
+              
               <div className="bg-white p-4 rounded-lg border shadow-sm space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Pedido nº</span><span className="font-bold">#{detalhesVenda.vendaId}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Data</span><span>{formatarDataHora(detalhesVenda.dataVenda)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Operador</span><span>{detalhesVenda.nomeOperador}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Pagamento</span><span>{detalhesVenda.formaPagamento}</span></div>
-                <div className="flex justify-between pt-2 border-t">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge variant={detalhesVenda.status === 'CONCLUIDA' ? 'default' : 'destructive'}>{detalhesVenda.status}</Badge>
-                </div>
               </div>
 
-              {/* Justificativa em caso de Cancelamento */}
               {detalhesVenda.status === 'CANCELADA' && (
                 <div className="bg-red-50 border border-red-200 p-4 rounded-lg flex gap-3 text-red-800 text-sm">
                   <AlertCircle size={20} className="shrink-0 mt-0.5" />
@@ -169,18 +256,15 @@ export function VendasView() {
                 </div>
               )}
 
-              {/* Itens da Venda */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">Itens Vendidos</h4>
+                <h4 className="font-semibold text-gray-700 mb-3 text-sm">Itens Vendidos</h4>
                 <div className="space-y-3">
                   {detalhesVenda.itens.map((item, idx) => (
-                    <div key={idx} className="bg-white p-3 rounded-lg border shadow-sm">
+                    <div key={idx} className="bg-white p-3 rounded-lg border shadow-sm text-sm">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-medium text-gray-900">{item.quantidade}x {item.nomeProduto}</span>
                         <span className="font-semibold">{formatarMoeda(item.subtotalItem)}</span>
                       </div>
-                      
-                      {/* Lista de Modificadores do Produto */}
                       {item.modificadores && item.modificadores.length > 0 && (
                         <ul className="pl-6 space-y-1 text-xs text-muted-foreground list-disc marker:text-gray-300 mt-2 border-t pt-2">
                           {item.modificadores.map((mod, modIdx) => (
@@ -196,16 +280,14 @@ export function VendasView() {
                 </div>
               </div>
 
-              {/* Totalizador */}
-              <div className="bg-blue-950 text-white p-4 rounded-lg shadow-md flex justify-between items-center">
-                <span className="font-medium uppercase tracking-wider text-sm text-blue-200">Total da Venda</span>
-                <span className="text-2xl font-bold">{formatarMoeda(detalhesVenda.valorTotal)}</span>
+              <div className={`p-4 rounded-lg shadow-md flex justify-between items-center ${detalhesVenda.status === 'CANCELADA' ? 'bg-gray-300 text-gray-500' : 'bg-blue-950 text-white'}`}>
+                <span className={`font-medium uppercase tracking-wider text-sm ${detalhesVenda.status === 'CANCELADA' ? 'text-gray-500' : 'text-blue-200'}`}>Total da Venda</span>
+                <span className={`text-2xl font-bold ${detalhesVenda.status === 'CANCELADA' ? 'line-through' : ''}`}>{formatarMoeda(detalhesVenda.valorTotal)}</span>
               </div>
             </div>
           )}
         </SheetContent>
       </Sheet>
-
     </div>
   );
 }

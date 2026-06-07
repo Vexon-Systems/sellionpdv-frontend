@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PatternFormat } from "react-number-format";
+
 
 import { useUsuarioMe } from "../hooks/useUsuarioMe";
-import { Camera, Loader2, CircleHelp, Moon, Volume1, MonitorSmartphone } from "lucide-react";
+import { Camera, Loader2, CircleHelp, Moon, Volume1 } from "lucide-react";
 
 // --- Schemas de Validação ---
 const perfilSchema = z.object({
@@ -146,7 +146,21 @@ export function ConfiguracoesPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="telefone">Telefone de Contato</Label>
-                          <Input id="telefone" {...formPerfil.register("telefone")} placeholder="(00) 00000-0000" className="bg-white" />
+                          <Controller
+                            name="telefone"
+                            control={formPerfil.control}
+                            render={({ field }) => (
+                              <PatternFormat
+                                getInputRef={field.ref}
+                                value={field.value}
+                                onValueChange={(values) => field.onChange(values.value)} 
+                                format="(##) #####-####"
+                                mask="_"
+                                placeholder="(00) 00000-0000"
+                                className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                              />
+                            )}
+                          />
                           {formPerfil.formState.errors.telefone && <p className="text-destructive text-xs">{formPerfil.formState.errors.telefone.message}</p>}
                         </div>
                       </div>
@@ -176,7 +190,7 @@ export function ConfiguracoesPage() {
                 <CardContent className="space-y-6">
                   
                   {/* Dark Mode */}
-                  <div className="flex flex-row items-center justify-between rounded-lg border p-4 bg-white shadow-sm">
+                  <div className="flex flex-row items-center justify-between rounded-lg border p-2 bg-white">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <Moon size={18} className="text-muted-foreground"/>
@@ -191,7 +205,7 @@ export function ConfiguracoesPage() {
                   </div>
                   
                   {/* Alertas Sonoros */}
-                  <div className="flex flex-row items-center justify-between rounded-lg border p-4 bg-white shadow-sm">
+                  <div className="flex flex-row items-center justify-between rounded-lg border p-2 bg-white">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <Volume1 size={18} className="text-muted-foreground"/>

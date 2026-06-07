@@ -45,7 +45,7 @@ export function UserAvatarDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none cursor-pointer">
-          <Avatar className="w-10 h-10 border-2 border-primary/10 hover:opacity-85 transition-opacity shadow-sm">
+          <Avatar className="w-10 h-10 hover:opacity-85 transition-opacity shadow-sm">
             <AvatarImage src={usuario.avatarUrl || undefined} alt={usuario.nome} />
             <AvatarFallback className="bg-primary text-white text-xs font-bold">
               {iniciais}

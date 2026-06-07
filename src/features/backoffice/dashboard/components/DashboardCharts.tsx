@@ -69,11 +69,11 @@ export function DashboardCharts({
                     ) : !produtosData || produtosData.length === 0 ? (
                         <div className="h-70 flex items-center justify-center text-gray-400">Nenhum dado.</div>
                     ) : (
-                        <ChartContainer config={chartConfigTopProdutos} className="h-70 w-full">
+                        <ChartContainer config={chartConfigTopProdutos} className="h-75 w-full">
                             <BarChart 
                                 data={produtosData}
                                 layout="vertical" 
-                                margin={{ top: -10, right: 10, left: 20, bottom: 0 }}
+                                margin={{ top: 0, right: 10, left: 20, bottom: 0 }}
                             >
                                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e5e7eb" />
                                 <XAxis

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { NumericFormat } from "react-number-format";
 
-import { LockOpen, Lock, Box, Coins, DollarSign, ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound, CheckCircle2 } from "lucide-react";
+import { Lock, Box, Coins, DollarSign, ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/layout/Header";
 
@@ -34,7 +34,7 @@ export function ControleCaixaPage() {
         abrir, isAbrindo, movimentar, isMovimentando, fechar, isFechando 
     } = useControleCaixa(fecharModais);
 
-    const { register, handleSubmit, formState: { errors } } = useForm<FormAberturaInputs>({
+    const { register, handleSubmit, control, formState: { errors } } = useForm<FormAberturaInputs>({
         resolver: zodResolver(formAberturaSchema),
         defaultValues: { saldoInicial: 0 }
     });
@@ -71,12 +71,29 @@ export function ControleCaixaPage() {
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">Caixa Fechado</h2>
                         <p className="text-gray-500 mb-6 text-sm">É necessário informar o saldo em dinheiro presente na gaveta para iniciar um novo turno de vendas.</p>
+                        
                         <form onSubmit={handleSubmit((dados) => abrir(dados.saldoInicial))} className="space-y-4 text-left">
+                            {/* Campo Saldo Inicial Refatorado */}
                             <div className="space-y-2">
                                 <Label className="font-semibold text-gray-800">Fundo de Troco / Saldo Inicial (R$)</Label>
-                                <Input type="number" step="0.01" placeholder="R$ 0.00" disabled={isAbrindo} {...register("saldoInicial", { valueAsNumber: true })} />
+                                <Controller
+                                    name="saldoInicial"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <NumericFormat
+                                            getInputRef={field.ref}
+                                            value={field.value}
+                                            onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                                            thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
+                                            disabled={isAbrindo}
+                                            placeholder="R$ 0,00"
+                                            className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        />
+                                    )}
+                                />
                                 {errors.saldoInicial && <p className="text-red-500 text-sm">{errors.saldoInicial.message}</p>}
                             </div>
+                            
                             <Button type="submit" disabled={isAbrindo} className="w-full bg-primary hover:bg-primary/90 text-white mt-4">
                                 {isAbrindo ? "Abrindo Caixa..." : "Abrir Caixa Agora"}
                             </Button>

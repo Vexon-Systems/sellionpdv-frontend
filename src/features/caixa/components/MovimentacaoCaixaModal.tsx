@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { NumericFormat } from "react-number-format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,7 +23,7 @@ interface MovimentacaoCaixaModalProps {
 }
 
 export function MovimentacaoCaixaModal({ tipo, onClose, onSave, isSalvando }: MovimentacaoCaixaModalProps) {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormInputs>({
+    const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: { valor: 0, motivo: "" }
     });
@@ -47,9 +47,24 @@ export function MovimentacaoCaixaModal({ tipo, onClose, onSave, isSalvando }: Mo
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSave)} className="space-y-4 mt-2">
+                    
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Valor (R$)</Label>
-                        <Input type="number" step="0.01" placeholder="R$ 0.00" disabled={isSalvando} {...register("valor", { valueAsNumber: true })} />
+                        <Controller
+                            name="valor"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericFormat
+                                    getInputRef={field.ref}
+                                    value={field.value}
+                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
+                                    disabled={isSalvando}
+                                    placeholder="R$ 0,00"
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            )}
+                        />
                         {errors.valor && <p className="text-red-500 text-sm">{errors.valor.message}</p>}
                     </div>
 

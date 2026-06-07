@@ -37,9 +37,9 @@ export const fetchCaixas = async (
   return response.data;
 };
 
-export const fetchComparativo = async (escala: 'HOJE' | 'SEMANA' | 'MES'): Promise<RelatorioComparativoResponse> => {
+export const fetchComparativo = async (dataInicial: string, dataFinal: string): Promise<RelatorioComparativoResponse> => {
   const response = await api.get<RelatorioComparativoResponse>('/api/relatorios/comparativo', {
-    params: { escala }
+    params: { dataInicial, dataFinal }
   });
   return response.data;
 };

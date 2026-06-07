@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, Save, X } from "lucide-react";
+import { NumericFormat } from "react-number-format";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,6 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
 
     const { fields, append, remove } = useFieldArray({ control, name: "opcoes" });
 
-    // Atualiza o form sempre que o grupo selecionado mudar
     useEffect(() => {
         reset(grupoInicial || DEFAULT_VALUES);
     }, [grupoInicial, reset]);
@@ -91,7 +91,7 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                 )}
             </CardHeader>
 
-            <CardContent className="p-6">
+            <CardContent className="px-6">
                 <form onSubmit={handleSubmit(onSave as any)} className="space-y-8">
                     {/* Nome do Grupo */}
                     <div className="space-y-2">
@@ -119,10 +119,25 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                                     
                                     <div className="flex-1 sm:w-32 space-y-1">
                                         <Label className="text-xs sm:hidden">Preço</Label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1.5 text-gray-500 font-medium">R$</span>
-                                            <Input type="number" step="0.01" className="pl-9 bg-white" {...register(`opcoes.${index}.precoAdicional` as const, { valueAsNumber: true })} />
-                                        </div>
+                                        <Controller
+                                            name={`opcoes.${index}.precoAdicional`}
+                                            control={control}
+                                            render={({ field: controllerField }) => (
+                                                <NumericFormat
+                                                    getInputRef={controllerField.ref}
+                                                    value={controllerField.value}
+                                                    onValueChange={(values) => controllerField.onChange(values.floatValue || 0)}
+                                                    thousandSeparator="."
+                                                    decimalSeparator=","
+                                                    prefix="R$ "
+                                                    decimalScale={2}
+                                                    fixedDecimalScale
+                                                    allowNegative={false}
+                                                    placeholder="R$ 0,00"
+                                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                />
+                                            )}
+                                        />
                                         {errors.opcoes?.[index]?.precoAdicional && <p className="text-red-500 text-xs">{errors.opcoes[index]?.precoAdicional?.message}</p>}
                                     </div>
 

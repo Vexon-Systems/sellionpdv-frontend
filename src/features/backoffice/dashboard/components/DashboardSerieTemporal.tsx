@@ -14,7 +14,7 @@ export function DashboardSerieTemporal({ data, isLoading }: DashboardSerieTempor
     const chartConfig = {
         valor: {
             label: "Faturamento",
-            color: "#162556",
+            color: "#3b82f6",
         },
     };
 
@@ -40,8 +40,8 @@ export function DashboardSerieTemporal({ data, isLoading }: DashboardSerieTempor
                         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorValor" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="20%" stopColor="#162556" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#162556" stopOpacity={0} />
+                                    <stop offset="20%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -51,7 +51,7 @@ export function DashboardSerieTemporal({ data, isLoading }: DashboardSerieTempor
                                 tickLine={false} 
                                 axisLine={false} 
                                 tickMargin={8} 
-                                width={80}
+                                width={70}
                             />
                             <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={(value) => formatarMoeda(Number(value))} />} />
                             <Area 

@@ -22,23 +22,23 @@ export function DashboardKpis({ data, isLoading }: DashboardKpisProps) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card className="shadow-sm border-gray-200">
+            <Card className="bg-linear-to-bl from-blue-800 to-blue-500 ring-0">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-gray-500">Faturamento Bruto</CardTitle>
-                    <div className="p-2 bg-green-50 text-green-600 rounded-lg"><DollarSign size={20} /></div>
+                    <CardTitle className="text-sm font-medium text-white">Faturamento Bruto</CardTitle>
+                    <div className="p-2 text-white rounded-lg"><DollarSign size={20} /></div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-bold text-gray-900">
+                    <div className="text-3xl font-bold text-white">
                         {isLoading ? "..." : formatarMoeda(data?.faturamentoTotal || 0)}
                     </div>
                     {renderPercentual(data?.comparativoPeriodoAnterior?.faturamentoPercentual)}
                 </CardContent>
             </Card>
 
-            <Card className="shadow-sm border-gray-200">
+            <Card className="bg-linear-to-tr from-blue-100 to-blue-300 ring-0">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-sm font-medium text-gray-500">Vendas Realizadas</CardTitle>
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><ShoppingBag size={20} /></div>
+                    <div className="p-2 text-vlackrounded-lg"><ShoppingBag size={20} /></div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-gray-900">
@@ -48,10 +48,10 @@ export function DashboardKpis({ data, isLoading }: DashboardKpisProps) {
                 </CardContent>
             </Card>
 
-            <Card className="shadow-sm border-gray-200">
+            <Card className="bg-linear-to-tr from-blue-100 to-blue-300 ring-0">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-sm font-medium text-gray-500">Ticket Médio</CardTitle>
-                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Receipt size={20} /></div>
+                    <div className="p-2 text-black rounded-lg"><Receipt size={20} /></div>
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-blue-950">

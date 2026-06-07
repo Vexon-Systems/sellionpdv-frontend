@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
 
 const formSchema = z.object({
@@ -24,7 +25,7 @@ interface FechamentoCaixaModalProps {
 }
 
 export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: FechamentoCaixaModalProps) {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormInputs>({
+    const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: { dinheiro: 0, maquininhas: 0, pix: 0 }
     });
@@ -49,21 +50,66 @@ export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: Fe
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+                    {/* Campo Dinheiro */}
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Dinheiro em Espécie (Total na Gaveta)</Label>
-                        <Input type="number" step="0.01" placeholder="R$ 0.00" disabled={isSalvando} {...register("dinheiro", { valueAsNumber: true })} />
+                        <Controller
+                            name="dinheiro"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericFormat
+                                    getInputRef={field.ref}
+                                    value={field.value}
+                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
+                                    disabled={isSalvando}
+                                    placeholder="R$ 0,00"
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            )}
+                        />
                         {errors.dinheiro && <p className="text-red-500 text-sm">{errors.dinheiro.message}</p>}
                     </div>
 
+                    {/* Campo Maquininhas */}
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Fechamento de Lote (Maquininhas)</Label>
-                        <Input type="number" step="0.01" placeholder="R$ 0.00" disabled={isSalvando} {...register("maquininhas", { valueAsNumber: true })} />
+                        <Controller
+                            name="maquininhas"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericFormat
+                                    getInputRef={field.ref}
+                                    value={field.value}
+                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
+                                    disabled={isSalvando}
+                                    placeholder="R$ 0,00"
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            )}
+                        />
                         {errors.maquininhas && <p className="text-red-500 text-sm">{errors.maquininhas.message}</p>}
                     </div>
 
+                    {/* Campo PIX */}
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Total PIX Informado</Label>
-                        <Input type="number" step="0.01" placeholder="R$ 0.00" disabled={isSalvando} {...register("pix", { valueAsNumber: true })} />
+                        <Controller
+                            name="pix"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericFormat
+                                    getInputRef={field.ref}
+                                    value={field.value}
+                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
+                                    disabled={isSalvando}
+                                    placeholder="R$ 0,00"
+                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            )}
+                        />
                         {errors.pix && <p className="text-red-500 text-sm">{errors.pix.message}</p>}
                     </div>
 
