@@ -75,23 +75,13 @@ export function CheckoutModal({isOpen, onClose, subtotal, onSuccessCallback}: Ch
 
         const exigeMaquininha = formaPagamento === 'CREDITO' || formaPagamento === 'DEBITO';
         
-        // Validação: Se for cartão, obriga a escolha da maquininha
         if (exigeMaquininha && !maquininhaId) {
             toast.warning("Atenção", { description: "Por favor, selecione qual maquininha foi utilizada." });
             return;
         }
 
-        const itensFormatados = itens.map((item) => ({
-            produtoId: item.produto.id,
-            quantidade: item.quantidade,
-            modificadores: item.modificadores ? item.modificadores.map((mod) => ({
-                opcaoId: mod.opcaoId
-            })) : []
-        }));
-
-        // Monta o payload real com o ID da maquininha selecionada
         const payload = {
-            itens: itensFormatados,
+            itens: itens, 
             formaPagamento: formaPagamento,
             maquininhaId: exigeMaquininha ? Number(maquininhaId) : null,
             descontoAplicado: 0.00

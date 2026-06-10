@@ -84,7 +84,6 @@ export function CartSidebar({
   );
 }
 
-// --- Sub-componentes internos (privados ao CartSidebar) ---
 
 interface CartItemCardProps {
   item: ItemCarrinho;

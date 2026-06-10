@@ -251,7 +251,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
 
                     {/* Input de Margem Bruta (Porcentagem) */}
                     <div className="space-y-2">
-                        <Label className="text-green-700 font-semibold">Margem Bruta</Label>
+                        <Label className="text-green-700 font-semibold">Margem Bruta de Lucro</Label>
                         <Controller
                             name="margemBruta"
                             control={control}
