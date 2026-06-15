@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, RefreshCw } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -14,13 +14,17 @@ interface DashboardFiltersProps {
     tabAtiva: string;
     onTabChange: (valor: string) => void;
     onCalendarChange: (novoRange: DateRange | undefined) => void;
+    onRefresh: () => void;
+    isRefreshing: boolean;
 }
 
 export function DashboardFilters({
     date,
     tabAtiva,
     onTabChange,
-    onCalendarChange
+    onCalendarChange,
+    onRefresh,
+    isRefreshing,
 }: DashboardFiltersProps) {
     return (
         <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
@@ -29,7 +33,7 @@ export function DashboardFilters({
                 <p className="text-gray-500 text-sm">Acompanhe o desempenho da sua loja em tempo real.</p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
                 <Tabs value={tabAtiva} onValueChange={onTabChange} className="w-full sm:w-auto">
                     <TabsList className="grid w-full grid-cols-3 bg-gray-100">
                         <TabsTrigger value="hoje" className="transition-all duration-300 ease-out">Hoje</TabsTrigger>
@@ -38,6 +42,17 @@ export function DashboardFilters({
                         <TabsTrigger value="custom" className="hidden">Custom</TabsTrigger>
                     </TabsList>
                 </Tabs>
+
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onRefresh}
+                    disabled={isRefreshing}
+                    title="Atualizar dados"
+                    className="border-gray-200 shrink-0"
+                >
+                    <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+                </Button>
 
                 <div className="grid gap-2">
                     <Popover>

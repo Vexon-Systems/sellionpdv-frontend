@@ -1,4 +1,5 @@
 // /features/pdv/components/CartSidebar.tsx
+import { memo } from "react";
 import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatarMoeda } from "@/lib/utils";
@@ -91,7 +92,7 @@ interface CartItemCardProps {
   onRemover: (idCarrinho: string) => void;
 }
 
-function CartItemCard({ item, onAlterarQuantidade, onRemover }: CartItemCardProps) {
+const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onRemover }: CartItemCardProps) {
   return (
     <div className="group flex flex-col gap-2 p-3 bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-colors">
       <div className="flex justify-between items-start gap-2">
@@ -156,7 +157,7 @@ function CartItemCard({ item, onAlterarQuantidade, onRemover }: CartItemCardProp
       </div>
     </div>
   );
-}
+});
 
 function EmptyCartMessage() {
   return (

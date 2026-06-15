@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,17 +8,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../../../types/pdv";
 import { ShoppingCart } from "lucide-react";
+import { formatarMoeda } from "@/lib/utils";
 
 interface Props {
     produto: ProdutoDTO;
     isOpen: boolean;
     onClose: () => void;
 }
-
-const formatadorMoeda = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-})
 
 export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
     const adicionarItem = useCartStore((state) => state.adicionarItem);
@@ -53,7 +49,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
         });
     }, [produto, selecao]);
 
-    const toggleOpcao = (grupoId: number, opcao: OpcaoModificadorDTO, tipo: 'UNICA' | 'MULTIPLA', max: number) => {
+    const toggleOpcao = useCallback((grupoId: number, opcao: OpcaoModificadorDTO, tipo: 'UNICA' | 'MULTIPLA', max: number) => {
         if (!opcao.id) return;
 
         setSelecao(prev => {
@@ -81,7 +77,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
 
         return [...prev, { opcaoId: opcao.id, nome: opcao.nome, precoAdicional: opcao.precoAdicional }];
         });
-    };
+    }, [produto.gruposModificadores]);
 
     const handleConfirmar = () => {
         adicionarItem(produto, selecao);
@@ -160,7 +156,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                                                     
                                                     {opcao.precoAdicional > 0 && (
                                                         <span className="text-sm font-bold text-emerald-500 p-1 rounded-md">
-                                                            + {formatadorMoeda.format(opcao.precoAdicional)}
+                                                            + {formatarMoeda(opcao.precoAdicional)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -177,7 +173,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                     <div className="bg-slate-100 px-4 py-2 rounded-lg flex justify-between items-center border border-slate-100">
                         <span className="text-slate-600 font-medium">Total do Item:</span>
                         <span className="text-xl font-bold text-blue-900">
-                            {formatadorMoeda.format(precoTotal)}
+                            {formatarMoeda(precoTotal)}
                         </span>
                     </div>
                 </div>

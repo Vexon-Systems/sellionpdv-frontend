@@ -1,18 +1,42 @@
+import { lazy } from 'react';
 import { createRootRoute, createRoute, createRouter, Outlet, redirect, useRouterState } from '@tanstack/react-router';
 import { useAuthStore } from '../store/useAuthStore';
+import { toast } from 'sonner';
+
+// Rotas primárias — carregadas imediatamente (fluxo principal de venda)
 import LoginPage from '@/features/auth/pages/LoginPage';
 import { PdvPage } from '@/features/pdv/pages/PdvPage';
 import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
-import { CatalogoPage } from '@/features/backoffice/catalogo/pages/CatalogoPage';
-import { ModificadoresPage } from '@/features/backoffice/modificadores/pages/ModificadoresPage';
-import { DashboardPage } from '@/features/backoffice/dashboard/pages/DashboardPage';
+
+// Rotas do backoffice — carregadas sob demanda
+const CatalogoPage     = lazy(() => import('@/features/backoffice/catalogo/pages/CatalogoPage').then(m => ({ default: m.CatalogoPage })));
+const ModificadoresPage = lazy(() => import('@/features/backoffice/modificadores/pages/ModificadoresPage').then(m => ({ default: m.ModificadoresPage })));
+const DashboardPage    = lazy(() => import('@/features/backoffice/dashboard/pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const RelatoriosPage   = lazy(() => import('@/features/backoffice/relatorios/pages/RelatoriosPage').then(m => ({ default: m.RelatoriosPage })));
+const EquipePage       = lazy(() => import('@/features/backoffice/equipe/pages/EquipePage').then(m => ({ default: m.EquipePage })));
+const MaquininhasPage  = lazy(() => import('@/features/backoffice/maquininhas/pages/MaquininhaPage').then(m => ({ default: m.MaquininhasPage })));
+const ConfiguracoesPage = lazy(() => import('@/features/usuarios/pages/ConfiguracoesPage').then(m => ({ default: m.ConfiguracoesPage })));
+
 import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
-import { RelatoriosPage } from '@/features/backoffice/relatorios/pages/RelatoriosPage';
-import { EquipePage } from '@/features/backoffice/equipe/pages/EquipePage';
-import { MaquininhasPage } from '@/features/backoffice/maquininhas/pages/MaquininhaPage';
-import { ConfiguracoesPage } from '@/features/usuarios/pages/ConfiguracoesPage';
 
+function requireAuth() {
+    const { isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated) {
+        throw redirect({ to: '/login' });
+    }
+}
+
+function requireAdmin() {
+    const { isAuthenticated, user } = useAuthStore.getState();
+    if (!isAuthenticated) {
+        throw redirect({ to: '/login' });
+    }
+    if (user?.role !== 'ROLE_ADMIN') {
+        toast.error('Acesso negado', { description: 'Apenas administradores podem acessar esta área.' });
+        throw redirect({ to: '/' });
+    }
+}
 
 const rootRoute = createRootRoute({
     component: () => {
@@ -43,150 +67,63 @@ const loginRoute = createRoute({
 const pdvRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    beforeLoad: () => {
-        const isAuthenticated = useAuthStore.getState().isAuthenticated;
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' }); 
-        }
-    },
+    beforeLoad: requireAuth,
     component: PdvPage,
 });
 
 const caixaRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/caixa',
-    beforeLoad: () => {
-        const isAuthenticated = useAuthStore.getState().isAuthenticated;
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' }); 
-        }
-    },
+    beforeLoad: requireAuth,
     component: ControleCaixaPage,
 });
 
 const catalogoRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/catalogo',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas ADMINS podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: CatalogoPage,
 });
 
 const modificadoresRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/modificadores',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: ModificadoresPage,
 });
 
 const dashboardRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/dashboard',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: DashboardPage,
 });
 
 const relatoriosRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/relatorios',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: RelatoriosPage,
 });
 
 const equipeRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/equipe',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: EquipePage,
 });
 
 const maquininhaRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/maquininhas',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: MaquininhasPage,
 });
 
 const configuracoesRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/configuracoes',
-    beforeLoad: () => {
-        const { isAuthenticated, user } = useAuthStore.getState();
-        
-        if (!isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-        
-        if (user?.role !== 'ROLE_ADMIN') {
-            alert('Acesso negado! Apenas gerentes podem acessar esta área.');
-            throw redirect({ to: '/' }); 
-        }
-    },
+    beforeLoad: requireAdmin,
     component: ConfiguracoesPage,
 });
 

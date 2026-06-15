@@ -8,12 +8,14 @@ import { DashboardSerieTemporal } from "../components/DashboardSerieTemporal";
 import { DashboardOperacoes } from "../components/DashboardOperacoes";
 
 export function DashboardPage() {
-    const { 
-        date, 
-        tabAtiva, 
-        handleTabChange, 
-        handleCalendarChange, 
-        queries 
+    const {
+        date,
+        tabAtiva,
+        handleTabChange,
+        handleCalendarChange,
+        handleRefresh,
+        isRefreshing,
+        queries,
     } = useDashboardData();
 
     return (
@@ -23,11 +25,13 @@ export function DashboardPage() {
             <div className="flex-1 overflow-y-auto p-4 md:p-8">
                 
                 {/* 1. Filtros e Controlos de Data */}
-                <DashboardFilters 
+                <DashboardFilters
                     date={date}
                     tabAtiva={tabAtiva}
                     onTabChange={handleTabChange}
                     onCalendarChange={handleCalendarChange}
+                    onRefresh={handleRefresh}
+                    isRefreshing={isRefreshing}
                 />
 
                 {/* 2. Indicadores Principais (KPIs) */}

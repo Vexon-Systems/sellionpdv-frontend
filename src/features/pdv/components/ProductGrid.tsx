@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatarMoeda } from "@/lib/utils";
 import type { ProdutoDTO } from "../../../types/pdv";
@@ -9,7 +10,7 @@ interface ProductGridProps {
   onCliqueProduto: (produto: ProdutoDTO) => void;
 }
 
-export function ProductGrid({
+export const ProductGrid = memo(function ProductGrid({
   produtos,
   isLoading,
   isError,
@@ -65,6 +66,7 @@ export function ProductGrid({
               <img
                 src={produto.imagemUrl}
                 alt={`Foto de ${produto.nome}`}
+                loading="lazy"
                 className="w-full h-full object-cover relative z-10"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -89,4 +91,4 @@ export function ProductGrid({
       ))}
     </div>
   );
-}
+});

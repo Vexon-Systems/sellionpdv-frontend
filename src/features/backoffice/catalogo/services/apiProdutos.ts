@@ -24,17 +24,7 @@ export const salvarProduto = async (produto: Partial<ProdutoDTO>): Promise<Produ
 };
  
 export const excluirProduto = async (id: number): Promise<void> => {
-  try {
-        await api.delete(`/api/produtos/${id}`);
-  } catch (error: any) {
-      if (error.response?.status === 405 || error.response?.status === 404) {
-          console.warn("Rota DELETE não encontrada, executando Soft Delete via PUT...");
-          const produto = await fetchProdutoPorId(id);
-          await api.put(`/api/produtos/${id}`, { ...produto, ativo: false });
-      } else {
-          throw error;
-      }
-    }
+    await api.delete(`/api/produtos/${id}`);
 };
 
 export const uploadImagemProduto = async (file: File): Promise<string> => {
