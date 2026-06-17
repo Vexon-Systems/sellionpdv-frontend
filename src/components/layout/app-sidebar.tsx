@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip";
@@ -35,10 +36,14 @@ import {
 export function AppSidebar(){
   const {user, clearAuth} = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {toggleSidebar} = useSidebar();
 
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+
   const handleLogout = () => {
+    queryClient.clear();
     clearAuth();
     navigate({to: "/login"});
   }
@@ -114,127 +119,129 @@ export function AppSidebar(){
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Grupo de Gestão */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Gestão</SidebarGroupLabel>
-          <SidebarGroupContent>
+        {/* Grupo de Gestão — visível apenas para admins */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Gestão</SidebarGroupLabel>
+            <SidebarGroupContent>
 
-            <TooltipProvider delayDuration={300}>
-              <SidebarMenu className="flex flex-col gap-1">
+              <TooltipProvider delayDuration={300}>
+                <SidebarMenu className="flex flex-col gap-1">
 
-                {/* Item 1: Catalálo de Produtos */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/catalogo" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <ChefHat />
-                          <span className="ml-1 text-sm">Catálogo & Ficha Técnica</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 1: Catálogo de Produtos */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/catalogo" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <ChefHat />
+                            <span className="ml-1 text-sm">Catálogo & Ficha Técnica</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie o catálogo de produtos</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Gerencie o catálogo de produtos</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-                {/* Item 2: Modificadores */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/modificadores" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <SlidersHorizontal />
-                          <span className="ml-1 text-sm">Modificadores</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 2: Modificadores */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/modificadores" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <SlidersHorizontal />
+                            <span className="ml-1 text-sm">Modificadores</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie os grupos de modificadores</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Gerencie os grupos de modificadores</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-                {/* Item 3: Dashboard */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/dashboard" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <BarChart />
-                          <span className="ml-1 text-sm">Dashboard</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 3: Dashboard */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/dashboard" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <BarChart />
+                            <span className="ml-1 text-sm">Dashboard</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Visualize gráficos</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Visualize gráficos</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-                {/* Item 4: Relatórios */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/relatorios" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <ClipboardList />
-                          <span className="ml-1 text-sm">Relatórios</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 4: Relatórios */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/relatorios" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <ClipboardList />
+                            <span className="ml-1 text-sm">Relatórios</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie e exporte seus relaórios</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Gerencie e exporte seus relatórios</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-                {/* Item 5: Equipe */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/equipe" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <Users />
-                          <span className="ml-1 text-sm">Equipe</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 5: Equipe */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/equipe" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <Users />
+                            <span className="ml-1 text-sm">Equipe</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Gerencie sua equipe de trabalho</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-                {/* Item 6: Maquininhas */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/maquininhas" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <CreditCard />
-                          <span className="ml-1 text-sm">Maquininhas</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                  {/* Item 6: Maquininhas */}
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/maquininhas" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <CreditCard />
+                            <span className="ml-1 text-sm">Maquininhas</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
 
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
-              
-              </SidebarMenu>
-            </TooltipProvider>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Gerencie as maquininhas de pagamento</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
 
-          </SidebarGroupContent>
-        </SidebarGroup>
+                </SidebarMenu>
+              </TooltipProvider>
+
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       {/* Rodapé */}

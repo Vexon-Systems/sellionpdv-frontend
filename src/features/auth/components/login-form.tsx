@@ -16,8 +16,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore"; 
+import { useAuthStore } from "@/store/useAuthStore";
 import { login } from "@/features/auth/services/apiAuth";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react" 
 
 const loginSchema = z.object({
@@ -34,6 +35,7 @@ export function LoginForm({
   
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const queryClient = useQueryClient();
 
   const {
     register, 
@@ -47,6 +49,7 @@ export function LoginForm({
     try {
       const respostaApi = await login(data.email, data.senha);
 
+      queryClient.clear();
       setAuth(respostaApi.usuario, respostaApi.token);
       toast.success(`Bem-vindo de volta, ${respostaApi.usuario.nome}!`);
       navigate({ to: "/" });

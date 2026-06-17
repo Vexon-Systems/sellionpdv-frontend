@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { useVendas } from "../hooks/useVendas";
-import { exportarElementoComoPdf } from "../services/exportarPdf";
+import { exportarVendasPdf } from "../services/exportarPdf";
+import { fetchVendas } from "../services/apiRelatorios";
+import { toast } from "sonner";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -42,13 +44,18 @@ export function VendasView() {
   const [justificativa, setJustificativa] = useState("");
   const [isCancelando, setIsCancelando] = useState(false);
   const [isExportando, setIsExportando] = useState(false);
-  const conteudoRef = useRef<HTMLDivElement>(null);
 
   const handleExportarPdf = async () => {
-    if (!conteudoRef.current) return;
     setIsExportando(true);
-    await exportarElementoComoPdf(conteudoRef.current, "historico-de-vendas");
-    setIsExportando(false);
+    try {
+      const statusParam = statusFiltro === "TODAS" ? undefined : statusFiltro;
+      const todos = await fetchVendas(0, 2000, statusParam);
+      await exportarVendasPdf(todos.content, statusFiltro);
+    } catch {
+      toast.error("Erro ao buscar dados para exportação.");
+    } finally {
+      setIsExportando(false);
+    }
   };
 
   const handleConfirmarCancelamento = async () => {
@@ -66,7 +73,7 @@ export function VendasView() {
   };
 
   return (
-    <div className="space-y-4" ref={conteudoRef}>
+    <div className="space-y-4">
       <Card className="bg-white shadow-sm border-gray-200">
         <CardContent className="p-0">
           <div className="pb-4 px-4 pt-4 border-b flex flex-col md:flex-row items-center justify-between gap-3 bg-white rounded-t-xl">

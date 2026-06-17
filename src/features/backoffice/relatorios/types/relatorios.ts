@@ -65,7 +65,7 @@ export interface RelatorioCaixa {
     dataAbertura: string;
     dataFechamento: string | null;
     saldoInicial: number;
-    totalVendasDinheiro: number;
+    totalVendas: number;
     totalSangrias: number;
     totalReforcos: number;
     saldoFinalCalculado: number;

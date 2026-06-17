@@ -123,7 +123,7 @@ const maquininhaRoute = createRoute({
 const configuracoesRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/configuracoes',
-    beforeLoad: requireAdmin,
+    beforeLoad: requireAuth,
     component: ConfiguracoesPage,
 });
 

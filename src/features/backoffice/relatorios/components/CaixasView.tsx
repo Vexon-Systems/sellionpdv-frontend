@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useCaixas } from "../hooks/useCaixas";
 import { RelatoriosFilter } from "./RelatoriosFilter";
-import { exportarElementoComoPdf } from "../services/exportarPdf";
+import { exportarCaixasPdf } from "../services/exportarPdf";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
@@ -16,18 +18,19 @@ const formatarData = (isoString: string | null) => {
 
 export function CaixasView() {
   const { date, tabAtiva, handleTabChange, handleCalendarChange, caixas, isLoading } = useCaixas();
-  const conteudoRef = useRef<HTMLDivElement>(null);
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
-    if (!conteudoRef.current) return;
     setIsExportando(true);
-    await exportarElementoComoPdf(conteudoRef.current, "auditoria-de-caixas");
+    const periodo = date?.from && date?.to
+      ? `${format(date.from, "dd/MM/yyyy", { locale: ptBR })} — ${format(date.to, "dd/MM/yyyy", { locale: ptBR })}`
+      : "Período selecionado";
+    await exportarCaixasPdf(caixas, periodo);
     setIsExportando(false);
   };
 
   return (
-    <div className="space-y-6" ref={conteudoRef}>
+    <div className="space-y-6">
       <RelatoriosFilter
         titulo="Auditoria de Turnos (Caixas)"
         subtitulo="Acompanhamento de sangrias, reforços e furos operacionais."
@@ -53,7 +56,7 @@ export function CaixasView() {
                   <TableHead>Fechamento</TableHead>
                   <TableHead>Op. Abertura</TableHead>
                   <TableHead>Op. Fechamento</TableHead>
-                  <TableHead className="text-right">Entradas (Dinheiro)</TableHead>
+                  <TableHead className="text-right">Total de Vendas</TableHead>
                   <TableHead className="text-right">Diferença / Furo</TableHead>
                 </TableRow>
               </TableHeader>
@@ -87,7 +90,7 @@ export function CaixasView() {
                       <TableCell className="text-sm text-gray-700">{caixa.operadorFechamento || '-'}</TableCell>
                       
                       <TableCell className="text-right text-sm font-medium">
-                        {formatarMoeda(caixa.totalVendasDinheiro)}
+                        {formatarMoeda(caixa.totalVendas)}
                       </TableCell>
                       
                       {/* Lógica Semântica de Cores para Auditoria */}

@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useDre } from "../hooks/useDre";
 import { RelatoriosFilter } from "./RelatoriosFilter";
-import { exportarElementoComoPdf } from "../services/exportarPdf";
+import { exportarDrePdf } from "../services/exportarPdf";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { DollarSign, TrendingDown, Percent, Wallet } from "lucide-react";
@@ -12,13 +14,15 @@ const formatarMoeda = (valor: number) =>
 
 export function DreView() {
   const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading } = useDre();
-  const conteudoRef = useRef<HTMLDivElement>(null);
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
-    if (!conteudoRef.current) return;
+    if (!data) return;
     setIsExportando(true);
-    await exportarElementoComoPdf(conteudoRef.current, "dre-gerencial");
+    const periodo = date?.from && date?.to
+      ? `${format(date.from, "dd/MM/yyyy", { locale: ptBR })} — ${format(date.to, "dd/MM/yyyy", { locale: ptBR })}`
+      : "Período selecionado";
+    await exportarDrePdf(data, periodo);
     setIsExportando(false);
   };
 
@@ -48,7 +52,7 @@ export function DreView() {
       />
 
       {data && (
-        <div ref={conteudoRef} className="space-y-6 print:block">
+        <div className="space-y-6 print:block">
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-white shadow-sm border-l-4 border-l-emerald-500">
