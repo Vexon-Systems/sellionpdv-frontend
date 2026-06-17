@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, FileDown } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ interface FiltroPeriodoProps {
   isLoading?: boolean;
   onTabChange: (valor: string) => void;
   onCalendarChange: (novoRange: DateRange | undefined) => void;
+  onExportarPdf?: () => void;
+  isExportando?: boolean;
 }
 
 export function RelatoriosFilter({
@@ -27,7 +29,9 @@ export function RelatoriosFilter({
   tabAtiva,
   isLoading,
   onTabChange,
-  onCalendarChange
+  onCalendarChange,
+  onExportarPdf,
+  isExportando
 }: FiltroPeriodoProps) {
   return (
     <Card className="bg-white print:hidden">
@@ -87,6 +91,18 @@ export function RelatoriosFilter({
               </PopoverContent>
             </Popover>
           </div>
+
+          {onExportarPdf && (
+            <Button
+              variant="outline"
+              className="border-gray-200 gap-2"
+              onClick={onExportarPdf}
+              disabled={isExportando}
+            >
+              {isExportando ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+              Exportar PDF
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -53,7 +53,7 @@ export function PdvPage() {
             <Input
               type="text"
               placeholder="Buscar produto por nome"
-              className="pl-10 h-10 w-full bg-white border-gray-200 shadow-md"
+              className="pl-10 h-10 w-full bg-white border-gray-200"
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
             />

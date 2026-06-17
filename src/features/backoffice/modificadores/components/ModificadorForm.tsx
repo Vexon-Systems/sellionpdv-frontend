@@ -111,9 +111,9 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                         <div className="space-y-4 sm:space-y-3">
                             {fields.map((field, index) => (
                                 <div key={field.id} className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 items-end sm:items-start bg-gray-50 sm:bg-transparent p-3 sm:p-0 rounded-md border sm:border-none">
-                                    <div className="w-full sm:flex-1 space-y-1">
+                                    <div className="w-full flex-1 space-y-1">
                                         <Label className="text-xs sm:hidden">Nome</Label>
-                                        <Input {...register(`opcoes.${index}.nome` as const)} placeholder="Ex: Copo 300ml" className="bg-white" />
+                                        <Input {...register(`opcoes.${index}.nome` as const)} placeholder="Ex: Copo 300ml" className="bg-white w-full h-9" />
                                         {errors.opcoes?.[index]?.nome && <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>}
                                     </div>
                                     
@@ -134,7 +134,7 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                                                     fixedDecimalScale
                                                     allowNegative={false}
                                                     placeholder="R$ 0,00"
-                                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                                 />
                                             )}
                                         />

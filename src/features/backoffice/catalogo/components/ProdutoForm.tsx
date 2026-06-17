@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { GerenciarCategoriasDialog } from "./GerenciarCategoriasDialog";
-import { Pen, Save, Trash2, Plus, ImagePlus, Loader2 } from "lucide-react";
+import { Pen, Save, Trash2, Plus, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { NumericFormat } from 'react-number-format';
 
@@ -38,8 +38,8 @@ const formSchema = z.object({
     nome: z.string().min(3, "O nome deve ter pelo menos 3 letras"),
     precoBase: z.number().min(0.01, "O preço deve ser maior que zero."),
     custoEstimado: z.number().min(0, "O custo não pode ser negativo").default(0),
-    margemBruta: z.number().default(0), 
-    categoriaId: z.number(),
+    margemBruta: z.number().default(0),
+    categoriaId: z.number().min(1, "Selecione uma categoria"),
     ativo: z.boolean(),
     imagemUrl: z.string().optional(),
     gruposModificadores: z.array(
@@ -51,6 +51,9 @@ const formSchema = z.object({
             opcoes: z.any().optional()
         })
     ).default([])
+}).refine((dados) => dados.custoEstimado <= dados.precoBase, {
+    message: "O custo estimado não pode ser maior que o preço de venda.",
+    path: ["custoEstimado"],
 });
 
 type FormInputs = z.input<typeof formSchema>;
@@ -66,7 +69,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
 
     const { register, handleSubmit, reset, watch, setValue, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
-        defaultValues: { nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] }
+        defaultValues: { nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 0, ativo: true, imagemUrl: "", gruposModificadores: [] }
     });
 
     const { fields, append, remove, replace } = useFieldArray({ control, name: "gruposModificadores" });
@@ -74,18 +77,27 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
     // Sincroniza dados quando um produto é selecionado
     useEffect(() => {
         if (produtoInicial) {
-            reset({ 
-                ...produtoInicial, 
+            reset({
+                ...produtoInicial,
                 custoEstimado: produtoInicial.custoEstimado || 0,
                 margemBruta: produtoInicial.margemBruta || 0,
-                gruposModificadores: produtoInicial.gruposModificadores || [] 
+                gruposModificadores: produtoInicial.gruposModificadores || []
             });
             replace(produtoInicial.gruposModificadores || []);
         } else {
-            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 1, ativo: true, imagemUrl: "", gruposModificadores: [] });
+            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: categorias[0]?.id || 0, ativo: true, imagemUrl: "", gruposModificadores: [] });
             replace([]);
         }
     }, [produtoInicial, reset, replace]);
+
+    const categoriaId = watch("categoriaId");
+
+    // Preenche a categoria padrão assim que a lista carrega (evita Select vazio na primeira abertura)
+    useEffect(() => {
+        if (!produtoInicial && !categoriaId && categorias.length > 0) {
+            setValue("categoriaId", categorias[0].id);
+        }
+    }, [categorias, produtoInicial, categoriaId, setValue]);
 
     // Observadores para reatividade
     const isAtivo = watch("ativo");
@@ -153,7 +165,18 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                 <div className="flex items-center gap-5">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 overflow-hidden relative group shrink-0" onClick={() => fileInputRef.current?.click()}>
                         {imagemAtual ? (
-                            <><img src={imagemAtual} alt="Produto" className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Pen className="text-white w-6 h-6" /></div></>
+                            <>
+                                <img src={imagemAtual} alt="Produto" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Pen className="text-white w-6 h-6" /></div>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setValue("imagemUrl", ""); }}
+                                    className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 shadow-sm cursor-pointer"
+                                    title="Remover imagem"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </>
                         ) : (
                             <div className="flex flex-col items-center text-gray-400">
                                 {isUploading ? <Loader2 className="animate-spin w-8 h-8" /> : <><ImagePlus className="w-8 h-8 mb-1" /><span className="text-[10px] font-medium uppercase tracking-wider">Adicionar</span></>}
@@ -309,8 +332,9 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            )} 
+                            )}
                         />
+                        {errors.categoriaId && <p className="text-red-500 text-sm">{errors.categoriaId.message}</p>}
                     </div>
                 </div>
 

@@ -2,11 +2,17 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiCategorias } from "../services/apiCategorias";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+    AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Pencil, Trash2, Check, X, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { extrairMensagemErro } from "@/lib/utils";
 
 interface Props{
     isOpen: boolean;
@@ -23,7 +29,7 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
     const [nomeEditado, setNomeEditado] = useState("");
 
     const { data: categorias, isLoading } = useQuery({
-        queryKey: ['lista-categorias'],
+        queryKey: ['categorias'],
         queryFn: apiCategorias.listar,
     });
 
@@ -31,10 +37,11 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
         mutationFn: apiCategorias.criar,
         onSuccess: (dados) => {
             setNovaCategoria("");
-            queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
+            queryClient.invalidateQueries({ queryKey: ['categorias'] });
             toast.success("Categoria criada!");
             if (onCategoriaCriada) onCategoriaCriada(dados.id);
-        }
+        },
+        onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao criar categoria."))
     });
 
     const mutationAtualizar = useMutation({
@@ -42,15 +49,16 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
         mutationFn: ({ id, nome }: { id: number, nome: string }) => apiCategorias.atualizar(id, { nome }),
         onSuccess: () => {
             setEditandoId(null);
-            queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
+            queryClient.invalidateQueries({ queryKey: ['categorias'] });
             toast.success("Categoria atualizada!");
-        }
+        },
+        onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao atualizar categoria."))
     });
 
     const mutationExcluir = useMutation({
         mutationFn: apiCategorias.excluir,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['lista-categorias'] });
+            queryClient.invalidateQueries({ queryKey: ['categorias'] });
             toast.success("Categoria excluída!");
         },
         onError: () => {
@@ -70,6 +78,7 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
 
     const handleCriar = (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         if (novaCategoria.trim().length < 3) return;
         
         // CORREÇÃO: Enviando o objeto { nome } exigido pelo NovaCategoriaDTO
@@ -138,14 +147,34 @@ export function GerenciarCategoriasDialog({ isOpen, onClose, onCategoriaCriada }
                                     >
                                     <Pencil size={14} />
                                     </Button>
-                                    <Button 
-                                        size="icon" 
-                                        variant="ghost" 
-                                        className="h-8 w-8 text-black hover:text-red-700 hover:bg-red-50 cursor-pointer"
-                                        onClick={() => mutationExcluir.mutate(cat.id)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-8 w-8 text-black hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                                            >
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="bg-white">
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Excluir categoria?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Deseja excluir a categoria "{cat.nome}"? Essa ação não pode ser desfeita.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() => mutationExcluir.mutate(cat.id)}
+                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                >
+                                                    Confirmar
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </div>
                                 </>
                             )}

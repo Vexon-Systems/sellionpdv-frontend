@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format } from "date-fns";
 import { useVendas } from "../hooks/useVendas";
+import { exportarElementoComoPdf } from "../services/exportarPdf";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -21,7 +22,7 @@ import {
   PaginationPrevious 
 } from "@/components/ui/pagination";
 
-import { Loader2, Eye, Receipt, AlertCircle, Ban, MoreHorizontal } from "lucide-react";
+import { Loader2, Eye, Receipt, AlertCircle, Ban, MoreHorizontal, FileDown } from "lucide-react";
 
 const formatarMoeda = (valor: number) => 
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
@@ -40,6 +41,15 @@ export function VendasView() {
 
   const [justificativa, setJustificativa] = useState("");
   const [isCancelando, setIsCancelando] = useState(false);
+  const [isExportando, setIsExportando] = useState(false);
+  const conteudoRef = useRef<HTMLDivElement>(null);
+
+  const handleExportarPdf = async () => {
+    if (!conteudoRef.current) return;
+    setIsExportando(true);
+    await exportarElementoComoPdf(conteudoRef.current, "historico-de-vendas");
+    setIsExportando(false);
+  };
 
   const handleConfirmarCancelamento = async () => {
     if (!justificativa.trim()) return;
@@ -56,26 +66,32 @@ export function VendasView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={conteudoRef}>
       <Card className="bg-white shadow-sm border-gray-200">
         <CardContent className="p-0">
-          <div className="pb-4 px-4 border-b flex flex-row items-center justify-between bg-white rounded-t-xl">
+          <div className="pb-4 px-4 pt-4 border-b flex flex-col md:flex-row items-center justify-between gap-3 bg-white rounded-t-xl">
             <h3 className="font-semibold text-gray-700 w-full md:w-auto">Últimas Transações</h3>
-            <div className="w-full md:w-64">
-              <Select value={statusFiltro} onValueChange={setStatusFiltro}>
-                <SelectTrigger className="bg-white">
-                  <SelectValue placeholder="Filtrar por Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODAS">Todas as Vendas</SelectItem>
-                  <SelectItem value="CONCLUIDA">Apenas Concluídas</SelectItem>
-                  <SelectItem value="CANCELADA">Apenas Canceladas</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              <div className="w-full md:w-64">
+                <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Filtrar por Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODAS">Todas as Vendas</SelectItem>
+                    <SelectItem value="CONCLUIDA">Apenas Concluídas</SelectItem>
+                    <SelectItem value="CANCELADA">Apenas Canceladas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" className="border-gray-200 gap-2 w-full sm:w-auto" onClick={handleExportarPdf} disabled={isExportando}>
+                {isExportando ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                Exportar PDF
+              </Button>
             </div>
           </div>
 
-          <div className="relative w-full overflow-auto min-h-[400px]">
+          <div className="relative w-full overflow-auto min-h-[400px] px-4">
             {isLoading ? (
               <div className="flex justify-center p-12"><Loader2 className="animate-spin text-blue-900 h-8 w-8" /></div>
             ) : (

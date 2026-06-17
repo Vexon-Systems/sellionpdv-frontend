@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiModificadores } from "../services/apiModificadores";
 import type { GrupoModificadorDTO } from "@/types/pdv";
 import { toast } from "sonner";
+import { extrairMensagemErro } from "@/lib/utils";
 
 export function useModificadores(onSuccessCallback?: () => void) {
     const queryClient = useQueryClient();
@@ -18,7 +19,7 @@ export function useModificadores(onSuccessCallback?: () => void) {
             queryClient.invalidateQueries({ queryKey: ['modificadores'] });
             if (onSuccessCallback) onSuccessCallback();
         },
-        onError: () => toast.error("Erro ao salvar o grupo de modificadores.")
+        onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao salvar o grupo de modificadores."))
     });
 
     const excluir = useMutation({
@@ -28,7 +29,7 @@ export function useModificadores(onSuccessCallback?: () => void) {
             queryClient.invalidateQueries({ queryKey: ['modificadores'] });
             if (onSuccessCallback) onSuccessCallback();
         },
-        onError: () => toast.error("Erro ao excluir. Verifique se está em uso por algum produto.")
+        onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao excluir. Verifique se está em uso por algum produto."))
     });
 
     return {

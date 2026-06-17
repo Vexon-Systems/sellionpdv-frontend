@@ -1,15 +1,26 @@
+import { useRef, useState } from "react";
 import { useDre } from "../hooks/useDre";
 import { RelatoriosFilter } from "./RelatoriosFilter";
+import { exportarElementoComoPdf } from "../services/exportarPdf";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { DollarSign, TrendingDown, Percent, Wallet } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const formatarMoeda = (valor: number) => 
+const formatarMoeda = (valor: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 
 export function DreView() {
   const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading } = useDre();
+  const conteudoRef = useRef<HTMLDivElement>(null);
+  const [isExportando, setIsExportando] = useState(false);
+
+  const handleExportarPdf = async () => {
+    if (!conteudoRef.current) return;
+    setIsExportando(true);
+    await exportarElementoComoPdf(conteudoRef.current, "dre-gerencial");
+    setIsExportando(false);
+  };
 
   const totalDeducoes = data ? (data.deducoes.taxasMaquininhas + data.deducoes.totalCancelamentos) : 0;
   
@@ -32,12 +43,13 @@ export function DreView() {
         isLoading={isLoading}
         onTabChange={handleTabChange}
         onCalendarChange={handleCalendarChange}
+        onExportarPdf={data ? handleExportarPdf : undefined}
+        isExportando={isExportando}
       />
 
       {data && (
-        <div className="space-y-6 print:block">
-          
-          {/* 1. KPIs Compactos (Cores Padronizadas) */}
+        <div ref={conteudoRef} className="space-y-6 print:block">
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-white shadow-sm border-l-4 border-l-emerald-500">
               <CardContent className="p-4 flex flex-col justify-center">

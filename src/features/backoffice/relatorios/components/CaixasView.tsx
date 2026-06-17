@@ -1,10 +1,12 @@
+import { useRef, useState } from "react";
 import { useCaixas } from "../hooks/useCaixas";
 import { RelatoriosFilter } from "./RelatoriosFilter";
+import { exportarElementoComoPdf } from "../services/exportarPdf";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
 
-const formatarMoeda = (valor: number) => 
+const formatarMoeda = (valor: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 
 const formatarData = (isoString: string | null) => {
@@ -14,10 +16,19 @@ const formatarData = (isoString: string | null) => {
 
 export function CaixasView() {
   const { date, tabAtiva, handleTabChange, handleCalendarChange, caixas, isLoading } = useCaixas();
+  const conteudoRef = useRef<HTMLDivElement>(null);
+  const [isExportando, setIsExportando] = useState(false);
+
+  const handleExportarPdf = async () => {
+    if (!conteudoRef.current) return;
+    setIsExportando(true);
+    await exportarElementoComoPdf(conteudoRef.current, "auditoria-de-caixas");
+    setIsExportando(false);
+  };
 
   return (
-    <div className="space-y-6">
-      <RelatoriosFilter 
+    <div className="space-y-6" ref={conteudoRef}>
+      <RelatoriosFilter
         titulo="Auditoria de Turnos (Caixas)"
         subtitulo="Acompanhamento de sangrias, reforços e furos operacionais."
         date={date}
@@ -25,11 +36,13 @@ export function CaixasView() {
         isLoading={isLoading}
         onTabChange={handleTabChange}
         onCalendarChange={handleCalendarChange}
+        onExportarPdf={handleExportarPdf}
+        isExportando={isExportando}
       />
 
       {/* Tabela de Auditoria */}
       <Card className="bg-white shadow-sm border-gray-200">
-        <CardContent className="p-0">
+        <CardContent className="p-4">
           <div className="overflow-x-auto min-h-100">
             <Table>
               <TableHeader className="bg-white">

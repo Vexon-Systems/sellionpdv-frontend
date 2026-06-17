@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Printer, PlusCircle } from "lucide-react";
 import type { ItemCarrinho } from "../../../types/pdv";
 import img_pgm_sucesso from "../../../assets/Img_Pagamento_Sucesso.png"
+import { gerarReciboPdf } from "../services/reciboPdf";
 
 interface SuccessViewProps {
     dadosVenda: {
@@ -34,7 +35,10 @@ export function SuccessView({ dadosVenda, onNovaVenda }: SuccessViewProps) {
                                 </p>
                             </div>
                             <div className="flex flex-col w-full gap-3 mt-4">
-                                <Button className="w-full bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md gap-2 h-12 text-md cursor-pointer">
+                                <Button
+                                    className="w-full bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md gap-2 h-12 text-md cursor-pointer"
+                                    onClick={() => dadosVenda && gerarReciboPdf(dadosVenda)}
+                                >
                                     <Printer size={20} />
                                     Imprimir Recibo
                                 </Button>
