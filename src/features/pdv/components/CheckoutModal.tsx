@@ -23,6 +23,8 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
         setFormaPagamento,
         maquininhaId,
         setMaquininhaId,
+        bandeiraCartao,
+        setBandeiraCartao,
         maquininhasAtivas,
         isLoadingMaquininhas,
         exigeMaquininha,
@@ -104,31 +106,55 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                 </RadioGroup>
 
                 {exigeMaquininha && (
-                    <div className="space-y-2 pt-2 border-t border-gray-100 animate-in fade-in-50 duration-200">
-                        <Label className="font-semibold text-gray-800">Selecione a Maquininha Utilizada</Label>
+                    <div className="space-y-3 pt-2 border-t border-gray-100 animate-in fade-in-50 duration-200">
+                        <div className="space-y-2">
+                            <Label className="font-semibold text-gray-800">Selecione a Maquininha Utilizada</Label>
+                            <Select
+                                value={maquininhaId || ""}
+                                onValueChange={setMaquininhaId}
+                                disabled={isPending || isLoadingMaquininhas}
+                            >
+                                <SelectTrigger className="w-full bg-white h-11 border-gray-200">
+                                    <SelectValue placeholder={isLoadingMaquininhas ? "Carregando terminais..." : "Selecione o terminal..."} />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    {maquininhasAtivas.length === 0 ? (
+                                        <div className="p-3 text-sm text-center text-gray-500">
+                                            Nenhum terminal ativo cadastrado.
+                                        </div>
+                                    ) : (
+                                        maquininhasAtivas.map((maq) => (
+                                            <SelectItem key={maq.id} value={maq.id.toString()}>
+                                                {maq.nome} ({maq.marca})
+                                            </SelectItem>
+                                        ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        <Select
-                            value={maquininhaId || ""}
-                            onValueChange={setMaquininhaId}
-                            disabled={isPending || isLoadingMaquininhas}
-                        >
-                            <SelectTrigger className="w-full bg-white h-11 border-gray-200">
-                                <SelectValue placeholder={isLoadingMaquininhas ? "Carregando terminais..." : "Selecione o terminal..."} />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
-                                {maquininhasAtivas.length === 0 ? (
-                                    <div className="p-3 text-sm text-center text-gray-500">
-                                        Nenhum terminal ativo cadastrado.
-                                    </div>
-                                ) : (
-                                    maquininhasAtivas.map((maq) => (
-                                        <SelectItem key={maq.id} value={maq.id.toString()}>
-                                            {maq.nome} ({maq.marca})
-                                        </SelectItem>
-                                    ))
-                                )}
-                            </SelectContent>
-                        </Select>
+                        <div className="space-y-2">
+                            <Label className="font-semibold text-gray-800">
+                                Bandeira do Cartão <span className="text-gray-400 font-normal">(opcional)</span>
+                            </Label>
+                            <Select
+                                value={bandeiraCartao ?? "NENHUMA"}
+                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as any)}
+                                disabled={isPending}
+                            >
+                                <SelectTrigger className="w-full bg-white h-11 border-gray-200">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    <SelectItem value="NENHUMA">Não informar</SelectItem>
+                                    <SelectItem value="VISA">Visa</SelectItem>
+                                    <SelectItem value="MASTERCARD">Mastercard</SelectItem>
+                                    <SelectItem value="ELO">Elo</SelectItem>
+                                    <SelectItem value="HIPERCARD">Hipercard</SelectItem>
+                                    <SelectItem value="AMEX">American Express</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 )}
 

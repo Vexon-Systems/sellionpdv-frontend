@@ -1,5 +1,7 @@
-import { Layers, Plus } from "lucide-react";
+import { useState } from "react";
+import { Layers, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GrupoModificadorDTO } from "@/types/pdv";
 
@@ -12,47 +14,65 @@ interface ModificadorSidebarProps {
     onNovo: () => void;
 }
 
-export function ModificadorSidebar({ 
-    grupos, 
-    isLoading, 
-    grupoSelecionado, 
+export function ModificadorSidebar({
+    grupos,
+    isLoading,
+    grupoSelecionado,
     isCriandoNovo,
-    onSelect, 
-    onNovo 
+    onSelect,
+    onNovo
 }: ModificadorSidebarProps) {
+    const [busca, setBusca] = useState("");
+
+    const gruposFiltrados = busca.trim()
+        ? grupos.filter(g => g.nome.toLowerCase().includes(busca.toLowerCase()))
+        : grupos;
+
     return (
-        <Card className="w-full lg:w-[320px] xl:w-95 shrink-0 rounded-md border-gray-200 flex flex-col h-100 lg:h-full lg:overflow-hidden">
+        <Card className="w-full lg:w-[320px] xl:w-95 shrink-0 rounded-md border-border flex flex-col h-100 lg:h-full lg:overflow-hidden">
             <CardHeader className="flex flex-col space-y-2 border-b px-6 py-1">
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
+                <CardTitle className="text-lg flex items-center gap-2 text-foreground">
                     <Layers className="h-5 w-5 text-primary" />
                     Grupos de Modificadores
                 </CardTitle>
                 <Button onClick={onNovo} className="w-full shadow-sm" variant={isCriandoNovo ? "secondary" : "default"}>
-                    <Plus size={16} className="mr-2" /> 
+                    <Plus size={16} className="mr-2" />
                     {isCriandoNovo ? "A Criar Novo..." : "Novo Modificador"}
                 </Button>
+                <div className="relative w-full">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input
+                        value={busca}
+                        onChange={e => setBusca(e.target.value)}
+                        placeholder="Buscar grupo..."
+                        className="pl-9 h-8 text-sm"
+                    />
+                </div>
             </CardHeader>
-            
+
             <CardContent className="flex-1 overflow-y-auto px-4 py-1 space-y-2">
-                {isLoading && <p className="text-gray-500 text-sm text-center py-4 animate-pulse">Carregando...</p>}
-                {!isLoading && grupos.length === 0 && (
-                    <p className="text-gray-400 text-sm text-center py-4">Nenhum grupo cadastrado.</p>
+                {isLoading && <p className="text-muted-foreground text-sm text-center py-4 animate-pulse">Carregando...</p>}
+
+                {!isLoading && gruposFiltrados.length === 0 && (
+                    <p className="text-muted-foreground/70 text-sm text-center py-4">
+                        {busca ? "Nenhum grupo encontrado." : "Nenhum grupo cadastrado."}
+                    </p>
                 )}
-            
-                {grupos.map((grupo) => {
+
+                {gruposFiltrados.map((grupo) => {
                     const isSelected = grupoSelecionado?.id === grupo.id && !isCriandoNovo;
                     return (
                         <div
                             key={grupo.id}
                             onClick={() => onSelect(grupo)}
                             className={`p-3 rounded-lg cursor-pointer border transition-all ${
-                                isSelected 
-                                ? 'border-primary bg-primary/5 shadow-sm' 
-                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                isSelected
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-border hover:border-border hover:bg-muted/50'
                             }`}
                         >
-                            <h3 className="font-medium text-gray-900">{grupo.nome}</h3>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <h3 className="font-medium text-foreground">{grupo.nome}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">
                                 {grupo.opcoes.length} {grupo.opcoes.length === 1 ? 'opção' : 'opções'}
                             </p>
                         </div>

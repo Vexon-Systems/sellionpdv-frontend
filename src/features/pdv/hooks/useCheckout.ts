@@ -4,7 +4,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useFinalizarVenda } from "./useFinalizarVenda";
 import { apiMaquininhas } from "@/features/backoffice/maquininhas/services/apiMaquininhas";
 import { toast } from "sonner";
-import type { FormaPagamento } from "../types/venda";
+import type { BandeiraCartao, FormaPagamento } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
 
 interface UseCheckoutOptions {
@@ -18,6 +18,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
     const { itens, limparCarrinho } = useCartStore();
     const [formaPagamento, setFormaPagamento] = useState<FormaPagamento | null>(null);
     const [maquininhaId, setMaquininhaId] = useState<string | null>(null);
+    const [bandeiraCartao, setBandeiraCartao] = useState<BandeiraCartao | null>(null);
 
     const { mutate, isPending } = useFinalizarVenda();
 
@@ -38,6 +39,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         if (!isOpen) {
             setFormaPagamento(null);
             setMaquininhaId(null);
+            setBandeiraCartao(null);
         }
     }, [isOpen]);
 
@@ -55,6 +57,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
             itens,
             formaPagamento,
             maquininhaId: exigeMaquininha ? Number(maquininhaId) : null,
+            bandeiraCartao: exigeMaquininha ? bandeiraCartao : null,
             descontoAplicado: 0,
         };
 
@@ -82,6 +85,8 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         setFormaPagamento,
         maquininhaId,
         setMaquininhaId,
+        bandeiraCartao,
+        setBandeiraCartao,
         maquininhasAtivas,
         isLoadingMaquininhas,
         exigeMaquininha,

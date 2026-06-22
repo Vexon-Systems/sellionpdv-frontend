@@ -97,7 +97,7 @@ export function CaixasView() {
                       <TableCell className="text-right p-0 align-middle">
                         <div className={`h-full w-full px-4 py-3 text-sm font-bold flex items-center justify-end ${
                           caixa.furoCaixa < 0 ? 'text-red-600 bg-red-50 border-l-2 border-red-500' : 
-                          caixa.furoCaixa > 0 ? 'text-orange-600 bg-orange-50 border-l-2 border-orange-500' : 
+                          caixa.furoCaixa > 0 ? 'text-blue-600 bg-blue-50 border-l-2 border-blue-500' : 
                           'text-emerald-600'
                         }`}>
                           {caixa.furoCaixa !== 0 ? formatarMoeda(caixa.furoCaixa) : 'OK'}

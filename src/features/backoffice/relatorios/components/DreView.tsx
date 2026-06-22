@@ -6,7 +6,7 @@ import { RelatoriosFilter } from "./RelatoriosFilter";
 import { exportarDrePdf } from "../services/exportarPdf";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { DollarSign, TrendingDown, Percent, Wallet } from "lucide-react";
+import { DollarSign, TrendingDown, ShoppingCart, Receipt, Landmark } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const formatarMoeda = (valor: number) =>
@@ -27,13 +27,16 @@ export function DreView() {
   };
 
   const totalDeducoes = data ? (data.deducoes.taxasMaquininhas + data.deducoes.totalCancelamentos) : 0;
-  
+  const lucroLiquidoPositivo = data ? data.lucroLiquido >= 0 : true;
+
   const dadosCascata = data ? [
-    { name: 'Bruto', valor: [0, data.receitaBruta], cor: '#10b981' }, 
+    { name: 'Bruto', valor: [0, data.receitaBruta], cor: '#10b981' },
     { name: 'Deduções', valor: [data.receitaLiquida, data.receitaBruta], cor: '#ef4444' },
     { name: 'Líquido', valor: [0, data.receitaLiquida], cor: '#3b82f6' },
     { name: 'CMV', valor: [data.lucroBrutoEstimado, data.receitaLiquida], cor: '#f97316' },
-    { name: 'Lucro', valor: [0, data.lucroBrutoEstimado], cor: '#1e3a8a' } 
+    { name: 'L. Bruto', valor: [0, data.lucroBrutoEstimado], cor: '#1e3a8a' },
+    { name: 'Despesas', valor: [Math.max(0, data.lucroLiquido), data.lucroBrutoEstimado], cor: '#dc2626' },
+    { name: 'L. Líquido', valor: [0, Math.max(0, data.lucroLiquido)], cor: data.lucroLiquido >= 0 ? '#065f46' : '#ef4444' },
   ] : [];
 
   return (
@@ -54,48 +57,65 @@ export function DreView() {
       {data && (
         <div className="space-y-6 print:block">
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-white shadow-sm border-l-4 border-l-emerald-500">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Receita Bruta</span>
-                  <DollarSign size={16} className="text-emerald-500" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">{formatarMoeda(data.receitaBruta)}</h3>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
+            {/* Receita Bruta */}
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <DollarSign size={18} className="text-blue-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Receita Bruta</p>
+                <p className="text-base font-bold text-gray-900 truncate">{formatarMoeda(data.receitaBruta)}</p>
+              </div>
+            </div>
 
-            <Card className="bg-red-50/30 shadow-sm border-l-4 border-l-red-500">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-red-700 uppercase tracking-wider">Deduções</span>
-                  <TrendingDown size={16} className="text-red-500" />
-                </div>
-                <h3 className="text-xl font-bold text-red-600">
-                  -{formatarMoeda(totalDeducoes)}
-                </h3>
-              </CardContent>
-            </Card>
+            {/* Deduções */}
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                <TrendingDown size={18} className="text-red-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Deduções</p>
+                <p className="text-base font-bold text-red-600 truncate">-{formatarMoeda(totalDeducoes)}</p>
+              </div>
+            </div>
 
-            <Card className="bg-orange-50/30 shadow-sm border-l-4 border-l-orange-500">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-orange-700 uppercase tracking-wider">Custos (CMV)</span>
-                  <Wallet size={16} className="text-orange-500" />
-                </div>
-                <h3 className="text-xl font-bold text-orange-600">-{formatarMoeda(data.custos.custoMercadoriaVendida)}</h3>
-              </CardContent>
-            </Card>
+            {/* Custos CMV */}
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                <ShoppingCart size={18} className="text-amber-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Custos (CMV)</p>
+                <p className="text-base font-bold text-amber-600 truncate">-{formatarMoeda(data.custos.custoMercadoriaVendida)}</p>
+              </div>
+            </div>
 
-            <Card className="bg-blue-950 text-white shadow-sm border-none">
-              <CardContent className="p-4 flex flex-col justify-center">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-blue-200 uppercase tracking-wider">Lucro Bruto</span>
-                  <Percent size={16} className="text-emerald-400" />
-                </div>
-                <h3 className="text-xl font-bold">{formatarMoeda(data.lucroBrutoEstimado)}</h3>
-              </CardContent>
-            </Card>
+            {/* Despesas Operacionais */}
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                <Receipt size={18} className="text-orange-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Despesas</p>
+                <p className="text-base font-bold text-orange-600 truncate">
+                  {data.totalDespesasOperacionais > 0 ? `-${formatarMoeda(data.totalDespesasOperacionais)}` : formatarMoeda(0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Lucro Líquido — tile invertido */}
+            <div className={`rounded-xl p-4 flex items-center gap-3 shadow-sm col-span-2 xl:col-span-1 ${lucroLiquidoPositivo ? 'bg-blue-950' : 'bg-blue-950'}`}>
+              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                <Landmark size={18} className="text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-0.5">Lucro Líquido</p>
+                <p className={`text-base font-bold truncate ${lucroLiquidoPositivo ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {formatarMoeda(data.lucroLiquido)}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Gráfico e Tabela Lado a Lado em Telas Grandes */}
@@ -145,11 +165,42 @@ export function DreView() {
                       <TableCell className="font-bold text-gray-900 py-4 text-base">5. Lucro Bruto Operacional</TableCell>
                       <TableCell className="text-right font-bold text-gray-900 text-base">{formatarMoeda(data.lucroBrutoEstimado)}</TableCell>
                     </TableRow>
-                    
+
                     <TableRow>
                       <TableCell className="text-sm font-medium text-gray-500 py-3">Margem Bruta (%)</TableCell>
-                      <TableCell className="text-right font-bold text-emerald-600">{data.margemBrutaPercentual}%</TableCell>
+                      <TableCell className="text-right font-bold text-emerald-600">{data.margemBrutaPercentual?.toFixed(2)}%</TableCell>
                     </TableRow>
+
+                    {data.despesasOperacionais && data.despesasOperacionais.length > 0 && (<>
+                      <TableRow className="bg-red-50/30 border-b-0 hover:bg-red-50/40">
+                        <TableCell className="font-semibold text-red-700 pt-3 pb-2">6. Despesas Operacionais</TableCell>
+                        <TableCell className="text-right font-bold text-red-700 pt-3 pb-2">-{formatarMoeda(data.totalDespesasOperacionais)}</TableCell>
+                      </TableRow>
+                      {data.despesasOperacionais.map((d) => (
+                        <TableRow key={d.categoria} className="bg-red-50/10 border-b-0">
+                          <TableCell className="text-red-700/70 pl-8 py-2 text-sm">(-) {d.categoria.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</TableCell>
+                          <TableCell className="text-right text-red-700/70 py-2 text-sm">-{formatarMoeda(d.total)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </>)}
+
+                    <TableRow className={lucroLiquidoPositivo ? "bg-emerald-50" : "bg-red-50"}>
+                      <TableCell className={`font-bold py-4 text-base ${lucroLiquidoPositivo ? "text-emerald-800" : "text-red-700"}`}>
+                        {data.despesasOperacionais?.length > 0 ? "7." : "6."} Lucro Líquido
+                      </TableCell>
+                      <TableCell className={`text-right font-bold text-base ${lucroLiquidoPositivo ? "text-emerald-800" : "text-red-700"}`}>
+                        {formatarMoeda(data.lucroLiquido)}
+                      </TableCell>
+                    </TableRow>
+
+                    {data.despesasOperacionais?.length > 0 && (
+                      <TableRow>
+                        <TableCell className="text-sm font-medium text-gray-500 py-3">Margem Líquida (%)</TableCell>
+                        <TableCell className={`text-right font-bold ${lucroLiquidoPositivo ? "text-emerald-600" : "text-red-600"}`}>
+                          {data.margemLiquidaPercentual?.toFixed(2)}%
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>

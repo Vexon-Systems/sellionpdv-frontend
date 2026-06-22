@@ -44,6 +44,7 @@ export interface OpcaoModificadorDTO {
     id: number;
     nome: string;
     precoAdicional: number;
+    custoEstimado?: number | null;
 }
 
 export interface DadosSucesso {

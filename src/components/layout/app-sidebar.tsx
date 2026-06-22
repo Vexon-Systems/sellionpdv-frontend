@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings } from "lucide-react";
+import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings, Wallet } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useQueryClient } from "@tanstack/react-query";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
@@ -121,6 +121,7 @@ export function AppSidebar(){
 
         {/* Grupo de Gestão — visível apenas para admins */}
         {isAdmin && (
+          <>
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Gestão</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -241,6 +242,35 @@ export function AppSidebar(){
 
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* Grupo Financeiro */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Financeiro</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <TooltipProvider delayDuration={300}>
+                <SidebarMenu className="flex flex-col gap-1">
+
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
+                          <Link to="/financeiro" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
+                            <Wallet />
+                            <span className="ml-1 text-sm">Financeiro</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
+                        <p className="text-sm">Lançamentos de despesas e DRE Gerencial</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+
+                </SidebarMenu>
+              </TooltipProvider>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          </>
         )}
       </SidebarContent>
 

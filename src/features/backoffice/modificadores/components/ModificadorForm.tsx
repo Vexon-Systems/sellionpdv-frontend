@@ -24,13 +24,15 @@ const modificadorSchema = z.object({
             id: z.number().optional(),
             nome: z.string().min(2, "Informe o nome"),
             precoAdicional: z.number().min(0, "Não pode ser negativo"),
+            custoEstimado: z.number().min(0, "Não pode ser negativo").nullable().optional(),
         })
     ).min(1, "Adicione pelo menos uma opção!"),
 });
 
 type FormInputs = z.infer<typeof modificadorSchema>;
 
-const DEFAULT_VALUES = { nome: "", opcoes: [{ nome: "", precoAdicional: 0 }] };
+const DEFAULT_OPCAO = { nome: "", precoAdicional: 0, custoEstimado: null };
+const DEFAULT_VALUES = { nome: "", opcoes: [DEFAULT_OPCAO] };
 
 interface ModificadorFormProps {
     grupoInicial: GrupoModificadorDTO | null;
@@ -42,7 +44,7 @@ interface ModificadorFormProps {
 }
 
 export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSalvando, isExcluindo }: ModificadorFormProps) {
-    
+
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(modificadorSchema),
         defaultValues: grupoInicial || DEFAULT_VALUES
@@ -58,14 +60,14 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
         <Card className="flex-1 flex flex-col overflow-y-auto">
             <CardHeader className="border-b flex flex-row items-start justify-between">
                 <div>
-                    <CardTitle className="text-xl text-gray-900">
-                        {grupoInicial?.id ? `Editar: ${grupoInicial.nome}` : "Novo Grupo de Modificadores"}
+                    <CardTitle className="text-xl text-foreground">
+                        {grupoInicial?.id ? `Editando ${grupoInicial.nome}` : "Novo Grupo de Modificadores"}
                     </CardTitle>
                     <CardDescription className="mt-1">
                         Configure as opções que o cliente poderá escolher.
                     </CardDescription>
                 </div>
-        
+
                 {grupoInicial?.id && (
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -73,7 +75,7 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                                 <Trash2 size={16} className="mr-2" /> Excluir
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-white">
+                        <AlertDialogContent className="bg-background">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Excluir "{grupoInicial.nome}"?</AlertDialogTitle>
                                 <AlertDialogDescription>
@@ -96,70 +98,196 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
                     {/* Nome do Grupo */}
                     <div className="space-y-2">
                         <Label htmlFor="nomeGrupo" className="text-sm font-semibold">Nome do Grupo</Label>
-                        <Input id="nomeGrupo" {...register("nome")} placeholder="Ex: Escolha o Tamanho" className="max-w-md bg-white" />
+                        <Input id="nomeGrupo" {...register("nome")} placeholder="Ex: Escolha o Tamanho" className="max-w-md bg-background" />
                         {errors.nome && <p className="text-red-500 text-sm">{errors.nome.message}</p>}
                     </div>
 
                     {/* Lista Dinâmica */}
-                    <div className="space-y-4">
-                        <div className="hidden sm:flex gap-4 px-1 border-b border-gray-100 pb-2">
-                            <div className="flex-1"><Label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Nome da Opção</Label></div>
-                            <div className="w-32"><Label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Preço Extra</Label></div>
-                            <div className="w-10"></div>
+                    <div className="space-y-2">
+                        {/* Cabeçalho das colunas — grid com mesmas proporções das linhas */}
+                        <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_140px_140px_36px] gap-x-3 px-1 pb-2 border-b border-border/60">
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome da Opção</Label>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Preço Extra</Label>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Custo Est.
+                                <span className="ml-1 font-normal text-muted-foreground/60">(opcional)</span>
+                            </Label>
+                            <div />
                         </div>
-                
-                        <div className="space-y-4 sm:space-y-3">
+
+                        <div className="space-y-1">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 items-end sm:items-start bg-gray-50 sm:bg-transparent p-3 sm:p-0 rounded-md border sm:border-none">
-                                    <div className="w-full flex-1 space-y-1">
-                                        <Label className="text-xs sm:hidden">Nome</Label>
-                                        <Input {...register(`opcoes.${index}.nome` as const)} placeholder="Ex: Copo 300ml" className="bg-white w-full h-9" />
-                                        {errors.opcoes?.[index]?.nome && <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>}
-                                    </div>
-                                    
-                                    <div className="flex-1 sm:w-32 space-y-1">
-                                        <Label className="text-xs sm:hidden">Preço</Label>
-                                        <Controller
-                                            name={`opcoes.${index}.precoAdicional`}
-                                            control={control}
-                                            render={({ field: controllerField }) => (
-                                                <NumericFormat
-                                                    getInputRef={controllerField.ref}
-                                                    value={controllerField.value}
-                                                    onValueChange={(values) => controllerField.onChange(values.floatValue || 0)}
-                                                    thousandSeparator="."
-                                                    decimalSeparator=","
-                                                    prefix="R$ "
-                                                    decimalScale={2}
-                                                    fixedDecimalScale
-                                                    allowNegative={false}
-                                                    placeholder="R$ 0,00"
-                                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                />
+                                <div key={field.id}>
+                                    {/* Desktop: grid alinhado com o cabeçalho */}
+                                    <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_140px_140px_36px] gap-x-3 items-start py-1.5">
+                                        {/* Nome */}
+                                        <div className="space-y-1">
+                                            <Input
+                                                {...register(`opcoes.${index}.nome` as const)}
+                                                placeholder="Ex: Copo 300ml"
+                                                className="bg-background h-9"
+                                            />
+                                            {errors.opcoes?.[index]?.nome && (
+                                                <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>
                                             )}
-                                        />
-                                        {errors.opcoes?.[index]?.precoAdicional && <p className="text-red-500 text-xs">{errors.opcoes[index]?.precoAdicional?.message}</p>}
+                                        </div>
+
+                                        {/* Preço Extra */}
+                                        <div className="space-y-1">
+                                            <Controller
+                                                name={`opcoes.${index}.precoAdicional`}
+                                                control={control}
+                                                render={({ field: f }) => (
+                                                    <NumericFormat
+                                                        getInputRef={f.ref}
+                                                        value={f.value}
+                                                        onValueChange={(v) => f.onChange(v.floatValue ?? 0)}
+                                                        thousandSeparator="."
+                                                        decimalSeparator=","
+                                                        prefix="R$ "
+                                                        decimalScale={2}
+                                                        fixedDecimalScale
+                                                        allowNegative={false}
+                                                        placeholder="R$ 0,00"
+                                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    />
+                                                )}
+                                            />
+                                            {errors.opcoes?.[index]?.precoAdicional && (
+                                                <p className="text-red-500 text-xs">{errors.opcoes[index]?.precoAdicional?.message}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Custo Estimado */}
+                                        <div className="space-y-1">
+                                            <Controller
+                                                name={`opcoes.${index}.custoEstimado`}
+                                                control={control}
+                                                render={({ field: f }) => (
+                                                    <NumericFormat
+                                                        getInputRef={f.ref}
+                                                        value={f.value ?? ""}
+                                                        onValueChange={(v) => f.onChange(v.floatValue ?? null)}
+                                                        thousandSeparator="."
+                                                        decimalSeparator=","
+                                                        prefix="R$ "
+                                                        decimalScale={2}
+                                                        fixedDecimalScale
+                                                        allowNegative={false}
+                                                        placeholder="R$ 0,00"
+                                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    />
+                                                )}
+                                            />
+                                            {errors.opcoes?.[index]?.custoEstimado && (
+                                                <p className="text-red-500 text-xs">{errors.opcoes[index]?.custoEstimado?.message}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Botão deletar */}
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground/70 hover:text-red-600 hover:bg-red-50 mt-0.5"
+                                            onClick={() => remove(index)}
+                                            disabled={fields.length === 1}
+                                        >
+                                            <X size={16} />
+                                        </Button>
                                     </div>
 
-                                    <Button type="button" variant="ghost" size="icon" className="text-gray-400 hover:text-red-600 hover:bg-red-50" onClick={() => remove(index)} disabled={fields.length === 1}>
-                                        <X size={20} />
-                                    </Button>
+                                    {/* Mobile: layout empilhado com labels visíveis */}
+                                    <div className="sm:hidden flex flex-col gap-3 bg-muted/50 p-3 rounded-md border">
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">Nome</Label>
+                                            <Input
+                                                {...register(`opcoes.${index}.nome` as const)}
+                                                placeholder="Ex: Copo 300ml"
+                                                className="bg-background h-9"
+                                            />
+                                            {errors.opcoes?.[index]?.nome && (
+                                                <p className="text-red-500 text-xs">{errors.opcoes[index]?.nome?.message}</p>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="flex-1 space-y-1">
+                                                <Label className="text-xs">Preço Extra</Label>
+                                                <Controller
+                                                    name={`opcoes.${index}.precoAdicional`}
+                                                    control={control}
+                                                    render={({ field: f }) => (
+                                                        <NumericFormat
+                                                            getInputRef={f.ref}
+                                                            value={f.value}
+                                                            onValueChange={(v) => f.onChange(v.floatValue ?? 0)}
+                                                            thousandSeparator="."
+                                                            decimalSeparator=","
+                                                            prefix="R$ "
+                                                            decimalScale={2}
+                                                            fixedDecimalScale
+                                                            allowNegative={false}
+                                                            placeholder="R$ 0,00"
+                                                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="flex-1 space-y-1">
+                                                <Label className="text-xs">Custo Est. <span className="text-muted-foreground">(opc.)</span></Label>
+                                                <Controller
+                                                    name={`opcoes.${index}.custoEstimado`}
+                                                    control={control}
+                                                    render={({ field: f }) => (
+                                                        <NumericFormat
+                                                            getInputRef={f.ref}
+                                                            value={f.value ?? ""}
+                                                            onValueChange={(v) => f.onChange(v.floatValue ?? null)}
+                                                            thousandSeparator="."
+                                                            decimalSeparator=","
+                                                            prefix="R$ "
+                                                            decimalScale={2}
+                                                            fixedDecimalScale
+                                                            allowNegative={false}
+                                                            placeholder="R$ 0,00"
+                                                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="self-end text-muted-foreground/70 hover:text-red-600 hover:bg-red-50"
+                                                onClick={() => remove(index)}
+                                                disabled={fields.length === 1}
+                                            >
+                                                <X size={16} />
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                        
-                        <Button type="button" variant="outline" className="w-full border-dashed border-2 text-primary hover:bg-primary/5" onClick={() => append({ nome: "", precoAdicional: 0 })}>
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full border-dashed border-2 text-primary hover:bg-primary/5"
+                            onClick={() => append(DEFAULT_OPCAO)}
+                        >
                             <Plus size={16} className="mr-2" /> Adicionar nova opção
                         </Button>
                         {errors.opcoes?.root && <p className="text-red-500 text-sm mt-2">{errors.opcoes.root.message}</p>}
                     </div>
 
-                    <div className="flex justify-end pt-6 border-t border-gray-100 gap-2">
-                        <Button 
+                    <div className="flex justify-end pt-6 border-t border-border/60 gap-2">
+                        <Button
                             type="button"
-                            variant={"outline"} 
+                            variant="outline"
                             className="w-full sm:w-auto px-8"
-                            onClick={onCancel} 
+                            onClick={onCancel}
                         >
                             Cancelar
                         </Button>

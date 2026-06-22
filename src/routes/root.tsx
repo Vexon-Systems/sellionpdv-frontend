@@ -16,6 +16,7 @@ const RelatoriosPage   = lazy(() => import('@/features/backoffice/relatorios/pag
 const EquipePage       = lazy(() => import('@/features/backoffice/equipe/pages/EquipePage').then(m => ({ default: m.EquipePage })));
 const MaquininhasPage  = lazy(() => import('@/features/backoffice/maquininhas/pages/MaquininhaPage').then(m => ({ default: m.MaquininhasPage })));
 const ConfiguracoesPage = lazy(() => import('@/features/usuarios/pages/ConfiguracoesPage').then(m => ({ default: m.ConfiguracoesPage })));
+const FinanceiroPage    = lazy(() => import('@/features/backoffice/financeiro/pages/FinanceiroPage').then(m => ({ default: m.FinanceiroPage })));
 
 import { SidebarProvider } from '../components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
@@ -127,7 +128,14 @@ const configuracoesRoute = createRoute({
     component: ConfiguracoesPage,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute, maquininhaRoute, configuracoesRoute]);
+const financeiroRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/financeiro',
+    beforeLoad: requireAdmin,
+    component: FinanceiroPage,
+});
+
+const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute, maquininhaRoute, configuracoesRoute, financeiroRoute]);
 
 export const router = createRouter({ routeTree });
 

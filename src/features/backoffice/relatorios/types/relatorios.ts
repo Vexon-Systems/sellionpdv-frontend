@@ -6,6 +6,11 @@ export interface PaginatedResponse<T> {
     totalPages: number;
 }
 
+export interface DreDespesaOperacional {
+    categoria: string;
+    total: number;
+}
+
 export interface DreResponse {
     periodo: string;
     receitaBruta: number;
@@ -19,6 +24,10 @@ export interface DreResponse {
     };
     lucroBrutoEstimado: number;
     margemBrutaPercentual: number;
+    despesasOperacionais: DreDespesaOperacional[];
+    totalDespesasOperacionais: number;
+    lucroLiquido: number;
+    margemLiquidaPercentual: number;
 }
 
 export interface VendaResumo {

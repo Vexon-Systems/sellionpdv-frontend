@@ -6,9 +6,12 @@ export interface ItemVendaDTO {
     modificadores?: number[]; 
 }
 
+export type BandeiraCartao = "VISA" | "MASTERCARD" | "ELO" | "HIPERCARD" | "AMEX"
+
 export interface VendaPayloadDTO {
     itens: ItemVendaDTO[];
     formaPagamento: FormaPagamento;
     maquininhaId: number | null;
+    bandeiraCartao?: BandeiraCartao | null;
     descontoAplicado: number;
 }
