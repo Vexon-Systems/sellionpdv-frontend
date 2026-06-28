@@ -74,7 +74,9 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
 
     const { fields, append, remove, replace } = useFieldArray({ control, name: "gruposModificadores" });
 
-    // Sincroniza dados quando um produto é selecionado
+    // Sincroniza dados quando um produto é selecionado.
+    // Para produto novo, categoriaId começa em 0; o effect abaixo (linha 96) define
+    // a categoria padrão assim que a lista de categorias carrega.
     useEffect(() => {
         if (produtoInicial) {
             reset({
@@ -85,7 +87,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
             });
             replace(produtoInicial.gruposModificadores || []);
         } else {
-            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: categorias[0]?.id || 0, ativo: true, imagemUrl: "", gruposModificadores: [] });
+            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 0, ativo: true, imagemUrl: "", gruposModificadores: [] });
             replace([]);
         }
     }, [produtoInicial, reset, replace]);
@@ -311,33 +313,28 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                 Gerenciar categorias
                             </button>
                         </div>
-                        {categorias.length === 0 ? (
-                            <div className="flex h-9 w-full items-center rounded-md border border-input bg-gray-50 px-3 text-sm text-muted-foreground">
-                                Carregando categorias...
-                            </div>
-                        ) : (
-                            <Controller
-                                name="categoriaId"
-                                control={control}
-                                render={({ field }) => (
-                                    <Select
-                                        value={field.value ? String(field.value) : undefined}
-                                        onValueChange={(v) => field.onChange(Number(v))}
-                                    >
-                                        <SelectTrigger className="w-full bg-white">
-                                            <SelectValue placeholder="Selecione..." />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            {categorias.map((cat) => (
-                                                <SelectItem key={cat.id} value={String(cat.id)}>
-                                                    {cat.nome}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                        )}
+                        <Controller
+                            name="categoriaId"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    key={field.value ? `cat-${field.value}` : 'cat-empty'}
+                                    value={field.value ? String(field.value) : undefined}
+                                    onValueChange={(v) => field.onChange(Number(v))}
+                                >
+                                    <SelectTrigger className="w-full bg-white">
+                                        <SelectValue placeholder="Selecione..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                        {categorias.map((cat) => (
+                                            <SelectItem key={cat.id} value={String(cat.id)}>
+                                                {cat.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                         {errors.categoriaId && <p className="text-red-500 text-sm">{errors.categoriaId.message}</p>}
                     </div>
                 </div>

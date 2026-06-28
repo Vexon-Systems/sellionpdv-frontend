@@ -254,10 +254,11 @@
           ],
           "formaPagamento": "CREDITO",
           "maquininhaId": 3,
+          "bandeiraCartao": "VISA",
           "descontoAplicado": 0.00
         }
         ```
-        *(Nota: O campo maquininhaId é obrigatório se a forma de pagamento for "CREDITO" ou "DEBITO", e deve ser null para "DINHEIRO" ou "PIX".)*
+        *(Nota: `maquininhaId` é obrigatório se a forma de pagamento for `"CREDITO"` ou `"DEBITO"`, e deve ser `null` para `"DINHEIRO"` ou `"PIX"`. `bandeiraCartao` é opcional; valores aceitos: `"VISA"`, `"MASTERCARD"`, `"ELO"`, `"HIPERCARD"`, `"AMEX"`. Quando informado, permite aplicar a taxa específica da bandeira no DRE.)*
     *   **Retorno (201 Created):** Objeto completo da venda com o ID gerado.
 
 *   **`POST /api/vendas/{id}/cancelar`**
@@ -276,9 +277,9 @@
 *Todas as rotas a seguir devem ser protegidas pelo SecurityFilter e aplicar isolamento de dados pelo @TenantID do Hibernate*
 
 * **`GET /api/maquininhas`**
-    *   **Descrição:** Retorna a lista de todas as maquininhas cadastradas para a franquia.
+    *   **Descrição:** Retorna a lista de todas as maquininhas cadastradas para a franquia, incluindo as taxas por bandeira.
         
-    *   **Retorno (200 OK):** Status indicando o sucesso.
+    *   **Retorno (200 OK):**
         ```json
         [
           {
@@ -287,37 +288,50 @@
             "marca": "Cielo",
             "taxaDebito": 1.99,
             "taxaCredito": 4.99,
+            "taxasPorBandeira": [
+              { "bandeira": "VISA", "tipo": "DEBITO", "taxa": 1.50 },
+              { "bandeira": "VISA", "tipo": "CREDITO", "taxa": 3.99 },
+              { "bandeira": "MASTERCARD", "tipo": "DEBITO", "taxa": 1.75 }
+            ],
             "ativo": true
           }
         ]
         ```
+        *(Nota: `taxasPorBandeira` pode ser uma lista vazia `[]` se nenhuma taxa específica estiver cadastrada. Nesse caso o sistema usa `taxaDebito` / `taxaCredito` como fallback.)*
+
 * **`POST /api/maquininhas/`**
-    *   **Descrição:** Cadastra um novo terminal de pagamento (Maquininha)
+    *   **Descrição:** Cadastra um novo terminal de pagamento.
         
     *   **Payload (Frontend):**
         ```json
-          {
-            "nome": "Stone Sem Fio",
-            "marca": "Stone",
-            "taxaDebito": 1.20,
-            "taxaCredito": 3.50,
-            "ativo": true
-          }
+        {
+          "nome": "Stone Sem Fio",
+          "marca": "Stone",
+          "taxaDebito": 1.20,
+          "taxaCredito": 3.50,
+          "taxasPorBandeira": [
+            { "bandeira": "VISA", "tipo": "DEBITO", "taxa": 1.00 },
+            { "bandeira": "VISA", "tipo": "CREDITO", "taxa": 2.99 }
+          ]
+        }
         ```
+        *(Nota: `taxasPorBandeira` é opcional. `bandeira` aceita: `"VISA"`, `"MASTERCARD"`, `"ELO"`, `"HIPERCARD"`, `"AMEX"`. `tipo` aceita: `"DEBITO"` ou `"CREDITO"`.)*
     *   **Retorno (201 Created):** Retorna o objeto da maquininha recém-criada com seu respectivo `id`.
 
-* **`PUT /api/maquininhas{id}`**
-    *   **Descrição:** Atualiza os dados de uma maquininha existente
+* **`PUT /api/maquininhas/{id}`**
+    *   **Descrição:** Atualiza os dados de uma maquininha existente. O backend realiza merge inteligente das taxas por bandeira.
         
-    *   **Payload (Frontend):** 
+    *   **Payload (Frontend):**
         ```json
-          {
-            "nome": "Stone Sem Fio",
-            "marca": "Stone",
-            "taxaDebito": 1.20,
-            "taxaCredito": 3.50,
-            "ativo": true
-          }
+        {
+          "nome": "Stone Sem Fio",
+          "marca": "Stone",
+          "taxaDebito": 1.20,
+          "taxaCredito": 3.50,
+          "taxasPorBandeira": [
+            { "bandeira": "VISA", "tipo": "DEBITO", "taxa": 1.00 }
+          ]
+        }
         ```
     *   **Retorno (200 OK):** Retorna o objeto atualizado.
 
@@ -605,9 +619,18 @@
               "custoMercadoriaVendida": 5569.50
             },
             "lucroBrutoEstimado": 9150.00,
-            "margemBrutaPercentual": 60.0
+            "margemBrutaPercentual": 60.0,
+            "despesasOperacionais": [
+              { "categoria": "ALUGUEL", "total": 2500.00 },
+              { "categoria": "FOLHA_PAGAMENTO", "total": 3000.00 },
+              { "categoria": "ENERGIA", "total": 450.00 }
+            ],
+            "totalDespesasOperacionais": 5950.00,
+            "lucroLiquido": 3200.00,
+            "margemLiquidaPercentual": 21.7
           }
         ```
+        *(Nota: `despesasOperacionais` agrega os lançamentos financeiros do módulo Financeiro registrados dentro do período consultado. Se não houver lançamentos, a lista é vazia e `lucroLiquido` = `lucroBrutoEstimado`. A `categoria` retorna o valor do enum `CategoriaLancamento`: ALUGUEL, ENERGIA, AGUA, INTERNET_TELEFONE, CONTADOR, FOLHA_PAGAMENTO, PRO_LABORE, COMPRA_MERCADORIA, EMBALAGENS_MATERIAIS, IMPOSTOS, TAXAS_BANCARIAS, MANUTENCAO, MARKETING, OUTROS.)*
 
 * **`GET /api/relatorios/auditoria`**
     *   **Descrição:** Endpoint de segurança (Insert-Only) para listar as ações sensíveis realizadas no sistema (ex: alterações de preço, sangrias, cancelamentos de vendas).
@@ -791,3 +814,131 @@
             "usaPin": true
           }
         ```
+
+### 11. Gestão de Equipe (Funcionários)
+
+*Todas as rotas protegidas por `ROLE_ADMIN`. Isolamento automático por tenant.*
+
+* **`GET /api/funcionarios`**
+    *   **Descrição:** Retorna a listagem de todos os funcionários ativos vinculados ao Tenant do usuário logado.
+    *   **Retorno (200 OK):**
+        ```json
+        [
+          {
+            "id": 1,
+            "nome": "João Silva",
+            "email": "joao.silva@sellion.com.br",
+            "role": "OPERADOR",
+            "ativo": true
+          },
+          {
+            "id": 2,
+            "nome": "Maria Gestora",
+            "email": "maria.gerente@sellion.com.br",
+            "role": "ADMIN",
+            "ativo": true
+          }
+        ]
+        ```
+
+* **`POST /api/funcionarios`**
+    *   **Descrição:** Cadastra um novo colaborador na equipe do Tenant. O e-mail deve ser único entre usuários ativos. O backend gera o hash Argon2id da senha.
+    *   **Payload (Frontend):**
+        ```json
+        {
+          "nome": "Carlos Caixa",
+          "email": "carlos.caixa@sellion.com.br",
+          "senha": "SenhaSeguraAqui123",
+          "role": "OPERADOR"
+        }
+        ```
+        *(Nota: `role` aceita estritamente `"ADMIN"` ou `"OPERADOR"`.)*
+    *   **Retorno (201 Created):**
+        ```json
+        {
+          "id": 3,
+          "nome": "Carlos Caixa",
+          "email": "carlos.caixa@sellion.com.br",
+          "role": "OPERADOR",
+          "ativo": true
+        }
+        ```
+
+* **`PUT /api/funcionarios/{id}`**
+    *   **Descrição:** Atualiza nome ou role do funcionário. O e-mail é imutável após o cadastro (integridade de auditoria).
+    *   **Payload (Frontend):**
+        ```json
+        {
+          "nome": "Carlos Eduardo Caixa",
+          "role": "ADMIN"
+        }
+        ```
+    *   **Retorno (200 OK):**
+        ```json
+        {
+          "id": 3,
+          "nome": "Carlos Eduardo Caixa",
+          "email": "carlos.caixa@sellion.com.br",
+          "role": "ADMIN",
+          "ativo": true
+        }
+        ```
+
+* **`DELETE /api/funcionarios/{id}`**
+    *   **Descrição:** Soft delete — marca `ativo = false`. Registro histórico preservado para auditoria.
+    *   **Retorno (204 No Content).**
+
+---
+
+### 12. Financeiro (Lançamentos de Despesas)
+
+*Todas as rotas protegidas por `ROLE_ADMIN`. Filtro de período obrigatório via query params. Hard delete (sem soft delete).*
+
+* **`GET /api/financeiro/lancamentos?dataInicial=YYYY-MM-DD&dataFinal=YYYY-MM-DD`**
+    *   **Descrição:** Retorna todos os lançamentos de despesas com `data_referencia` dentro do período. Ordenados por data decrescente.
+    *   **Retorno (200 OK):**
+        ```json
+        [
+          {
+            "id": 1,
+            "descricao": "Aluguel do ponto comercial",
+            "valor": 2500.00,
+            "categoria": "ALUGUEL",
+            "dataReferencia": "2026-06-01",
+            "criadoEm": "2026-06-05T10:30:00Z"
+          },
+          {
+            "id": 2,
+            "descricao": "Conta de energia elétrica",
+            "valor": 450.00,
+            "categoria": "ENERGIA",
+            "dataReferencia": "2026-06-10",
+            "criadoEm": "2026-06-10T08:00:00Z"
+          }
+        ]
+        ```
+
+* **`POST /api/financeiro/lancamentos`**
+    *   **Descrição:** Registra uma nova despesa operacional.
+    *   **Payload (Frontend):**
+        ```json
+        {
+          "descricao": "Aluguel do ponto comercial",
+          "valor": 2500.00,
+          "categoria": "ALUGUEL",
+          "dataReferencia": "2026-06-01"
+        }
+        ```
+        *(Nota: `categoria` aceita: `ALUGUEL`, `ENERGIA`, `AGUA`, `INTERNET_TELEFONE`, `CONTADOR`, `FOLHA_PAGAMENTO`, `PRO_LABORE`, `COMPRA_MERCADORIA`, `EMBALAGENS_MATERIAIS`, `IMPOSTOS`, `TAXAS_BANCARIAS`, `MANUTENCAO`, `MARKETING`, `OUTROS`.)*
+    *   **Retorno (201 Created):** Objeto completo do lançamento criado.
+
+* **`PUT /api/financeiro/lancamentos/{id}`**
+    *   **Descrição:** Atualiza um lançamento existente.
+    *   **Payload (Frontend):** Mesmo formato do POST.
+    *   **Retorno (200 OK):** Objeto atualizado.
+
+* **`DELETE /api/financeiro/lancamentos/{id}`**
+    *   **Descrição:** Exclusão permanente (hard delete). Não há recuperação após confirmação.
+    *   **Retorno (204 No Content).**
+
+---

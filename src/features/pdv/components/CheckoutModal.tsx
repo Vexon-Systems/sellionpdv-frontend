@@ -30,10 +30,11 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
         exigeMaquininha,
         isPending,
         handleConfirmar,
+        handleClose,
     } = useCheckout({ isOpen, subtotal, onSuccess: onSuccessCallback, onClose });
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && handleClose()}>
             <DialogContent className="sm:max-w-120 bg-white gap-6">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-gray-900">Finalizar Venda</DialogTitle>

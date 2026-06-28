@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package } from "lucide-react";
+import { Package, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 
 import { useProdutos } from "../hooks/useProdutos.ts";
@@ -40,17 +40,24 @@ export function CatalogoPage() {
 
                 <main className="flex-1 flex flex-col h-full lg:overflow-hidden">
                     {produtoSelecionado || isCriandoNovo ? (
-                        <ProdutoForm 
-                            produtoInicial={produtoSelecionado}
-                            categorias={categorias}
-                            gruposDisponiveis={gruposDisponiveis}
-                            onSave={salvar}
-                            onDelete={excluir}
-                            onUploadImagem={upload}
-                            onCancel={resetSelection}
-                            isSalvando={isSalvando}
-                            isUploading={isUploading}
-                        />
+                        categorias.length === 0 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50/50 rounded-lg gap-3 text-gray-400">
+                                <Loader2 className="animate-spin" size={28} />
+                                <p className="text-sm">Carregando categorias...</p>
+                            </div>
+                        ) : (
+                            <ProdutoForm
+                                produtoInicial={produtoSelecionado}
+                                categorias={categorias}
+                                gruposDisponiveis={gruposDisponiveis}
+                                onSave={salvar}
+                                onDelete={excluir}
+                                onUploadImagem={upload}
+                                onCancel={resetSelection}
+                                isSalvando={isSalvando}
+                                isUploading={isUploading}
+                            />
+                        )
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg bg-gray-50/50">
                             <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">

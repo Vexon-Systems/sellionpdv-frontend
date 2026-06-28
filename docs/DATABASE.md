@@ -15,7 +15,15 @@
 * **Catálogo:**
   * `categorias`, `produtos`, `grupos_modificadores`, `opcoes_modificadores`.
   * Relação complexa: Produtos ligam-se a grupos através de uma tabela intermediária `produto_grupos_modificadores` para definir regras (`min_opcoes`, `max_opcoes`).
-* **Operacional e Financeiro:**
+* **Pagamentos:**
+  * `maquininhas`: Terminais de cartão da loja (nome, marca, taxaDebito, taxaCredito, ativo). Soft delete.
+  * `taxas_maquininha`: Taxas específicas por bandeira e tipo de transação (FK para maquininha, `bandeira_cartao` VARCHAR, `tipo_transacao` VARCHAR, `taxa` DECIMAL). Permite sobrescrever a taxa genérica por bandeira (VISA, MASTERCARD, ELO, HIPERCARD, AMEX).
+* **Operacional:**
   * `caixas`: Turnos de trabalho (status: ABERTO/FECHADO). Índice único garante apenas um caixa ABERTO por `tenant_id`.
-  * `vendas`: Cabeçalho da transação, possui `idempotency_key` (UUID) para evitar duplicidade.
+  * `movimentacoes_caixa`: Sangrias e reforços vinculados a um caixa (tipo: SANGRIA/REFORCO, valor, justificativa).
+  * `vendas`: Cabeçalho da transação. Possui `idempotency_key` (UUID) e campo `bandeira_cartao` VARCHAR (nullable — preenchido quando pagamento for crédito/débito com bandeira informada).
   * `itens_venda` e `itens_venda_modificadores`: Detalhamento imutável dos preços cobrados no momento exato da venda.
+* **Equipe:**
+  * `funcionarios` (alias `usuarios` com `tenant_id`): Colaboradores da loja. Role restrito a `ROLE_ADMIN` ou `ROLE_OPERADOR`. E-mail imutável. Soft delete via `ativo`.
+* **Financeiro:**
+  * `lancamentos_financeiros`: Despesas operacionais manuais (descricao, valor DECIMAL, categoria VARCHAR, data_referencia DATE, criado_em TIMESTAMPTZ). Hard delete — sem soft delete. Usado pelo `RelatorioService` para compor `despesasOperacionais` e calcular `lucroLiquido` no DRE.

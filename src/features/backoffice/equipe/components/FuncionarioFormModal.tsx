@@ -57,15 +57,18 @@ export function FuncionarioFormModal({
         defaultValues: { nome: "", role: "OPERADOR" },
     });
 
+    const { reset: resetCriar } = formCriar;
+    const { reset: resetEditar } = formEditar;
+
     useEffect(() => {
         if (!isOpen) return;
         if (funcionarioEmEdicao) {
-            formEditar.reset({ nome: funcionarioEmEdicao.nome, role: funcionarioEmEdicao.role });
+            resetEditar({ nome: funcionarioEmEdicao.nome, role: funcionarioEmEdicao.role });
         } else {
-            formCriar.reset({ nome: "", email: "", senha: "", role: "OPERADOR" });
+            resetCriar({ nome: "", email: "", senha: "", role: "OPERADOR" });
             setMostrarSenha(false);
         }
-    }, [isOpen, funcionarioEmEdicao]);
+    }, [isOpen, funcionarioEmEdicao, resetCriar, resetEditar]);
 
     const handleSubmitCriar = formCriar.handleSubmit(async (dados) => {
         await onCriar(dados);
