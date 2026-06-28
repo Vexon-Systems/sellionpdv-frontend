@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { apiCaixa } from "../services/apiCaixa";
-import { apiVendas } from "@/features/pdv/services/apiVendas"; 
+import { apiVendas } from "@/features/pdv/services/apiVendas";
 import { useCaixaStore } from "@/store/useCaixaStore";
+import { extrairMensagemErro } from "@/lib/utils";
 import type { ExtratoItem } from "../types/caixa";
 
 export function useControleCaixa(onSuccessCallback?: () => void) {
@@ -37,8 +38,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     
     const vendasDinheiro = useMemo(() => {
         return vendas
-            .filter((v: any) => v.formaPagamento?.toUpperCase() === 'DINHEIRO')
-            .reduce((acc: number, v: any) => acc + (v.totalFinal || 0), 0);
+            .filter((v) => v.formaPagamento?.toUpperCase() === 'DINHEIRO')
+            .reduce((acc, v) => acc + (v.totalFinal || 0), 0);
     }, [vendas]);
 
     const totalSangrias = useMemo(() => {
@@ -71,7 +72,7 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             });
         }
 
-        vendas.forEach((venda: any) => {
+        vendas.forEach((venda) => {
             const dataVenda = new Date(venda.dataVenda || new Date());
             itens.push({
                 id: `venda-${venda.id}`,
@@ -110,8 +111,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             setCaixa(novoCaixa);
             toast.success("Caixa aberto com sucesso!");
         },
-        onError: (error: any) => {
-            toast.error("Falha na abertura", { description: error.response?.data?.detail || "Não foi possível abrir o caixa." });
+        onError: (error) => {
+            toast.error("Falha na abertura", { description: extrairMensagemErro(error, "Não foi possível abrir o caixa.") });
         }
     });
 
@@ -122,8 +123,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             toast.success(`${variaveis.tipo === 'SANGRIA' ? 'Sangria' : 'Reforço'} realizado!`);
             if (onSuccessCallback) onSuccessCallback();
         },
-        onError: (error: any) => {
-            toast.error("Falha na operação", { description: error.response?.data?.detail });
+        onError: (error) => {
+            toast.error("Falha na operação", { description: extrairMensagemErro(error, "Não foi possível realizar a movimentação.") });
         }
     });
 
@@ -135,8 +136,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             toast.success(`Caixa fechado com sucesso!`);
             if (onSuccessCallback) onSuccessCallback();
         },
-        onError: (error: any) => {
-            toast.error("Erro no fechamento", { description: error.response?.data?.detail });
+        onError: (error) => {
+            toast.error("Erro no fechamento", { description: extrairMensagemErro(error, "Não foi possível fechar o caixa.") });
         }
     });
 

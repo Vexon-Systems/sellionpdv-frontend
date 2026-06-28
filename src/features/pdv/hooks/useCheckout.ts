@@ -4,7 +4,8 @@ import { useCartStore } from "@/store/useCartStore";
 import { useFinalizarVenda } from "./useFinalizarVenda";
 import { apiMaquininhas } from "@/features/backoffice/maquininhas/services/apiMaquininhas";
 import { toast } from "sonner";
-import type { BandeiraCartao, FormaPagamento } from "../types/venda";
+import { extrairMensagemErro } from "@/lib/utils";
+import type { BandeiraCartao, FormaPagamento, VendaTurnoDTO } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
 
 interface UseCheckoutOptions {
@@ -65,7 +66,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         };
 
         mutate(payload, {
-            onSuccess: (respostaDaApi: any) => {
+            onSuccess: (respostaDaApi: VendaTurnoDTO) => {
                 const dadosCongelados: DadosSucesso = {
                     id: respostaDaApi?.id,
                     itens: [...itens],
@@ -75,10 +76,10 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
                 limparCarrinho();
                 resetEFechar();
             },
-            onError: (error: any) => {
-                const mensagem =
-                    error.response?.data?.detail || "Não foi possível processar. Tente novamente.";
-                toast.error("Erro na Venda", { description: mensagem });
+            onError: (error) => {
+                toast.error("Erro na Venda", {
+                    description: extrairMensagemErro(error, "Não foi possível processar. Tente novamente."),
+                });
             },
         });
     }

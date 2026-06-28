@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiMaquininhas } from "../services/apiMaquininhas";
 import { toast } from "sonner";
+import { extrairMensagemErro } from "@/lib/utils";
 
 export function useMaquininhas(onSuccessCallback?: () => void) {
     const queryClient = useQueryClient();
@@ -17,9 +18,8 @@ export function useMaquininhas(onSuccessCallback?: () => void) {
             toast.success("Operação realizada com sucesso!");
             if (onSuccessCallback) onSuccessCallback();
         },
-        onError: (error: any) => {
-            const msg = error.response?.data?.detail || "Erro ao salvar a maquininha.";
-            toast.error("Falha na operação", { description: msg });
+        onError: (error) => {
+            toast.error("Falha na operação", { description: extrairMensagemErro(error, "Erro ao salvar a maquininha.") });
         }
     });
 
