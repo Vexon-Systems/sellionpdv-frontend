@@ -3,12 +3,10 @@ import { createRootRoute, createRoute, createRouter, Outlet, redirect, useRouter
 import { useAuthStore } from '../store/useAuthStore';
 import { toast } from 'sonner';
 
-// Rotas primárias — carregadas imediatamente (fluxo principal de venda)
 import LoginPage from '@/features/auth/pages/LoginPage';
 import { PdvPage } from '@/features/pdv/pages/PdvPage';
 import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
 
-// Rotas do backoffice — carregadas sob demanda
 const CatalogoPage     = lazy(() => import('@/features/backoffice/catalogo/pages/CatalogoPage').then(m => ({ default: m.CatalogoPage })));
 const ModificadoresPage = lazy(() => import('@/features/backoffice/modificadores/pages/ModificadoresPage').then(m => ({ default: m.ModificadoresPage })));
 const DashboardPage    = lazy(() => import('@/features/backoffice/dashboard/pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -39,24 +37,26 @@ function requireAdmin() {
     }
 }
 
-const rootRoute = createRootRoute({
-    component: () => {
-        const routerState = useRouterState();
-        const isLoginPage = routerState.location.pathname === '/login'
+function RootLayout() {
+    const routerState = useRouterState();
+    const isLoginPage = routerState.location.pathname === '/login';
 
-        if (isLoginPage){
-            return <Outlet/>;
-        }
-
-        return(
-            <SidebarProvider>
-                <AppSidebar/>
-                <main className='flex flex-1 overflow-hidden'>
-                    <Outlet/>
-                </main>
-            </SidebarProvider>
-        )
+    if (isLoginPage) {
+        return <Outlet />;
     }
+
+    return (
+        <SidebarProvider>
+            <AppSidebar />
+            <main className='flex flex-1 overflow-hidden'>
+                <Outlet />
+            </main>
+        </SidebarProvider>
+    );
+}
+
+const rootRoute = createRootRoute({
+    component: RootLayout,
 });
 
 const loginRoute = createRoute({

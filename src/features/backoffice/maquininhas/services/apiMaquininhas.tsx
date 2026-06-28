@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { MaquininhaDTO, NovaMaquininhaDTO } from '../types/maquininha';
+import type { MaquininhaDTO } from '../types/maquininha';
 
 export const apiMaquininhas = {
     listarTodas: async (): Promise<MaquininhaDTO[]> => {

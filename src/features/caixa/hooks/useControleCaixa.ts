@@ -85,10 +85,10 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             });
         });
 
-        movimentacoes.forEach((mov) => {
+        movimentacoes.forEach((mov, index) => {
             const dataMov = new Date(mov.dataMovimentacao || new Date());
             itens.push({
-                id: `mov-${mov.id || Math.random()}`,
+                id: `mov-${mov.id ?? `idx-${index}`}`,
                 tipo: mov.tipo,
                 titulo: mov.tipo === 'SANGRIA' ? 'Retirada (Sangria)' : 'Entrada Extra (Reforço)',
                 subtitulo: mov.motivo || 'Sem justificativa',
@@ -129,9 +129,9 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
 
     const fechar = useMutation({
         mutationFn: apiCaixa.fechar,
-        onSuccess: (_, variaveis) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['caixa-atual'] });
-            limparCaixa(); 
+            limparCaixa();
             toast.success(`Caixa fechado com sucesso!`);
             if (onSuccessCallback) onSuccessCallback();
         },

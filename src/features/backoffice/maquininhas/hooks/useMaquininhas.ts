@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiMaquininhas } from "../services/apiMaquininhas";
 import { toast } from "sonner";
-import type { MaquininhaDTO } from "../types/maquininha";
 
 export function useMaquininhas(onSuccessCallback?: () => void) {
     const queryClient = useQueryClient();
@@ -13,7 +12,7 @@ export function useMaquininhas(onSuccessCallback?: () => void) {
 
     const salvar = useMutation({
         mutationFn: apiMaquininhas.salvar,
-        onSuccess: (dados) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['lista-maquininhas'] });
             toast.success("Operação realizada com sucesso!");
             if (onSuccessCallback) onSuccessCallback();

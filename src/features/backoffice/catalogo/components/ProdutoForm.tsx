@@ -134,7 +134,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
     };
 
     const onSubmit = (dados: FormInputs) => {
-        const { margemBruta, ...payloadLimpo } = dados;
+        const { margemBruta: _margemBruta, ...payloadLimpo } = dados;
         onSave({ ...payloadLimpo, id: produtoInicial?.id || undefined });
     };
 
@@ -311,29 +311,33 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                 Gerenciar categorias
                             </button>
                         </div>
-                        <Controller 
-                            name="categoriaId" 
-                            control={control} 
-                            render={({ field }) => (
-                                <Select 
-                                    key={categorias.length} 
-                                    value={field.value ? String(field.value) : undefined} 
-                                    onValueChange={(v) => field.onChange(Number(v))}
-                                    disabled={categorias.length === 0}
-                                >
-                                    <SelectTrigger className="w-full bg-white">
-                                        <SelectValue placeholder={categorias.length === 0 ? "Carregando..." : "Selecione..."} />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white">
-                                        {categorias.map((cat) => (
-                                            <SelectItem key={cat.id} value={String(cat.id)}>
-                                                {cat.nome}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                        />
+                        {categorias.length === 0 ? (
+                            <div className="flex h-9 w-full items-center rounded-md border border-input bg-gray-50 px-3 text-sm text-muted-foreground">
+                                Carregando categorias...
+                            </div>
+                        ) : (
+                            <Controller
+                                name="categoriaId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        value={field.value ? String(field.value) : undefined}
+                                        onValueChange={(v) => field.onChange(Number(v))}
+                                    >
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Selecione..." />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                            {categorias.map((cat) => (
+                                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                                    {cat.nome}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                        )}
                         {errors.categoriaId && <p className="text-red-500 text-sm">{errors.categoriaId.message}</p>}
                     </div>
                 </div>
