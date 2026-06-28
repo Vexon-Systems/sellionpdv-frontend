@@ -29,10 +29,6 @@ const senhaSchema = z.object({
   novaSenha: z.string().min(6, "A nova senha deve ter no mínimo 6 caracteres.")
 });
 
-const pinSchema = z.object({
-  pin: z.string().length(4, "O PIN deve conter exatamente 4 dígitos.")
-});
-
 // Lógica de Força da Senha
 const calcularForcaSenha = (senha: string) => {
   if (!senha) return 0;
@@ -60,15 +56,14 @@ const InfoTooltip = ({ texto }: { texto: string }) => (
 
 export function ConfiguracoesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { 
-    usuario, atualizarPerfil, isAtualizandoPerfil, 
-    uploadAvatar, isUploadingAvatar, alterarSenha, isAlterandoSenha, 
-    alterarPreferencias, configurarPin 
+  const {
+    usuario, atualizarPerfil, isAtualizandoPerfil,
+    uploadAvatar, isUploadingAvatar, alterarSenha, isAlterandoSenha,
+    alterarPreferencias
   } = useUsuarioMe();
 
   const formPerfil = useForm({ resolver: zodResolver(perfilSchema), defaultValues: { nome: "", telefone: "" } });
   const formSenha = useForm({ resolver: zodResolver(senhaSchema), defaultValues: { senhaAtual: "", novaSenha: "" } });
-  const formPin = useForm({ resolver: zodResolver(pinSchema), defaultValues: { pin: "" } });
 
   const novaSenhaValor = formSenha.watch("novaSenha") || "";
   const forcaSenha = calcularForcaSenha(novaSenhaValor);

@@ -4,7 +4,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
@@ -25,7 +24,7 @@ interface FechamentoCaixaModalProps {
 }
 
 export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: FechamentoCaixaModalProps) {
-    const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
+    const { handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: { dinheiro: 0, maquininhas: 0, pix: 0 }
     });

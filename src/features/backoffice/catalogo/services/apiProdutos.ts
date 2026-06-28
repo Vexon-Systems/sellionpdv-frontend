@@ -17,7 +17,7 @@ export const salvarProduto = async (produto: Partial<ProdutoDTO>): Promise<Produ
         const response = await api.put<ProdutoDTO>(`/api/produtos/${produto.id}`, produto);
         return response.data;
     } else {
-        const { id, ...produtoNovo } = produto; 
+        const { id: _id, ...produtoNovo } = produto;
         const response = await api.post<ProdutoDTO>('/api/produtos', produtoNovo);
         return response.data;
     }

@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchProdutos, salvarProduto, excluirProduto, uploadImagemProduto } from "../services/apiProdutos"; // Ajuste o caminho se necessário
+import { fetchProdutos, salvarProduto, excluirProduto, uploadImagemProduto } from "../services/apiProdutos";
 import { toast } from "sonner";
-import type { ProdutoDTO } from "@/types/pdv";
 import { extrairMensagemErro } from "@/lib/utils";
 
 export function useProdutos(onSuccessCallback?: () => void) {

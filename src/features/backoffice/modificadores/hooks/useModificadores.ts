@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiModificadores } from "../services/apiModificadores";
-import type { GrupoModificadorDTO } from "@/types/pdv";
 import { toast } from "sonner";
 import { extrairMensagemErro } from "@/lib/utils";
 

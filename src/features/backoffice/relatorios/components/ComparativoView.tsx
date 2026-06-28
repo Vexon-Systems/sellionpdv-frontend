@@ -1,51 +1,60 @@
+import type { ReactNode } from "react";
 import { useComparativo } from "../hooks/useComparativo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RelatoriosFilter } from "./RelatoriosFilter";
-import { Input } from "@/components/ui/input";
-import { Loader2, TrendingUp, TrendingDown, DollarSign, ShoppingCart, Percent, PiggyBank, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Percent, PiggyBank, Minus } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatarMoeda } from "@/lib/utils";
 
+interface MetricCardProps {
+  titulo: string;
+  icone: ReactNode;
+  valorAtual: number;
+  valorAnterior: number;
+  percentual: number;
+  formatador?: (valor: number) => string;
+}
+
+function MetricCard({ titulo, icone, valorAtual, valorAnterior, percentual, formatador = (v) => String(v) }: MetricCardProps) {
+  const isNovo = valorAnterior === 0 && valorAtual > 0;
+  const isNeutro = valorAnterior === 0 && valorAtual === 0;
+  const isPositivo = percentual > 0;
+
+  return (
+    <Card className="bg-white shadow-sm border-gray-100">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{titulo}</CardTitle>
+        <div className="h-8 w-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-500">{icone}</div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-gray-900">{formatador(valorAtual)}</div>
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-muted-foreground">vs {formatador(valorAnterior)}</p>
+
+          {isNeutro ? (
+            <div className="flex items-center text-xs font-semibold px-2 py-1 rounded-full text-gray-500 bg-gray-100">
+              <Minus className="mr-1 h-3 w-3" /> 0%
+            </div>
+          ) : isNovo ? (
+            <div className="flex items-center text-xs font-semibold px-2 py-1 rounded-full text-purple-700 bg-purple-100">
+              <TrendingUp className="mr-1 h-3 w-3" /> Inicial
+            </div>
+          ) : (
+            <div className={`flex items-center text-xs font-semibold px-2 py-1 rounded-full ${
+              isPositivo ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
+            }`}>
+              {isPositivo ? <TrendingUp className="mr-1 h-3 w-3" /> : <TrendingDown className="mr-1 h-3 w-3" />}
+              {isPositivo ? '+' : ''}{percentual.toFixed(1)}%
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ComparativoView() {
   const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading } = useComparativo();
-
-  const MetricCard = ({ titulo, icone, valorAtual, valorAnterior, percentual, formatador = String }: any) => {
-    const isNovo = valorAnterior === 0 && valorAtual > 0;
-    const isNeutro = valorAnterior === 0 && valorAtual === 0;
-    const isPositivo = percentual > 0;
-
-    return (
-      <Card className="bg-white shadow-sm border-gray-100">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">{titulo}</CardTitle>
-          <div className="h-8 w-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-500">{icone}</div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{formatador(valorAtual)}</div>
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-muted-foreground">vs {formatador(valorAnterior)}</p>
-            
-            {isNeutro ? (
-              <div className="flex items-center text-xs font-semibold px-2 py-1 rounded-full text-gray-500 bg-gray-100">
-                <Minus className="mr-1 h-3 w-3" /> 0%
-              </div>
-            ) : isNovo ? (
-              <div className="flex items-center text-xs font-semibold px-2 py-1 rounded-full text-purple-700 bg-purple-100">
-                <TrendingUp className="mr-1 h-3 w-3" /> Inicial
-              </div>
-            ) : (
-              <div className={`flex items-center text-xs font-semibold px-2 py-1 rounded-full ${
-                isPositivo ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
-              }`}>
-                {isPositivo ? <TrendingUp className="mr-1 h-3 w-3" /> : <TrendingDown className="mr-1 h-3 w-3" />}
-                {isPositivo ? '+' : ''}{percentual.toFixed(1)}%
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
 
   // Dados mockados
   const dadosGrafico = [

@@ -6,7 +6,7 @@ import { fetchVendas } from "../services/apiRelatorios";
 import { toast } from "sonner";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,8 +64,9 @@ export function VendasView() {
     setIsCancelando(true);
     try {
       await cancelarVenda(justificativa);
-      setJustificativa(""); 
+      setJustificativa("");
     } catch (error) {
+      console.error("Erro ao cancelar venda:", error);
       alert("Não foi possível cancelar a venda. Verifique se o caixa já foi fechado.");
     } finally {
       setIsCancelando(false);
