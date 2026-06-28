@@ -21,17 +21,15 @@ export function CartSidebar({
   onConfirmarVenda,
 }: CartSidebarProps) {
   const hasItems = itens.length > 0;
+  const totalItens = itens.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
     <aside
       className={`
         bg-white flex flex-col border-gray-200 shadow-md shrink-0
         transition-all duration-500 ease-in-out overflow-hidden
-        ${
-          hasItems
-            ? "w-full lg:w-[320px] xl:w-[400px] h-[45vh] lg:h-full opacity-100 border-t-2 lg:border-t-0 lg:border-l-2"
-            : "w-full lg:w-0 h-0 opacity-0 border-0"
-        }
+        w-full lg:w-[320px] xl:w-[400px]
+        ${hasItems ? "h-[45vh] lg:h-full border-t-2 lg:border-t-0 lg:border-l-2" : "h-[45vh] lg:h-full border-t-2 lg:border-t-0 lg:border-l-2 opacity-80"}
       `}
     >
       <div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
@@ -79,6 +77,11 @@ export function CartSidebar({
           className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md"
         >
           Confirmar Venda
+          {hasItems && (
+            <span className="ml-2 bg-white/20 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              {totalItens} {totalItens === 1 ? "item" : "itens"}
+            </span>
+          )}
         </Button>
       </div>
     </aside>
