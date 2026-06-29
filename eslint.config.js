@@ -30,4 +30,13 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // Componentes vendored do shadcn/ui seguem a convenção upstream de exportar
+    // variants (cva) e hooks junto com componentes. Forçar separação aqui só
+    // adiciona fricção sem ganho — Fast Refresh é aceitável de perder nesses arquivos.
+    files: ['src/components/ui/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
