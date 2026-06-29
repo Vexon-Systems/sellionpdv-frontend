@@ -34,7 +34,7 @@ export function ControleCaixaPage() {
         abrir, isAbrindo, movimentar, isMovimentando, fechar, isFechando 
     } = useControleCaixa(fecharModais);
 
-    const { register, handleSubmit, control, formState: { errors } } = useForm<FormAberturaInputs>({
+    const { handleSubmit, control, formState: { errors } } = useForm<FormAberturaInputs>({
         resolver: zodResolver(formAberturaSchema),
         defaultValues: { saldoInicial: 0 }
     });

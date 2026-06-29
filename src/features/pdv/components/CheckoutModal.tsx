@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { QrCode, CreditCard, Banknote, Loader2 } from "lucide-react";
+import { CreditCard, Banknote, Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,6 +7,7 @@ import { Field, FieldContent, FieldLabel, FieldTitle } from "@/components/ui/fie
 import { Label } from "@/components/ui/label";
 import { formatarMoeda } from "@/lib/utils";
 import { useCheckout } from "../hooks/useCheckout";
+import type { BandeiraCartao, FormaPagamento } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
 import pix from "../../../assets/pix.png";
 
@@ -30,10 +31,11 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
         exigeMaquininha,
         isPending,
         handleConfirmar,
+        handleClose,
     } = useCheckout({ isOpen, subtotal, onSuccess: onSuccessCallback, onClose });
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && handleClose()}>
             <DialogContent className="sm:max-w-120 bg-white gap-6">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-gray-900">Finalizar Venda</DialogTitle>
@@ -44,7 +46,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
 
                 <RadioGroup
                     value={formaPagamento || ""}
-                    onValueChange={(val) => setFormaPagamento(val as any)}
+                    onValueChange={(val) => setFormaPagamento(val as FormaPagamento)}
                     disabled={isPending}
                     className="grid grid-cols-2 gap-3"
                 >
@@ -139,7 +141,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                             </Label>
                             <Select
                                 value={bandeiraCartao ?? "NENHUMA"}
-                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as any)}
+                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as BandeiraCartao)}
                                 disabled={isPending}
                             >
                                 <SelectTrigger className="w-full bg-white h-11 border-gray-200">

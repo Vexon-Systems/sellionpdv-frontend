@@ -12,7 +12,7 @@ export const apiModificadores = {
             const { data } = await api.put<GrupoModificadorDTO>(`/api/modificadores/${grupo.id}`, grupo);
             return data;
         } else {
-            const { id, ...grupoNovo } = grupo;
+            const { id: _id, ...grupoNovo } = grupo;
             const { data } = await api.post<GrupoModificadorDTO>('/api/modificadores', grupoNovo);
             return data;
         }

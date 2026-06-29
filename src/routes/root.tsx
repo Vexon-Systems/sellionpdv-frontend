@@ -1,62 +1,24 @@
-import { lazy } from 'react';
-import { createRootRoute, createRoute, createRouter, Outlet, redirect, useRouterState } from '@tanstack/react-router';
-import { useAuthStore } from '../store/useAuthStore';
-import { toast } from 'sonner';
+import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
-// Rotas primárias — carregadas imediatamente (fluxo principal de venda)
 import LoginPage from '@/features/auth/pages/LoginPage';
 import { PdvPage } from '@/features/pdv/pages/PdvPage';
 import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
 
-// Rotas do backoffice — carregadas sob demanda
-const CatalogoPage     = lazy(() => import('@/features/backoffice/catalogo/pages/CatalogoPage').then(m => ({ default: m.CatalogoPage })));
-const ModificadoresPage = lazy(() => import('@/features/backoffice/modificadores/pages/ModificadoresPage').then(m => ({ default: m.ModificadoresPage })));
-const DashboardPage    = lazy(() => import('@/features/backoffice/dashboard/pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
-const RelatoriosPage   = lazy(() => import('@/features/backoffice/relatorios/pages/RelatoriosPage').then(m => ({ default: m.RelatoriosPage })));
-const EquipePage       = lazy(() => import('@/features/backoffice/equipe/pages/EquipePage').then(m => ({ default: m.EquipePage })));
-const MaquininhasPage  = lazy(() => import('@/features/backoffice/maquininhas/pages/MaquininhaPage').then(m => ({ default: m.MaquininhasPage })));
-const ConfiguracoesPage = lazy(() => import('@/features/usuarios/pages/ConfiguracoesPage').then(m => ({ default: m.ConfiguracoesPage })));
-const FinanceiroPage    = lazy(() => import('@/features/backoffice/financeiro/pages/FinanceiroPage').then(m => ({ default: m.FinanceiroPage })));
-
-import { SidebarProvider } from '../components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/app-sidebar';
-
-function requireAuth() {
-    const { isAuthenticated } = useAuthStore.getState();
-    if (!isAuthenticated) {
-        throw redirect({ to: '/login' });
-    }
-}
-
-function requireAdmin() {
-    const { isAuthenticated, user } = useAuthStore.getState();
-    if (!isAuthenticated) {
-        throw redirect({ to: '/login' });
-    }
-    if (user?.role !== 'ROLE_ADMIN') {
-        toast.error('Acesso negado', { description: 'Apenas administradores podem acessar esta área.' });
-        throw redirect({ to: '/' });
-    }
-}
+import { RootLayout } from './RootLayout';
+import { requireAuth, requireAdmin } from './auth-guards';
+import {
+    CatalogoPage,
+    ModificadoresPage,
+    DashboardPage,
+    RelatoriosPage,
+    EquipePage,
+    MaquininhasPage,
+    ConfiguracoesPage,
+    FinanceiroPage,
+} from './lazyPages';
 
 const rootRoute = createRootRoute({
-    component: () => {
-        const routerState = useRouterState();
-        const isLoginPage = routerState.location.pathname === '/login'
-
-        if (isLoginPage){
-            return <Outlet/>;
-        }
-
-        return(
-            <SidebarProvider>
-                <AppSidebar/>
-                <main className='flex flex-1 overflow-hidden'>
-                    <Outlet/>
-                </main>
-            </SidebarProvider>
-        )
-    }
+    component: RootLayout,
 });
 
 const loginRoute = createRoute({
@@ -135,7 +97,19 @@ const financeiroRoute = createRoute({
     component: FinanceiroPage,
 });
 
-const routeTree = rootRoute.addChildren([loginRoute, pdvRoute, caixaRoute, catalogoRoute, modificadoresRoute, dashboardRoute, relatoriosRoute, equipeRoute, maquininhaRoute, configuracoesRoute, financeiroRoute]);
+const routeTree = rootRoute.addChildren([
+    loginRoute,
+    pdvRoute,
+    caixaRoute,
+    catalogoRoute,
+    modificadoresRoute,
+    dashboardRoute,
+    relatoriosRoute,
+    equipeRoute,
+    maquininhaRoute,
+    configuracoesRoute,
+    financeiroRoute,
+]);
 
 export const router = createRouter({ routeTree });
 

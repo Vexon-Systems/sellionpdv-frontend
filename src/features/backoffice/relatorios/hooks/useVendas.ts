@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchVendas, fetchVendaDetalhes } from "../services/apiRelatorios";
 import { type VendaResumo, type VendaDetalhes } from "../types/relatorios";
 import { api } from "@/lib/api";
@@ -17,11 +17,11 @@ export function useVendas() {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [vendaSelecionadaParaCancelamento, setVendaSelecionadaParaCancelamento] = useState<number | null>(null);
 
-  const carregarVendas = async () => {
+  const carregarVendas = useCallback(async () => {
     setIsLoading(true);
     try {
       const statusParam = statusFiltro === "TODAS" ? undefined : statusFiltro;
-      const response = await fetchVendas(paginaAtual, 15, statusParam); 
+      const response = await fetchVendas(paginaAtual, 15, statusParam);
       setVendas(response.content);
       setTotalPaginas(response.totalPages);
     } catch (error) {
@@ -29,11 +29,11 @@ export function useVendas() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [paginaAtual, statusFiltro]);
 
   useEffect(() => {
     carregarVendas();
-  }, [paginaAtual, statusFiltro]);
+  }, [carregarVendas]);
 
   useEffect(() => {
     setPaginaAtual(0);

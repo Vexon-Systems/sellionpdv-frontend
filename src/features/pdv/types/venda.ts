@@ -15,3 +15,10 @@ export interface VendaPayloadDTO {
     bandeiraCartao?: BandeiraCartao | null;
     descontoAplicado: number;
 }
+
+export interface VendaTurnoDTO {
+    id: number;
+    formaPagamento: FormaPagamento;
+    totalFinal: number;
+    dataVenda: string;
+}

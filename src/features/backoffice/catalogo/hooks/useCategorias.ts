@@ -11,8 +11,8 @@ export function useCategorias() {
     });
 
     const salvar = useMutation({
-        mutationFn: (dados: { id?: number, nome: string }) => 
-            dados.id ? apiCategorias.atualizar(dados.id, dados.nome) : apiCategorias.criar(dados.nome),
+        mutationFn: (dados: { id?: number, nome: string }) =>
+            dados.id ? apiCategorias.atualizar(dados.id, { nome: dados.nome }) : apiCategorias.criar({ nome: dados.nome }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['categorias'] });
             toast.success("Categoria salva!");

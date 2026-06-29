@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import type { FuncionarioDTO } from "../types/funcionario";
+import type { FuncionarioDTO, CriarFuncionarioDTO, AtualizarFuncionarioDTO } from "../types/funcionario";
 
 const schemaCriar = z.object({
     nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
@@ -31,8 +31,8 @@ interface FuncionarioFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     funcionarioEmEdicao: FuncionarioDTO | null;
-    onCriar: (dados: FormCriar) => Promise<void>;
-    onAtualizar: (id: number, dados: FormEditar) => Promise<void>;
+    onCriar: (dados: CriarFuncionarioDTO) => Promise<FuncionarioDTO>;
+    onAtualizar: (id: number, dados: AtualizarFuncionarioDTO) => Promise<FuncionarioDTO>;
     isSalvando: boolean;
 }
 
@@ -57,15 +57,18 @@ export function FuncionarioFormModal({
         defaultValues: { nome: "", role: "OPERADOR" },
     });
 
+    const { reset: resetCriar } = formCriar;
+    const { reset: resetEditar } = formEditar;
+
     useEffect(() => {
         if (!isOpen) return;
         if (funcionarioEmEdicao) {
-            formEditar.reset({ nome: funcionarioEmEdicao.nome, role: funcionarioEmEdicao.role });
+            resetEditar({ nome: funcionarioEmEdicao.nome, role: funcionarioEmEdicao.role });
         } else {
-            formCriar.reset({ nome: "", email: "", senha: "", role: "OPERADOR" });
+            resetCriar({ nome: "", email: "", senha: "", role: "OPERADOR" });
             setMostrarSenha(false);
         }
-    }, [isOpen, funcionarioEmEdicao]);
+    }, [isOpen, funcionarioEmEdicao, resetCriar, resetEditar]);
 
     const handleSubmitCriar = formCriar.handleSubmit(async (dados) => {
         await onCriar(dados);

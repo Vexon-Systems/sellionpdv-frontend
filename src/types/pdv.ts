@@ -27,7 +27,7 @@ export interface ItemCarrinho{
 
 export interface ProdutoGrupoModificadorDTO {
     grupoId: number;
-    nome: string; 
+    nome?: string;
     tipoEscolha: 'UNICA' | 'MULTIPLA';
     minOpcoes: number;
     maxOpcoes: number;

@@ -1,23 +1,23 @@
 import { api } from "@/lib/api";
-import { type VendaPayloadDTO } from "../types/venda";
+import { type VendaPayloadDTO, type VendaTurnoDTO } from "../types/venda";
 
 export const finalizarVenda = async (
     payload: VendaPayloadDTO,
     idempotencyKey: string
-) => {
-    const response = await api.post("/api/vendas", payload, {
+): Promise<VendaTurnoDTO> => {
+    const response = await api.post<VendaTurnoDTO>("/api/vendas", payload, {
         headers: {
             'Idempotency-Key': idempotencyKey
         }
     });
-    
-    return response.data; 
+
+    return response.data;
 };
 
 export const apiVendas = {
 
-  listarVendasTurno: async (): Promise<any[]> => {
-    const response = await api.get("/api/vendas");
+  listarVendasTurno: async (): Promise<VendaTurnoDTO[]> => {
+    const response = await api.get<VendaTurnoDTO[]>("/api/vendas");
     return response.data;
   }
 };

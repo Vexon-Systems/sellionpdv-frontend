@@ -11,12 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-import { CATEGORIAS_AGRUPADAS, CATEGORIA_LABELS, type CategoriaLancamento, type LancamentoDTO } from "../types/lancamento"
+import { CATEGORIAS_AGRUPADAS, CATEGORIA_LABELS, type LancamentoDTO } from "../types/lancamento"
+
+const CATEGORIA_VALUES = Object.keys(CATEGORIA_LABELS) as [keyof typeof CATEGORIA_LABELS, ...Array<keyof typeof CATEGORIA_LABELS>]
 
 const schema = z.object({
     descricao: z.string().min(2, "Informe uma descrição"),
-    valor: z.number({ invalid_type_error: "Informe o valor" }).positive("O valor deve ser positivo"),
-    categoria: z.string().min(1, "Selecione uma categoria") as z.ZodType<CategoriaLancamento>,
+    valor: z.number({ error: "Informe o valor" }).positive("O valor deve ser positivo"),
+    categoria: z.enum(CATEGORIA_VALUES, { error: "Selecione uma categoria" }),
     dataReferencia: z.string().min(1, "Informe a data"),
 })
 

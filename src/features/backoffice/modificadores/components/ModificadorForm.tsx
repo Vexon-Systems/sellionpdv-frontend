@@ -94,7 +94,16 @@ export function ModificadorForm({ grupoInicial, onSave, onDelete, onCancel, isSa
             </CardHeader>
 
             <CardContent className="px-6">
-                <form onSubmit={handleSubmit(onSave as any)} className="space-y-8">
+                <form onSubmit={handleSubmit((data) => onSave({
+                    id: data.id ?? 0,
+                    nome: data.nome,
+                    opcoes: data.opcoes.map(o => ({
+                        id: o.id ?? 0,
+                        nome: o.nome,
+                        precoAdicional: o.precoAdicional,
+                        custoEstimado: o.custoEstimado ?? null,
+                    })),
+                }))} className="space-y-8">
                     {/* Nome do Grupo */}
                     <div className="space-y-2">
                         <Label htmlFor="nomeGrupo" className="text-sm font-semibold">Nome do Grupo</Label>

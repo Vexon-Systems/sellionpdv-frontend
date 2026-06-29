@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CaixaAtualDTO } from '@/features/caixa/services/apiCaixa';
+import type { CaixaAtualDTO } from '@/features/caixa/types/caixa';
 
 interface CaixaState {
   caixaAtual: CaixaAtualDTO | null;

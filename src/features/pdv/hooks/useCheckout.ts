@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCartStore } from "@/store/useCartStore";
 import { useFinalizarVenda } from "./useFinalizarVenda";
 import { apiMaquininhas } from "@/features/backoffice/maquininhas/services/apiMaquininhas";
 import { toast } from "sonner";
-import type { BandeiraCartao, FormaPagamento } from "../types/venda";
+import { extrairMensagemErro } from "@/lib/utils";
+import type { BandeiraCartao, FormaPagamento, VendaTurnoDTO } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
 
 interface UseCheckoutOptions {
@@ -31,17 +32,20 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
     const maquininhasAtivas = maquininhas.filter((m) => m.ativo);
     const exigeMaquininha = formaPagamento === "CREDITO" || formaPagamento === "DEBITO";
 
-    useEffect(() => {
-        if (!exigeMaquininha) setMaquininhaId(null);
-    }, [exigeMaquininha]);
-
-    useEffect(() => {
-        if (!isOpen) {
-            setFormaPagamento(null);
+    function handleFormaPagamentoChange(forma: FormaPagamento | null) {
+        setFormaPagamento(forma);
+        if (forma !== "CREDITO" && forma !== "DEBITO") {
             setMaquininhaId(null);
             setBandeiraCartao(null);
         }
-    }, [isOpen]);
+    }
+
+    function resetEFechar() {
+        setFormaPagamento(null);
+        setMaquininhaId(null);
+        setBandeiraCartao(null);
+        onClose();
+    }
 
     function handleConfirmar() {
         if (!formaPagamento) {
@@ -62,7 +66,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         };
 
         mutate(payload, {
-            onSuccess: (respostaDaApi: any) => {
+            onSuccess: (respostaDaApi: VendaTurnoDTO) => {
                 const dadosCongelados: DadosSucesso = {
                     id: respostaDaApi?.id,
                     itens: [...itens],
@@ -70,19 +74,19 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
                 };
                 onSuccess(dadosCongelados);
                 limparCarrinho();
-                onClose();
+                resetEFechar();
             },
-            onError: (error: any) => {
-                const mensagem =
-                    error.response?.data?.detail || "Não foi possível processar. Tente novamente.";
-                toast.error("Erro na Venda", { description: mensagem });
+            onError: (error) => {
+                toast.error("Erro na Venda", {
+                    description: extrairMensagemErro(error, "Não foi possível processar. Tente novamente."),
+                });
             },
         });
     }
 
     return {
         formaPagamento,
-        setFormaPagamento,
+        setFormaPagamento: handleFormaPagamentoChange,
         maquininhaId,
         setMaquininhaId,
         bandeiraCartao,
@@ -92,5 +96,6 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         exigeMaquininha,
         isPending,
         handleConfirmar,
+        handleClose: resetEFechar,
     };
 }

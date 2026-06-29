@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiUsuarios } from "../services/apiUsuarios";
 import { toast } from "sonner";
+import { extrairMensagemErro } from "@/lib/utils";
 
 export function useUsuarioMe() {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export function useUsuarioMe() {
       queryClient.invalidateQueries({ queryKey: ['usuario-me'] });
       toast.success("Perfil atualizado com sucesso!");
     },
-    onError: (err: any) => toast.error(err.response?.data?.detail || "Erro ao atualizar perfil.")
+    onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao atualizar perfil."))
   });
 
   const uploadAvatar = useMutation({
@@ -32,14 +33,14 @@ export function useUsuarioMe() {
   const alterarSenha = useMutation({
     mutationFn: apiUsuarios.alterarSenha,
     onSuccess: () => toast.success("Senha alterada com sucesso!"),
-    onError: (err: any) => toast.error(err.response?.data?.detail || "Senha atual incorreta.")
+    onError: (error) => toast.error(extrairMensagemErro(error, "Senha atual incorreta."))
   });
 
   const alterarPreferencias = useMutation({
     mutationFn: apiUsuarios.alterarPreferencias,
     onSuccess: (novasPrefs) => {
       queryClient.invalidateQueries({ queryKey: ['usuario-me'] });
-      
+
       if (novasPrefs.tema === 'DARK') {
         document.documentElement.classList.add('dark');
       } else {
@@ -55,7 +56,7 @@ export function useUsuarioMe() {
       queryClient.invalidateQueries({ queryKey: ['usuario-me'] });
       toast.success("PIN de acesso atualizado!");
     },
-    onError: (err: any) => toast.error(err.response?.data?.detail || "Erro ao configurar PIN.")
+    onError: (error) => toast.error(extrairMensagemErro(error, "Erro ao configurar PIN."))
   });
 
   return {

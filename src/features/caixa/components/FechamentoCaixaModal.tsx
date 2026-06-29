@@ -4,10 +4,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
+import type { FechamentoDTO } from "../types/caixa";
 
 const formSchema = z.object({
     dinheiro: z.number().min(0, "O valor não pode ser negativo."),
@@ -20,12 +20,12 @@ type FormInputs = z.infer<typeof formSchema>;
 interface FechamentoCaixaModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (dados: any) => Promise<void>;
+    onSave: (dados: FechamentoDTO) => Promise<void>;
     isSalvando: boolean;
 }
 
 export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: FechamentoCaixaModalProps) {
-    const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
+    const { handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
         defaultValues: { dinheiro: 0, maquininhas: 0, pix: 0 }
     });

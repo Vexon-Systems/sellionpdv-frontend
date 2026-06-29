@@ -1,5 +1,6 @@
+import { isAxiosError } from 'axios';
 import { api } from '@/lib/api';
-import type { MaquininhaDTO, NovaMaquininhaDTO } from '../types/maquininha';
+import type { MaquininhaDTO } from '../types/maquininha';
 
 export const apiMaquininhas = {
     listarTodas: async (): Promise<MaquininhaDTO[]> => {
@@ -20,8 +21,9 @@ export const apiMaquininhas = {
     excluir: async (id: number): Promise<void> => {
         try {
             await api.delete(`/api/maquininhas/${id}`);
-        } catch (error: any) {
-            if (error.response?.status === 405 || error.response?.status === 404) {
+        } catch (error: unknown) {
+            const status = isAxiosError(error) ? error.response?.status : undefined;
+            if (status === 405 || status === 404) {
                 console.warn("Rota DELETE não encontrada, enviando requisição PUT para inativar...");
                 const lista = await apiMaquininhas.listarTodas();
                 const maq = lista.find(m => m.id === id);

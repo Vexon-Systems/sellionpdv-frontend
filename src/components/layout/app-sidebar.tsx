@@ -30,15 +30,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  useSidebar,
 } from '@/components/ui/sidebar';
 
 export function AppSidebar(){
   const {user, clearAuth} = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  const {toggleSidebar} = useSidebar();
 
   const isAdmin = user?.role === 'ROLE_ADMIN';
 

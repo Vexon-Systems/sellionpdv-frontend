@@ -19,14 +19,14 @@ import { Pen, Save, Trash2, Plus, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { NumericFormat } from 'react-number-format';
 
-import type { ProdutoDTO, GrupoModificadorDTO } from "@/types/pdv";
+import type { ProdutoDTO, GrupoModificadorDTO, ProdutoGrupoModificadorDTO } from "@/types/pdv";
 import type { CategoriaDTO } from "../types/categoria";
 
 interface ProdutoFormProps {
     produtoInicial: ProdutoDTO | null;
     categorias: CategoriaDTO[];
     gruposDisponiveis: GrupoModificadorDTO[];
-    onSave: (dados: any) => void;
+    onSave: (dados: Partial<ProdutoDTO>) => void;
     onDelete: (id: number) => void;
     onUploadImagem: (file: File) => Promise<string>;
     onCancel: () => void;
@@ -74,7 +74,9 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
 
     const { fields, append, remove, replace } = useFieldArray({ control, name: "gruposModificadores" });
 
-    // Sincroniza dados quando um produto é selecionado
+    // Sincroniza dados quando um produto é selecionado.
+    // Para produto novo, categoriaId começa em 0; o effect abaixo (linha 96) define
+    // a categoria padrão assim que a lista de categorias carrega.
     useEffect(() => {
         if (produtoInicial) {
             reset({
@@ -85,7 +87,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
             });
             replace(produtoInicial.gruposModificadores || []);
         } else {
-            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: categorias[0]?.id || 0, ativo: true, imagemUrl: "", gruposModificadores: [] });
+            reset({ nome: "", precoBase: 0, custoEstimado: 0, margemBruta: 0, categoriaId: 0, ativo: true, imagemUrl: "", gruposModificadores: [] });
             replace([]);
         }
     }, [produtoInicial, reset, replace]);
@@ -134,8 +136,23 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
     };
 
     const onSubmit = (dados: FormInputs) => {
-        const { margemBruta, ...payloadLimpo } = dados;
-        onSave({ ...payloadLimpo, id: produtoInicial?.id || undefined });
+        const { margemBruta: _margemBruta, gruposModificadores: gruposForm, ...resto } = dados;
+        const gruposCompletos: ProdutoGrupoModificadorDTO[] = (gruposForm ?? []).map((g) => {
+            const grupoDisp = gruposDisponiveis.find((gd) => gd.id === g.grupoId);
+            return {
+                grupoId: g.grupoId,
+                nome: grupoDisp?.nome,
+                tipoEscolha: g.tipoEscolha,
+                minOpcoes: g.minOpcoes,
+                maxOpcoes: g.maxOpcoes,
+                opcoes: grupoDisp?.opcoes ?? [],
+            };
+        });
+        onSave({
+            ...resto,
+            gruposModificadores: gruposCompletos,
+            id: produtoInicial?.id || undefined,
+        });
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,18 +328,17 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                 Gerenciar categorias
                             </button>
                         </div>
-                        <Controller 
-                            name="categoriaId" 
-                            control={control} 
+                        <Controller
+                            name="categoriaId"
+                            control={control}
                             render={({ field }) => (
-                                <Select 
-                                    key={categorias.length} 
-                                    value={field.value ? String(field.value) : undefined} 
+                                <Select
+                                    key={field.value ? `cat-${field.value}` : 'cat-empty'}
+                                    value={field.value ? String(field.value) : undefined}
                                     onValueChange={(v) => field.onChange(Number(v))}
-                                    disabled={categorias.length === 0}
                                 >
                                     <SelectTrigger className="w-full bg-white">
-                                        <SelectValue placeholder={categorias.length === 0 ? "Carregando..." : "Selecione..."} />
+                                        <SelectValue placeholder="Selecione..." />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white">
                                         {categorias.map((cat) => (
@@ -359,7 +375,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs">Tipo de Escolha</Label>
-                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val: any) => setNovoVinculo({ ...novoVinculo, tipoEscolha: val })}>
+                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val) => setNovoVinculo({ ...novoVinculo, tipoEscolha: val as "UNICA" | "MULTIPLA" })}>
                                             <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                                             <SelectContent className="bg-white"><SelectItem value="UNICA">Única</SelectItem><SelectItem value="MULTIPLA">Múltipla</SelectItem></SelectContent>
                                         </Select>
