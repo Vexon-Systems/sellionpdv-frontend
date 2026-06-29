@@ -216,9 +216,10 @@ export function DreView() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#4b5563' }} />
                     <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `R$ ${val}`} tick={{ fontSize: 12, fill: '#4b5563' }} />
-                    <Tooltip 
-                      formatter={(value: any) => {
-                        const valReal = Math.abs(value[1] - value[0]);
+                    <Tooltip
+                      formatter={(value) => {
+                        const v = value as [number, number];
+                        const valReal = Math.abs(v[1] - v[0]);
                         return formatarMoeda(valReal);
                       }}
                       labelStyle={{ color: '#111827', fontWeight: 'bold' }}

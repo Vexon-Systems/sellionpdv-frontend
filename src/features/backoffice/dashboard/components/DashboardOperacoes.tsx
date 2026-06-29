@@ -31,7 +31,7 @@ export function DashboardOperacoes({
         fill: CORES_PAGAMENTO[pag.formaPagamento] || '#94a3b8'
     })) || [];
 
-    const chartConfigPagamentos = pagamentosFormatados.reduce((acc: any, curr) => {
+    const chartConfigPagamentos = pagamentosFormatados.reduce<Record<string, { label: string; color: string }>>((acc, curr) => {
         acc[curr.formaPagamento] = {
             label: curr.formaPagamento,
             color: curr.fill,

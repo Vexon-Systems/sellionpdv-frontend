@@ -7,6 +7,7 @@ import { Field, FieldContent, FieldLabel, FieldTitle } from "@/components/ui/fie
 import { Label } from "@/components/ui/label";
 import { formatarMoeda } from "@/lib/utils";
 import { useCheckout } from "../hooks/useCheckout";
+import type { BandeiraCartao, FormaPagamento } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
 import pix from "../../../assets/pix.png";
 
@@ -45,7 +46,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
 
                 <RadioGroup
                     value={formaPagamento || ""}
-                    onValueChange={(val) => setFormaPagamento(val as any)}
+                    onValueChange={(val) => setFormaPagamento(val as FormaPagamento)}
                     disabled={isPending}
                     className="grid grid-cols-2 gap-3"
                 >
@@ -140,7 +141,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                             </Label>
                             <Select
                                 value={bandeiraCartao ?? "NENHUMA"}
-                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as any)}
+                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as BandeiraCartao)}
                                 disabled={isPending}
                             >
                                 <SelectTrigger className="w-full bg-white h-11 border-gray-200">

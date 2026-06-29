@@ -14,7 +14,7 @@ import {
 import { DreView } from "@/features/backoffice/relatorios/components/DreView"
 import { LancamentoFormModal } from "../components/LancamentoFormModal"
 import { useLancamentos } from "../hooks/useLancamentos"
-import { CATEGORIA_LABELS, type LancamentoDTO } from "../types/lancamento"
+import { CATEGORIA_LABELS, type LancamentoDTO, type LancamentoPayloadDTO } from "../types/lancamento"
 
 const formatarMoeda = (valor: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
@@ -53,8 +53,8 @@ export function FinanceiroPage() {
     const maiorPct = maiorDespesa && totalMes > 0 ? Math.round((maiorDespesa.valor / totalMes) * 100) : 0
     const nomeMes = format(mesReferencia, "MMMM", { locale: ptBR })
 
-    const handleSalvar = (dados: any, id?: number) => {
-        const payload = {
+    const handleSalvar = (dados: LancamentoPayloadDTO, id?: number) => {
+        const payload: LancamentoPayloadDTO = {
             descricao: dados.descricao,
             valor: dados.valor,
             categoria: dados.categoria,

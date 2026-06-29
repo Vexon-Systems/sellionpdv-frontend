@@ -19,14 +19,14 @@ import { Pen, Save, Trash2, Plus, ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { NumericFormat } from 'react-number-format';
 
-import type { ProdutoDTO, GrupoModificadorDTO } from "@/types/pdv";
+import type { ProdutoDTO, GrupoModificadorDTO, ProdutoGrupoModificadorDTO } from "@/types/pdv";
 import type { CategoriaDTO } from "../types/categoria";
 
 interface ProdutoFormProps {
     produtoInicial: ProdutoDTO | null;
     categorias: CategoriaDTO[];
     gruposDisponiveis: GrupoModificadorDTO[];
-    onSave: (dados: any) => void;
+    onSave: (dados: Partial<ProdutoDTO>) => void;
     onDelete: (id: number) => void;
     onUploadImagem: (file: File) => Promise<string>;
     onCancel: () => void;
@@ -136,8 +136,23 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
     };
 
     const onSubmit = (dados: FormInputs) => {
-        const { margemBruta: _margemBruta, ...payloadLimpo } = dados;
-        onSave({ ...payloadLimpo, id: produtoInicial?.id || undefined });
+        const { margemBruta: _margemBruta, gruposModificadores: gruposForm, ...resto } = dados;
+        const gruposCompletos: ProdutoGrupoModificadorDTO[] = (gruposForm ?? []).map((g) => {
+            const grupoDisp = gruposDisponiveis.find((gd) => gd.id === g.grupoId);
+            return {
+                grupoId: g.grupoId,
+                nome: grupoDisp?.nome,
+                tipoEscolha: g.tipoEscolha,
+                minOpcoes: g.minOpcoes,
+                maxOpcoes: g.maxOpcoes,
+                opcoes: grupoDisp?.opcoes ?? [],
+            };
+        });
+        onSave({
+            ...resto,
+            gruposModificadores: gruposCompletos,
+            id: produtoInicial?.id || undefined,
+        });
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -360,7 +375,7 @@ export function ProdutoForm({ produtoInicial, categorias, gruposDisponiveis, onS
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs">Tipo de Escolha</Label>
-                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val: any) => setNovoVinculo({ ...novoVinculo, tipoEscolha: val })}>
+                                        <Select value={novoVinculo.tipoEscolha} onValueChange={(val) => setNovoVinculo({ ...novoVinculo, tipoEscolha: val as "UNICA" | "MULTIPLA" })}>
                                             <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                                             <SelectContent className="bg-white"><SelectItem value="UNICA">Única</SelectItem><SelectItem value="MULTIPLA">Múltipla</SelectItem></SelectContent>
                                         </Select>

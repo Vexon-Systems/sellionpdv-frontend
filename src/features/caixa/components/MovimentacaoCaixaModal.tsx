@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { MovimentacaoDTO } from "../types/caixa";
 
 const formSchema = z.object({
     valor: z.number().min(0.01, "O valor deve ser maior que R$ 0,00."),
@@ -18,7 +19,7 @@ type FormInputs = z.infer<typeof formSchema>;
 interface MovimentacaoCaixaModalProps {
     tipo: 'SANGRIA' | 'REFORCO' | null;
     onClose: () => void;
-    onSave: (dados: any) => Promise<void>;
+    onSave: (dados: Omit<MovimentacaoDTO, 'tipo'>) => Promise<void>;
     isSalvando: boolean;
 }
 

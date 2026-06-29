@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import autoTable, { type RowInput } from "jspdf-autotable";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -59,7 +59,7 @@ function cabecalho(doc: jsPDF, titulo: string, subtitulo: string): void {
 function rodape(doc: jsPDF): void {
     const w = doc.internal.pageSize.getWidth();
     const h = doc.internal.pageSize.getHeight();
-    const total = (doc.internal as any).getNumberOfPages() as number;
+    const total = doc.getNumberOfPages();
 
     for (let i = 1; i <= total; i++) {
         doc.setPage(i);
@@ -125,7 +125,7 @@ export async function exportarDrePdf(data: DreResponse, periodo: string): Promis
         doc.text("Estrutura DRE", 14, TY - 2);
 
         // Tabela DRE
-        const rows: any[][] = [
+        const rows: RowInput[] =[
             [
                 { content: "1. Receita Bruta de Vendas",        styles: { fontStyle: "bold", textColor: ESCURO } },
                 { content: R(data.receitaBruta),                styles: { fontStyle: "bold", halign: "right", textColor: ESCURO } },
@@ -209,7 +209,7 @@ export async function exportarVendasPdf(vendas: VendaResumo[], statusFiltro: str
             14, SY,
         );
 
-        const rows: any[][] = vendas.map(v => [
+        const rows: RowInput[] =vendas.map(v => [
             { content: `#${v.vendaId}`,                          styles: { textColor: CINZA_TXT } },
             { content: dtHr(v.dataVenda) },
             { content: v.nomeOperador },
@@ -274,7 +274,7 @@ export async function exportarCaixasPdf(caixas: RelatorioCaixa[], periodo: strin
         doc.setTextColor(...CINZA_TXT);
         doc.text(`${caixas.length} turno(s) auditado(s)  ·  ${nFuros} com divergência detectada`, 14, SY);
 
-        const rows: any[][] = caixas.map(c => {
+        const rows: RowInput[] =caixas.map(c => {
             const furoCor: [number,number,number] = c.furoCaixa < 0 ? VERM : c.furoCaixa > 0 ? LANJ : VERDE_TXT;
             const furoBg:  [number,number,number] = c.furoCaixa < 0 ? VERM_BG : c.furoCaixa > 0 ? LANJ_BG : VERDE_BG;
 

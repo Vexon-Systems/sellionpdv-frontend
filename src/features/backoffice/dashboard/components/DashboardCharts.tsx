@@ -38,7 +38,7 @@ export function DashboardCharts({
         fill: CORES_CATEGORIAS[index % CORES_CATEGORIAS.length]
     })) || [];
 
-    const chartConfigCategorias = dadosCategoriasFormatados.reduce((acc: any, curr) => {
+    const chartConfigCategorias = dadosCategoriasFormatados.reduce<Record<string, { label: string; color: string }>>((acc, curr) => {
         acc[curr.nomeCategoria] = {
             label: curr.nomeCategoria,
             color: curr.fill,
@@ -56,7 +56,7 @@ export function DashboardCharts({
                         <ChartColumnBig className="text-gray-500"/>    Top Produtos ({viewTopProdutos === "faturamento" ? "Faturamento" : "Vendas"})
                     </CardTitle>
                     
-                    <Tabs value={viewTopProdutos} onValueChange={(v) => setViewTopProdutos(v as any)}>
+                    <Tabs value={viewTopProdutos} onValueChange={(v) => setViewTopProdutos(v as "faturamento" | "quantidade")}>
                         <TabsList className="bg-gray-100 h-8">
                             <TabsTrigger value="faturamento" className="text-xs px-3">Faturamento</TabsTrigger>
                             <TabsTrigger value="quantidade" className="text-xs px-3">Vendas</TabsTrigger>
