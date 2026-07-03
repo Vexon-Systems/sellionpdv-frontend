@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useCaixas } from "../hooks/useCaixas";
 import { RelatoriosFilter } from "./RelatoriosFilter";
-import { exportarCaixasPdf } from "../services/exportarPdf";
+import { downloadPdf } from "@/lib/downloadPdf";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
@@ -21,12 +20,21 @@ export function CaixasView() {
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
+    if (!date?.from || !date?.to || isExportando) return;
     setIsExportando(true);
-    const periodo = date?.from && date?.to
-      ? `${format(date.from, "dd/MM/yyyy", { locale: ptBR })} — ${format(date.to, "dd/MM/yyyy", { locale: ptBR })}`
-      : "Período selecionado";
-    await exportarCaixasPdf(caixas, periodo);
-    setIsExportando(false);
+    try {
+      const dataInicial = format(date.from, "yyyy-MM-dd");
+      const dataFinal = format(date.to, "yyyy-MM-dd");
+      await downloadPdf(
+        "/api/relatorios/caixas.pdf",
+        `caixas-${dataInicial}-a-${dataFinal}.pdf`,
+        { dataInicial, dataFinal }
+      );
+    } catch {
+      // Erro já foi comunicado via toast dentro de downloadPdf.
+    } finally {
+      setIsExportando(false);
+    }
   };
 
   return (

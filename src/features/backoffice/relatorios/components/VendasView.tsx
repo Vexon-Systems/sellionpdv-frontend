@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useVendas } from "../hooks/useVendas";
-import { exportarVendasPdf } from "../services/exportarPdf";
-import { fetchVendas } from "../services/apiRelatorios";
-import { toast } from "sonner";
+import { downloadPdf } from "@/lib/downloadPdf";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -46,13 +44,17 @@ export function VendasView() {
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
+    if (isExportando) return;
     setIsExportando(true);
     try {
-      const statusParam = statusFiltro === "TODAS" ? undefined : statusFiltro;
-      const todos = await fetchVendas(0, 2000, statusParam);
-      await exportarVendasPdf(todos.content, statusFiltro);
+      const status = statusFiltro === "TODAS" ? undefined : statusFiltro;
+      await downloadPdf(
+        "/api/relatorios/vendas.pdf",
+        "historico-vendas.pdf",
+        { status }
+      );
     } catch {
-      toast.error("Erro ao buscar dados para exportação.");
+      // Erro já foi comunicado via toast dentro de downloadPdf.
     } finally {
       setIsExportando(false);
     }
