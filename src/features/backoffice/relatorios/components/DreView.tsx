@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useDre } from "../hooks/useDre";
 import { RelatoriosFilter } from "./RelatoriosFilter";
-import { exportarDrePdf } from "../services/exportarPdf";
+import { downloadPdf } from "@/lib/downloadPdf";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { DollarSign, TrendingDown, ShoppingCart, Receipt, Landmark } from "lucide-react";
@@ -17,13 +16,21 @@ export function DreView() {
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
-    if (!data) return;
+    if (!date?.from || !date?.to || isExportando) return;
     setIsExportando(true);
-    const periodo = date?.from && date?.to
-      ? `${format(date.from, "dd/MM/yyyy", { locale: ptBR })} — ${format(date.to, "dd/MM/yyyy", { locale: ptBR })}`
-      : "Período selecionado";
-    await exportarDrePdf(data, periodo);
-    setIsExportando(false);
+    try {
+      const dataInicial = format(date.from, "yyyy-MM-dd");
+      const dataFinal = format(date.to, "yyyy-MM-dd");
+      await downloadPdf(
+        "/api/relatorios/dre.pdf",
+        `dre-${dataInicial}-a-${dataFinal}.pdf`,
+        { dataInicial, dataFinal }
+      );
+    } catch {
+      // Erro já foi comunicado via toast dentro de downloadPdf.
+    } finally {
+      setIsExportando(false);
+    }
   };
 
   const totalDeducoes = data ? (data.deducoes.taxasMaquininhas + data.deducoes.totalCancelamentos) : 0;

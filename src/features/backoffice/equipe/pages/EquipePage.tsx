@@ -111,7 +111,7 @@ export function EquipePage() {
                     <Card className="bg-white shadow-sm border-gray-200">
                         <CardContent className="p-0">
                             <Table>
-                                <TableHeader className="bg-gray-50/50">
+                                <TableHeader>
                                     <TableRow>
                                         <TableHead className="pl-6">Colaborador</TableHead>
                                         <TableHead>E-mail</TableHead>

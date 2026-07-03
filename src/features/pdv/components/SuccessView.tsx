@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Printer, PlusCircle } from "lucide-react";
+import { CheckCircle2, Loader2, Printer, PlusCircle } from "lucide-react";
+import { downloadPdf } from "@/lib/downloadPdf";
 import type { ItemCarrinho } from "../../../types/pdv";
 import img_pgm_sucesso from "../../../assets/Img_Pagamento_Sucesso.png"
 
@@ -16,11 +18,21 @@ interface SuccessViewProps {
 
 export function SuccessView({ dadosVenda, onNovaVenda }: SuccessViewProps) {
     const isOpen = !!dadosVenda;
+    const [isImprimindo, setIsImprimindo] = useState(false);
 
     const handleImprimir = async () => {
-        if (!dadosVenda) return;
-        const { gerarReciboPdf } = await import("../services/reciboPdf");
-        gerarReciboPdf(dadosVenda);
+        if (!dadosVenda || isImprimindo) return;
+        setIsImprimindo(true);
+        try {
+            await downloadPdf(
+                `/api/vendas/${dadosVenda.id}/recibo.pdf`,
+                `recibo-venda-${dadosVenda.id}.pdf`
+            );
+        } catch {
+            // Erro já foi comunicado via toast dentro de downloadPdf.
+        } finally {
+            setIsImprimindo(false);
+        }
     };
 
     return (
@@ -43,9 +55,10 @@ export function SuccessView({ dadosVenda, onNovaVenda }: SuccessViewProps) {
                                 <Button
                                     className="w-full bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md gap-2 h-12 text-md cursor-pointer"
                                     onClick={handleImprimir}
+                                    disabled={isImprimindo}
                                 >
-                                    <Printer size={20} />
-                                    Imprimir Recibo
+                                    {isImprimindo ? <Loader2 size={20} className="animate-spin" /> : <Printer size={20} />}
+                                    {isImprimindo ? "Gerando recibo..." : "Imprimir Recibo"}
                                 </Button>
                                 <Button variant="outline" className="w-full border-gray-300 gap-2 h-12 text-md cursor-pointer hover:-translate-y-0.5 hover:bg-gray-100 transition-all duration-300" onClick={onNovaVenda}>
                                     <PlusCircle size={20} />
