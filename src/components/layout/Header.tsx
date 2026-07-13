@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { PanelLeft, Bell } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSidebar } from "../ui/sidebar";
@@ -6,36 +7,48 @@ import { UserAvatarDropdown } from "@/features/usuarios/components/UserAvatarDro
 
 interface HeaderProps {
     titulo: string;
+    /** Conteúdo opcional exibido após o título (ex.: contexto de turno). */
+    subtitulo?: ReactNode;
+    /** Ações específicas da página, renderizadas antes das ações globais (sino + avatar). */
+    acoes?: ReactNode;
 }
 
-export function Header({ titulo }: HeaderProps){
+export function Header({ titulo, subtitulo, acoes }: HeaderProps){
     const { toggleSidebar } = useSidebar();
 
     return (
         <header className="flex justify-between items-center bg-white border-b border-gray-200 px-8 py-2 shrink-0">
-            
+
             {/* Título e Botão Lateral */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
                 <Button
-                    onClick={toggleSidebar} 
+                    onClick={toggleSidebar}
                     className="text-primary transition duration-300 bg-transparent hover:bg-gray-100 hover:text-black py-3 cursor-pointer"
                 >
                     <PanelLeft size={20} />
                 </Button>
                 <Separator orientation="vertical"/>
-                <h1 className="text-xl font-semibold text-gray-900">{titulo}</h1>
+                <h1 className="text-xl font-semibold text-gray-900 shrink-0">{titulo}</h1>
+                {subtitulo && (
+                    <>
+                        <span className="text-gray-300 select-none">·</span>
+                        <div className="text-sm text-gray-500 truncate">{subtitulo}</div>
+                    </>
+                )}
             </div>
 
             {/* Ações e Perfil */}
             <div className="flex items-center gap-3">
-                
+
+                {acoes}
+
                 {/* Sino de Notificações */}
                 <Button className="w-9 h-9 rounded-full bg-gray-100 border-accent cursor-pointer hover:bg-gray-300 transition-all">
                     <Bell className="text-gray-600"/>
                 </Button>
 
                 <UserAvatarDropdown />
-                
+
             </div>
         </header>
     );

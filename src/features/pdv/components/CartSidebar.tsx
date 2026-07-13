@@ -1,8 +1,9 @@
 // /features/pdv/components/CartSidebar.tsx
 import { memo } from "react";
-import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatarMoeda } from "@/lib/utils";
+import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
 import type { ItemCarrinho } from "../../../types/pdv";
 
 interface CartSidebarProps {
@@ -10,6 +11,7 @@ interface CartSidebarProps {
   subtotal: number;
   onAlterarQuantidade: (idCarrinho: string, delta: number) => void;
   onRemoverItem: (idCarrinho: string) => void;
+  onEditarItem: (idCarrinho: string) => void;
   onConfirmarVenda: () => void;
 }
 
@@ -18,9 +20,13 @@ export function CartSidebar({
   subtotal,
   onAlterarQuantidade,
   onRemoverItem,
+  onEditarItem,
   onConfirmarVenda,
 }: CartSidebarProps) {
   const hasItems = itens.length > 0;
+
+  // F2 aciona a cobrança. Só ativo quando tem itens — senão a tecla não faz nada.
+  useKeyboardShortcut("F2", onConfirmarVenda, { enabled: hasItems });
 
   return (
     <aside
@@ -49,6 +55,7 @@ export function CartSidebar({
               item={item}
               onAlterarQuantidade={onAlterarQuantidade}
               onRemover={onRemoverItem}
+              onEditar={onEditarItem}
             />
           ))
         ) : (
@@ -76,9 +83,12 @@ export function CartSidebar({
         <Button
           disabled={!hasItems}
           onClick={onConfirmarVenda}
-          className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md"
+          className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md flex items-center justify-center gap-2"
         >
-          Confirmar Venda
+          <span>Cobrar {formatarMoeda(subtotal)}</span>
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold bg-white/15 border border-white/25 rounded">
+            F2
+          </kbd>
         </Button>
       </div>
     </aside>
@@ -90,9 +100,11 @@ interface CartItemCardProps {
   item: ItemCarrinho;
   onAlterarQuantidade: (idCarrinho: string, delta: number) => void;
   onRemover: (idCarrinho: string) => void;
+  onEditar: (idCarrinho: string) => void;
 }
 
-const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onRemover }: CartItemCardProps) {
+const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onRemover, onEditar }: CartItemCardProps) {
+  const temModificadores = (item.modificadores?.length ?? 0) > 0;
   return (
     <div className="group flex flex-col gap-2 p-3 bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-colors">
       <div className="flex justify-between items-start gap-2">
@@ -102,14 +114,9 @@ const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onR
           </h4>
 
           {item.modificadores && item.modificadores.length > 0 && (
-            <ul className="mt-1 flex flex-col gap-0.5">
-              {item.modificadores.map((mod, i) => (
-                <li key={i} className="text-[11px] text-slate-500 flex items-center">
-                  <span className="text-slate-300 mr-1.5">-</span>
-                  {mod.nome}
-                </li>
-              ))}
-            </ul>
+            <p className="mt-0.5 text-[11px] text-slate-500 leading-snug">
+              {item.modificadores.map((m) => m.nome).join(" · ")}
+            </p>
           )}
         </div>
 
@@ -145,15 +152,29 @@ const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onR
           </Button>
         </div>
 
-        <Button
-          onClick={() => onRemover(item.idCarrinho)}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-pointer text-red-500 hover:bg-red-50 hover:text-red-600 bg-red-50/50 opacity-80 group-hover:opacity-100 transition-opacity"
-          title="Remover Item"
-        >
-          <Trash size={14} />
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {temModificadores && (
+            <Button
+              onClick={() => onEditar(item.idCarrinho)}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 cursor-pointer text-slate-500 hover:bg-slate-100 hover:text-blue-700 opacity-80 group-hover:opacity-100 transition-opacity"
+              title="Editar item"
+              aria-label="Editar item"
+            >
+              <Pencil size={14} />
+            </Button>
+          )}
+          <Button
+            onClick={() => onRemover(item.idCarrinho)}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-pointer text-red-500 hover:bg-red-50 hover:text-red-600 bg-red-50/50 opacity-80 group-hover:opacity-100 transition-opacity"
+            title="Remover Item"
+          >
+            <Trash size={14} />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -24,3 +24,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+.env*
+
+# Documentos internos de seguranca (auditoria SAST/OWASP) — mantidos so localmente,
+# nunca commitados enquanto o repositorio for publico
+docs/security/

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,7 @@ type FormInputs = z.infer<typeof formSchema>;
 interface MovimentacaoCaixaModalProps {
     tipo: 'SANGRIA' | 'REFORCO' | null;
     onClose: () => void;
-    onSave: (dados: Omit<MovimentacaoDTO, 'tipo'>) => Promise<void>;
+    onSave: (dados: Omit<MovimentacaoDTO, 'tipo'> & { idempotencyKey: string }) => Promise<void>;
     isSalvando: boolean;
 }
 
@@ -29,6 +29,11 @@ export function MovimentacaoCaixaModal({ tipo, onClose, onSave, isSalvando }: Mo
         defaultValues: { valor: 0, motivo: "" }
     });
 
+    // Nova chave a cada abertura do modal (tipo muda de null para SANGRIA/REFORCO) —
+    // um retry manual dentro da mesma tentativa reusa a mesma chave, evitando
+    // duplicar a movimentação (SAST-19).
+    const idempotencyKey = useMemo(() => crypto.randomUUID(), [tipo]);
+
     useEffect(() => {
         if (tipo) reset({ valor: 0, motivo: "" });
     }, [tipo, reset]);
@@ -36,6 +41,10 @@ export function MovimentacaoCaixaModal({ tipo, onClose, onSave, isSalvando }: Mo
     if (!tipo) return null;
 
     const isSangria = tipo === 'SANGRIA';
+
+    function onSubmit(dados: FormInputs) {
+        return onSave({ ...dados, idempotencyKey });
+    }
 
     return (
         <Dialog open={!!tipo} onOpenChange={(open) => !open && onClose()}>
@@ -47,7 +56,7 @@ export function MovimentacaoCaixaModal({ tipo, onClose, onSave, isSalvando }: Mo
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSave)} className="space-y-4 mt-2">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
                     
                     <div className="space-y-2">
                         <Label className="font-semibold text-gray-800">Valor (R$)</Label>

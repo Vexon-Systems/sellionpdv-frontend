@@ -5,6 +5,7 @@ import { PdvPage } from '@/features/pdv/pages/PdvPage';
 import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
 
 import { RootLayout } from './RootLayout';
+import { RootErrorComponent } from './RootErrorComponent';
 import { requireAuth, requireAdmin } from './auth-guards';
 import {
     CatalogoPage,
@@ -19,6 +20,7 @@ import {
 
 const rootRoute = createRootRoute({
     component: RootLayout,
+    errorComponent: RootErrorComponent,
 });
 
 const loginRoute = createRoute({

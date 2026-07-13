@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCartStore } from "@/store/useCartStore";
 import { useFinalizarVenda } from "./useFinalizarVenda";
@@ -20,6 +20,17 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
     const [formaPagamento, setFormaPagamento] = useState<FormaPagamento | null>(null);
     const [maquininhaId, setMaquininhaId] = useState<string | null>(null);
     const [bandeiraCartao, setBandeiraCartao] = useState<BandeiraCartao | null>(null);
+
+    const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
+
+    // Nova chave só quando um checkout novo começa — retries dentro da mesma
+    // tentativa (mesmo carrinho, mesmo modal aberto) reusam a mesma chave,
+    // evitando duplicar a venda se um retry manual acontecer após timeout.
+    useEffect(() => {
+        if (isOpen) {
+            idempotencyKeyRef.current = crypto.randomUUID();
+        }
+    }, [isOpen]);
 
     const { mutate, isPending } = useFinalizarVenda();
 
@@ -63,6 +74,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
             maquininhaId: exigeMaquininha ? Number(maquininhaId) : null,
             bandeiraCartao: exigeMaquininha ? bandeiraCartao : null,
             descontoAplicado: 0,
+            idempotencyKey: idempotencyKeyRef.current,
         };
 
         mutate(payload, {

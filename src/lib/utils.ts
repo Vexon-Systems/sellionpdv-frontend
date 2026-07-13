@@ -24,3 +24,17 @@ const moedaFormatter = new Intl.NumberFormat("pt-BR", {
 export function formatarMoeda(valor: number): string {
   return moedaFormatter.format(valor);
 }
+
+/**
+ * Encurta o nome completo em "Primeiro + inicial do último".
+ * "João Silva" → "João S."
+ * "Ana Maria Souza" → "Ana S."
+ * "João" → "João"
+ */
+export function formatarNomeCurto(nomeCompleto: string | null | undefined): string {
+  if (!nomeCompleto) return "";
+  const partes = nomeCompleto.trim().split(/\s+/);
+  if (partes.length === 1) return partes[0];
+  const inicial = partes[partes.length - 1]?.charAt(0)?.toUpperCase() ?? "";
+  return inicial ? `${partes[0]} ${inicial}.` : partes[0];
+}

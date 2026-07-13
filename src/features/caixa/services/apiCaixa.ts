@@ -12,8 +12,11 @@ export const apiCaixa = {
         return data;
     },
 
-    movimentacao: async (dados: MovimentacaoDTO): Promise<void> => {
-        await api.post("/api/caixa/movimentacao", dados);
+    movimentacao: async (dados: MovimentacaoDTO & { idempotencyKey: string }): Promise<void> => {
+        const { idempotencyKey, ...payload } = dados;
+        await api.post("/api/caixa/movimentacao", payload, {
+            headers: { 'Idempotency-Key': idempotencyKey }
+        });
     },
 
     fechar: async (dados: FechamentoDTO): Promise<void> => {

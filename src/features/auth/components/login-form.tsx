@@ -50,7 +50,7 @@ export function LoginForm({
       const respostaApi = await login(data.email, data.senha);
 
       queryClient.clear();
-      setAuth(respostaApi.usuario, respostaApi.token);
+      setAuth(respostaApi.usuario, respostaApi.accessToken, respostaApi.refreshToken);
       toast.success(`Bem-vindo de volta, ${respostaApi.usuario.nome}!`);
       navigate({ to: "/" });
 

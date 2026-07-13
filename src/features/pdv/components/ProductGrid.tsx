@@ -8,6 +8,8 @@ interface ProductGridProps {
   isLoading: boolean;
   isError: boolean;
   onCliqueProduto: (produto: ProdutoDTO) => void;
+  /** Quantidade no carrinho por produto (produtoId → total). Ausente ou 0 = não renderizar badge. */
+  contagemPorProduto?: Record<number, number>;
 }
 
 export const ProductGrid = memo(function ProductGrid({
@@ -15,6 +17,7 @@ export const ProductGrid = memo(function ProductGrid({
   isLoading,
   isError,
   onCliqueProduto,
+  contagemPorProduto,
 }: ProductGridProps) {
   if (isLoading) {
     return (
@@ -42,7 +45,9 @@ export const ProductGrid = memo(function ProductGrid({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 xl:gap-6 my-6">
-      {produtos.map((produto) => (
+      {produtos.map((produto) => {
+        const qtdeNoCarrinho = contagemPorProduto?.[produto.id] ?? 0;
+        return (
         <Card
           key={produto.id}
           onClick={() => onCliqueProduto(produto)}
@@ -60,7 +65,7 @@ export const ProductGrid = memo(function ProductGrid({
             <span className="text-slate-400 text-sm font-medium absolute z-0 text-center px-2">
               Sem Imagem
             </span>
-            
+
             {/* Imagem do produto */}
             {produto.imagemUrl && (
               <img
@@ -72,6 +77,16 @@ export const ProductGrid = memo(function ProductGrid({
                   e.currentTarget.style.display = 'none';
                 }}
               />
+            )}
+
+            {/* Badge de quantidade no carrinho — só aparece se o produto já foi adicionado */}
+            {qtdeNoCarrinho > 0 && (
+              <div
+                className="absolute top-2 right-2 z-20 min-w-[28px] h-7 px-2 rounded-full bg-blue-900 text-white text-xs font-bold flex items-center justify-center shadow-md"
+                aria-label={`${qtdeNoCarrinho} unidades no carrinho`}
+              >
+                {qtdeNoCarrinho}x
+              </div>
             )}
           </div>
 
@@ -88,7 +103,8 @@ export const ProductGrid = memo(function ProductGrid({
 
           </CardContent>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 });
