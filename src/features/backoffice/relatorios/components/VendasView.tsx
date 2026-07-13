@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 // 1. Importações do Pagination do Shadcn
 import { 
@@ -68,7 +69,7 @@ export function VendasView() {
       await cancelarVenda(justificativa);
       setJustificativa("");
     } catch (error) {
-      console.error("Erro ao cancelar venda:", error);
+      reportOperationalError("relatorios.vendas.confirmar-cancelamento", error);
       alert("Não foi possível cancelar a venda. Verifique se o caixa já foi fechado.");
     } finally {
       setIsCancelando(false);

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchVendas, fetchVendaDetalhes } from "../services/apiRelatorios";
 import { type VendaResumo, type VendaDetalhes } from "../types/relatorios";
 import { api } from "@/lib/api";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useVendas() {
   const [vendas, setVendas] = useState<VendaResumo[]>([]);
@@ -25,7 +26,7 @@ export function useVendas() {
       setVendas(response.content);
       setTotalPaginas(response.totalPages);
     } catch (error) {
-      console.error("Erro ao carregar vendas", error);
+      reportOperationalError("relatorios.vendas.listar", error);
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +47,7 @@ export function useVendas() {
       const detalhes = await fetchVendaDetalhes(id);
       setDetalhesVenda(detalhes);
     } catch (error) {
-      console.error("Erro ao carregar detalhes", error);
+      reportOperationalError("relatorios.vendas.detalhes", error);
     } finally {
       setIsLoadingDetalhes(false);
     }
@@ -71,7 +72,7 @@ export function useVendas() {
          await abrirDetalhes(vendaSelecionadaParaCancelamento);
       }
     } catch (error) {
-      console.error("Erro ao cancelar venda", error);
+      reportOperationalError("relatorios.vendas.cancelar", error);
       throw error;
     }
   };

@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { login } from "@/features/auth/services/apiAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react" 
+import { reportOperationalError } from "@/lib/errorReporting";
 
 const loginSchema = z.object({
   email: z.string().email("Por favor, digite um e-mail válido."),
@@ -55,7 +56,7 @@ export function LoginForm({
       navigate({ to: "/" });
 
     } catch (error) {
-      console.error("Falha na autenticação:", error);
+      reportOperationalError("auth.login", error);
       toast.error("Erro ao acessar", {
         description: "E-mail ou senha incorretos. Verifique e tente novamente."
       });
@@ -95,9 +96,6 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor="password">Senha</FieldLabel>
-                  <a href="#" className="text-sm underline-offset-2 hover:underline text-blue-950">
-                    Esqueceu sua senha?
-                  </a>
                 </div>
                 <Input 
                   id="password" 
@@ -121,7 +119,7 @@ export function LoginForm({
               </Field>
               
               <FieldDescription className="text-center mt-4">
-                Não tem uma conta? <a href="#" className="font-semibold text-blue-900 hover:underline">Solicite agora!</a>
+                Não tem uma conta? Solicite acesso ao administrador.
               </FieldDescription>
             </FieldGroup>
           </form>
