@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchComparativo } from "../services/apiRelatorios";
 import { type RelatorioComparativoResponse } from "../types/relatorios";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useComparativo() {
   const [date, setDate] = useState<DateRange | undefined>(() => {
@@ -52,7 +53,7 @@ export function useComparativo() {
         const response = await fetchComparativo(dataInicialStr, dataFinalStr);
         setData(response);
       } catch (error) {
-        console.error("Erro ao carregar Relatório Comparativo", error);
+        reportOperationalError("relatorios.comparativo", error);
       } finally {
         setIsLoading(false);
       }

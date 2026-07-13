@@ -1,6 +1,6 @@
 # SellionPDV — Contexto do Projeto (Frontend)
 
-SellionPDV é um POS SaaS multi-tenant para franquias alimentícias, em produção. Este arquivo fornece contexto persistente para o Claude Code.
+SellionPDV é um POS SaaS multi-tenant para franquias alimentícias, em produção. Este arquivo fornece contexto persistente para o Codex.
 
 ## Stack
 

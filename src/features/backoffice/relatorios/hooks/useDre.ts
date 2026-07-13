@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchDre } from "../services/apiRelatorios";
 import { type DreResponse } from "../types/relatorios";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useDre() {
   const [date, setDate] = useState<DateRange | undefined>(() => {
@@ -52,7 +53,7 @@ export function useDre() {
         const response = await fetchDre(dataInicial, dataFinal);
         setData(response);
       } catch (error) {
-        console.error("Erro ao carregar DRE", error);
+        reportOperationalError("relatorios.dre", error);
       } finally {
         setIsLoading(false);
       }

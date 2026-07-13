@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchCaixas } from "../services/apiRelatorios";
 import { type RelatorioCaixa } from "../types/relatorios";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useCaixas() {
   const [date, setDate] = useState<DateRange | undefined>(() => {
@@ -52,7 +53,7 @@ export function useCaixas() {
         const response = await fetchCaixas(dataInicialStr, dataFinalStr, 0, 100); 
         setCaixas(response.content);
       } catch (error) {
-        console.error("Erro ao carregar Relatório de Caixas", error);
+        reportOperationalError("relatorios.caixas", error);
       } finally {
         setIsLoading(false);
       }

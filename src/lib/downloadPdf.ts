@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import type { AxiosResponse } from "axios";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 /**
  * Baixa um PDF gerado pelo backend e dispara o download no browser.
@@ -31,7 +32,7 @@ export async function downloadPdf(
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (err) {
-    console.error("[downloadPdf]", endpoint, err);
+    reportOperationalError("pdf.download", err);
     toast.error("Não foi possível gerar o PDF. Tente novamente.");
     throw err;
   }

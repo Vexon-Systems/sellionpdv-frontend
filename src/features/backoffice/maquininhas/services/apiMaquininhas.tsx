@@ -1,5 +1,6 @@
 import { isAxiosError } from 'axios';
 import { api } from '@/lib/api';
+import { reportOperationalError } from '@/lib/errorReporting';
 import type { MaquininhaDTO } from '../types/maquininha';
 
 export const apiMaquininhas = {
@@ -24,7 +25,7 @@ export const apiMaquininhas = {
         } catch (error: unknown) {
             const status = isAxiosError(error) ? error.response?.status : undefined;
             if (status === 405 || status === 404) {
-                console.warn("Rota DELETE não encontrada, enviando requisição PUT para inativar...");
+                reportOperationalError("maquininhas.excluir.fallback", error);
                 const lista = await apiMaquininhas.listarTodas();
                 const maq = lista.find(m => m.id === id);
                 if (maq) {

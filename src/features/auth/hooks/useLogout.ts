@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { logout as logoutApi } from "@/features/auth/services/apiAuth";
+import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useLogout() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export function useLogout() {
       try {
         await logoutApi(refreshToken);
       } catch (error) {
-        console.error("Falha ao revogar sessão no servidor:", error);
+        reportOperationalError("auth.logout", error);
       }
     }
 

@@ -3,17 +3,39 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+/**
+ * The current backend contract uses bearer tokens, not cookies. Keep the
+ * Authorization header restricted to the configured API origin even if a
+ * caller accidentally passes an absolute URL to this axios instance.
+ */
+function isConfiguredApiRequest(config: InternalAxiosRequestConfig) {
+  try {
+    const fallbackOrigin = window.location.origin;
+    const apiOrigin = new URL(api.defaults.baseURL ?? fallbackOrigin, fallbackOrigin).origin;
+    const requestUrl = new URL(
+      config.url ?? '',
+      config.baseURL ?? api.defaults.baseURL ?? fallbackOrigin
+    );
+
+    return requestUrl.origin === apiOrigin;
+  } catch {
+    return false;
+  }
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
+  const isApiRequest = isConfiguredApiRequest(config);
 
-  if (token) {
+  if (token && isApiRequest) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else if (!isApiRequest) {
+    config.headers.delete('Authorization');
   }
 
   return config;
@@ -50,7 +72,13 @@ api.interceptors.response.use(
       originalRequest?.url?.includes('/api/auth/refresh') ||
       originalRequest?.url?.includes('/api/auth/login');
 
-    if (error.response?.status !== 401 || !originalRequest || originalRequest._retry || isAuthRoute) {
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retry ||
+      isAuthRoute ||
+      !isConfiguredApiRequest(originalRequest)
+    ) {
       return Promise.reject(error);
     }
 
