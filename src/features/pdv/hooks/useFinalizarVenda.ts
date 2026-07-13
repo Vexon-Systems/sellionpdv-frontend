@@ -4,22 +4,21 @@ import type { ItemCarrinho } from "../../../types/pdv";
 import type { FormaPagamento } from "../types/venda"; //
 
 export interface FormatoVendaFrontend {
-    formaPagamento: FormaPagamento; 
+    formaPagamento: FormaPagamento;
     maquininhaId?: number | null;
     descontoAplicado?: number;
     itens: ItemCarrinho[];
+    idempotencyKey: string;
 }
 
 export const useFinalizarVenda = () => {
     return useMutation({
         mutationFn: async (dadosFrontend: FormatoVendaFrontend) => {
-            const idempotencyKey = crypto.randomUUID();
-
             const payloadLimpo = {
                 formaPagamento: dadosFrontend.formaPagamento,
                 maquininhaId: dadosFrontend.maquininhaId || null,
                 descontoAplicado: dadosFrontend.descontoAplicado || 0,
-                
+
                 itens: dadosFrontend.itens.map(item => ({
                     produtoId: item.produto.id,
                     quantidade: item.quantidade,
@@ -27,7 +26,7 @@ export const useFinalizarVenda = () => {
                 }))
             };
 
-            return await finalizarVenda(payloadLimpo, idempotencyKey);
+            return await finalizarVenda(payloadLimpo, dadosFrontend.idempotencyKey);
         },
     });
 };

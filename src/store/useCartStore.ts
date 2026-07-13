@@ -6,6 +6,11 @@ interface CartStore {
     adicionarItem: (produto: ProdutoDTO, modificadores?: ModificadorSelecionado[]) => void;
     removerItem: (id_temporario: string) => void;
     alterarQuantidade: (id_temporario: string, delta: number) => void;
+    /**
+     * Substitui os modificadores de um item existente (edição). Mantém idCarrinho,
+     * quantidade e produto — recalcula valorUnitarioTotal e subtotal.
+     */
+    substituirModificadores: (id_temporario: string, modificadores: ModificadorSelecionado[]) => void;
     limparCarrinho: () => void;
 }
 
@@ -60,6 +65,20 @@ export const useCartStore = create<CartStore>((set) => ({
             return { ...item, quantidade: novaQuantidade, subtotal: novaQuantidade * item.valorUnitarioTotal };
         }
         return item;
+        }),
+    })),
+
+    substituirModificadores: (id_temporario, modificadores) => set((state) => ({
+        itens: state.itens.map((item) => {
+            if (item.idCarrinho !== id_temporario) return item;
+            const somaMods = modificadores.reduce((acc, m) => acc + m.precoAdicional, 0);
+            const novoValorUnitario = item.produto.precoBase + somaMods;
+            return {
+                ...item,
+                modificadores,
+                valorUnitarioTotal: novoValorUnitario,
+                subtotal: item.quantidade * novoValorUnitario,
+            };
         }),
     })),
 

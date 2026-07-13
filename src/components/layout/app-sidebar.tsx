@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings, Wallet } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
 import sellionSimbolo from '@/assets/simbolo_sellion.png';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip";
@@ -33,17 +33,10 @@ import {
 } from '@/components/ui/sidebar';
 
 export function AppSidebar(){
-  const {user, clearAuth} = useAuthStore();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const {user} = useAuthStore();
+  const handleLogout = useLogout();
 
   const isAdmin = user?.role === 'ROLE_ADMIN';
-
-  const handleLogout = () => {
-    queryClient.clear();
-    clearAuth();
-    navigate({to: "/login"});
-  }
 
   return(
     <Sidebar variant="inset" collapsible="icon" className="bg-primary text-white border-none w-65">

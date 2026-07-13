@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router"; // Assumindo TanStack Router conforme sua documentação
-import { useAuthStore } from "@/store/useAuthStore";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import { useUsuarioMe } from "../hooks/useUsuarioMe";
 
 import {
@@ -26,8 +26,8 @@ const formatarRole = (role?: string) => {
 export function UserAvatarDropdown() {
   const navigate = useNavigate();
   const { usuario, isLoading } = useUsuarioMe();
-  const clearAuth = useAuthStore((state) => state.clearAuth);
-  
+  const handleLogout = useLogout();
+
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
   if (isLoading || !usuario) {
@@ -35,11 +35,6 @@ export function UserAvatarDropdown() {
   }
 
   const iniciais = usuario.nome.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate({ to: "/login" });
-  };
 
   return (
     <>

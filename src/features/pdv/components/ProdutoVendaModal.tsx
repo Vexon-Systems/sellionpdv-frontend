@@ -7,18 +7,30 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCartStore } from "@/store/useCartStore";
 import type { ProdutoDTO, ModificadorSelecionado, OpcaoModificadorDTO } from "../../../types/pdv";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Save } from "lucide-react";
 import { formatarMoeda } from "@/lib/utils";
 
 interface Props {
     produto: ProdutoDTO;
     isOpen: boolean;
     onClose: () => void;
+    /**
+     * Se presente, o modal opera em modo edição: pré-preenche a seleção e ao confirmar
+     * substitui o item existente (mantendo idCarrinho e quantidade) em vez de adicionar novo.
+     */
+    modoEdicao?: {
+        idCarrinho: string;
+        modificadoresIniciais: ModificadorSelecionado[];
+    };
 }
 
-export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
+export function ProdutoVendaModal({ produto, isOpen, onClose, modoEdicao}: Props){
     const adicionarItem = useCartStore((state) => state.adicionarItem);
-    const [selecao, setSelecao] = useState<ModificadorSelecionado[]>([]);
+    const substituirModificadores = useCartStore((state) => state.substituirModificadores);
+    const isEdicao = !!modoEdicao;
+    const [selecao, setSelecao] = useState<ModificadorSelecionado[]>(
+        modoEdicao?.modificadoresIniciais ?? []
+    );
 
     // Mapa de otimização:
     // Relaciona id_da_opcao -> id_do_grupo em tempo constante
@@ -80,7 +92,11 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
     }, [produto.gruposModificadores]);
 
     const handleConfirmar = () => {
-        adicionarItem(produto, selecao);
+        if (modoEdicao) {
+            substituirModificadores(modoEdicao.idCarrinho, selecao);
+        } else {
+            adicionarItem(produto, selecao);
+        }
         setSelecao([]);
         onClose();
     };
@@ -92,7 +108,7 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                     <DialogTitle className="text-2xl font-bold text-slate-800">
                         {produto.nome}
                         <p className="text-sm font-normal text-slate-500">
-                            Personalize seu pedido abaixo
+                            {isEdicao ? "Editando item do carrinho" : "Personalize seu pedido abaixo"}
                         </p>
                     </DialogTitle>
                 </DialogHeader>
@@ -188,8 +204,10 @@ export function ProdutoVendaModal({ produto, isOpen, onClose}: Props){
                         size={"lg"}
                         className="bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md cursor-pointer px-8"
                     >
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Adicionar ao Carrinho
+                        {isEdicao
+                            ? <><Save className="mr-2 h-5 w-5" /> Salvar Alterações</>
+                            : <><ShoppingCart className="mr-2 h-5 w-5" /> Adicionar ao Carrinho</>
+                        }
                     </Button>
                 </DialogFooter>
                 

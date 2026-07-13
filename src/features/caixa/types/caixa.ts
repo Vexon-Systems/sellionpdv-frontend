@@ -3,6 +3,8 @@ export interface CaixaAtualDTO {
     status: "ABERTO" | "FECHADO";
     dataAbertura: string;
     saldoInicial: number;
+    operadorAberturaId: number | null;
+    operadorAberturaNome: string | null;
 }
 
 export interface FechamentoDTO {
