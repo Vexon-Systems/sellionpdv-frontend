@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Header } from "@/components/layout/Header";
+import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -42,33 +42,31 @@ export function MaquininhasPage() {
     };
 
     return (
-        <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden">
-            <Header titulo="Gestão de Maquininhas" />
-
-            <div className="flex-1 overflow-y-auto p-4 md:px-8 py-6">
+        <PageShell titulo="Gestão de Maquininhas">
+            <div>
                 
                 {/* Cabeçalho da Página */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">                    
-                    <Button onClick={handleNovaMaquininha} className="bg-primary hover:bg-primary/90 text-white shadow-md" size={"lg"}>
+                    <Button onClick={handleNovaMaquininha} size={"lg"}>
                         <Plus size={18} className="mr-2" /> Cadastrar Maquininha
                     </Button>
 
                     {/* Toggle de Inativas */}
-                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="flex items-center space-x-2 rounded-lg border bg-surface-raised px-4 py-2">
                         <Switch id="inativas" checked={mostrarInativas} onCheckedChange={setMostrarInativas} />
-                        <Label htmlFor="inativas" className="text-gray-600 cursor-pointer">Mostrar Excluídas/Inativas</Label>
+                        <Label htmlFor="inativas" className="cursor-pointer text-muted-foreground">Mostrar Excluídas/Inativas</Label>
                     </div>
                 </div>
 
                 {/* Estados de Carregamento e Erro */}
                 {isLoading && (
-                    <div className="flex justify-center items-center py-20 text-gray-400 animate-pulse">
+                    <div className="flex items-center justify-center py-20 text-muted-foreground animate-pulse">
                         Carregando terminais...
                     </div>
                 )}
 
                 {isError && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-3">
+                    <div className="flex items-center gap-3 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
                         <AlertCircle size={20} />
                         <p>Ocorreu um erro ao buscar as maquininhas. Tente novamente mais tarde.</p>
                     </div>
@@ -76,9 +74,9 @@ export function MaquininhasPage() {
 
                 {/* Grid de Maquininhas */}
                 {!isLoading && !isError && maquininhasFiltradas.length === 0 ? (
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 flex flex-col items-center justify-center text-gray-400 bg-white">
-                        <CreditCard size={48} className="mb-4 opacity-20" />
-                        <h3 className="text-lg font-medium text-gray-600 mb-1">Nenhuma maquininha encontrada</h3>
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface p-12 text-muted-foreground">
+                        <CreditCard size={48} className="mb-4 opacity-30" />
+                        <h3 className="mb-1 text-lg font-medium text-foreground">Nenhuma maquininha encontrada</h3>
                         <p className="text-center text-sm mb-4">
                             {maquininhas.length > 0 
                                 ? "Você possui maquininhas cadastradas, mas elas estão inativas." 
@@ -89,43 +87,43 @@ export function MaquininhasPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {maquininhasFiltradas.map((maq) => (
-                            <div key={maq.id} className={`bg-white rounded-xl border shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow relative overflow-hidden ${!maq.ativo && 'opacity-60 grayscale'}`}>
+                            <div key={maq.id} className={`relative flex flex-col overflow-hidden rounded-xl border bg-surface-raised p-6 shadow-card transition-shadow hover:shadow-floating ${!maq.ativo && 'opacity-60 grayscale'}`}>
                                 
                                 {/* Tarja visual para inativos */}
-                                {!maq.ativo && <div className="absolute top-0 left-0 w-full h-1 bg-gray-400" />}
-                                {maq.ativo && <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />}
+                                {!maq.ativo && <div className="absolute top-0 left-0 h-1 w-full bg-muted-foreground" />}
+                                {maq.ativo && <div className="absolute top-0 left-0 h-1 w-full bg-success" />}
 
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-3 rounded-full ${maq.ativo ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                                        <div className={`rounded-full p-3 ${maq.ativo ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
                                             <CreditCard size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-gray-900 text-lg">{maq.nome}</h3>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${maq.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>
+                                            <h3 className="text-lg font-bold text-foreground">{maq.nome}</h3>
+                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${maq.ativo ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground'}`}>
                                                 {maq.ativo ? 'Em Operação' : 'Excluída/Inativa'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 my-4 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                <div className="my-4 grid grid-cols-2 gap-4 rounded-lg border bg-surface-sunken/70 p-3">
                                     <div>
-                                        <p className="text-xs text-gray-500 font-medium mb-1">Taxa de Débito</p>
-                                        <p className="text-lg font-bold text-gray-800">{maq.taxaDebito.toFixed(2)}%</p>
+                                        <p className="mb-1 text-xs font-medium text-muted-foreground">Taxa de Débito</p>
+                                        <p className="text-lg font-bold text-foreground">{maq.taxaDebito.toFixed(2)}%</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-500 font-medium mb-1">Taxa de Crédito</p>
-                                        <p className="text-lg font-bold text-gray-800">{maq.taxaCredito.toFixed(2)}%</p>
+                                        <p className="mb-1 text-xs font-medium text-muted-foreground">Taxa de Crédito</p>
+                                        <p className="text-lg font-bold text-foreground">{maq.taxaCredito.toFixed(2)}%</p>
                                     </div>
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-2">
-                                    <Button variant="ghost" size="sm" onClick={() => handleEditar(maq)} className="text-gray-600 hover:text-primary">
+                                <div className="mt-auto flex justify-end gap-2 border-t pt-4">
+                                    <Button variant="ghost" size="sm" onClick={() => handleEditar(maq)} className="text-muted-foreground hover:text-primary">
                                         <Pen size={16} className="mr-2" /> Editar
                                     </Button>
                                     {maq.ativo && (
-                                        <Button variant="ghost" size="sm" onClick={() => setMaquininhaParaExcluir(maq)} className="text-gray-400 hover:text-red-600 hover:bg-red-50">
+                                        <Button variant="ghost" size="sm" onClick={() => setMaquininhaParaExcluir(maq)} className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                                             <Trash2 size={16} />
                                         </Button>
                                     )}
@@ -166,6 +164,6 @@ export function MaquininhasPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </PageShell>
     );
 }

@@ -29,9 +29,9 @@ export function ModificadorSidebar({
         : grupos;
 
     return (
-        <Card className="w-full lg:w-[320px] xl:w-95 shrink-0 rounded-md border-border flex flex-col h-100 lg:h-full lg:overflow-hidden">
-            <CardHeader className="flex flex-col space-y-2 border-b px-6 py-1">
-                <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+        <Card className="flex h-100 w-full shrink-0 flex-col overflow-hidden lg:h-full lg:w-[320px] xl:w-95">
+            <CardHeader className="flex flex-col space-y-3 border-b px-5 py-4">
+                <CardTitle className="flex items-center gap-2 text-base text-foreground">
                     <Layers className="h-5 w-5 text-primary" />
                     Grupos de Modificadores
                 </CardTitle>
@@ -50,7 +50,7 @@ export function ModificadorSidebar({
                 </div>
             </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto px-4 py-1 space-y-2">
+            <CardContent className="flex-1 space-y-1 overflow-y-auto px-2 py-2">
                 {isLoading && <p className="text-muted-foreground text-sm text-center py-4 animate-pulse">Carregando...</p>}
 
                 {!isLoading && gruposFiltrados.length === 0 && (
@@ -62,10 +62,10 @@ export function ModificadorSidebar({
                 {gruposFiltrados.map((grupo) => {
                     const isSelected = grupoSelecionado?.id === grupo.id && !isCriandoNovo;
                     return (
-                        <div
+                        <button type="button"
                             key={grupo.id}
                             onClick={() => onSelect(grupo)}
-                            className={`p-3 rounded-lg cursor-pointer border transition-all ${
+                            className={`w-full p-3 text-left rounded-lg cursor-pointer border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 isSelected
                                 ? 'border-primary bg-primary/5 shadow-sm'
                                 : 'border-border hover:border-border hover:bg-muted/50'
@@ -75,7 +75,7 @@ export function ModificadorSidebar({
                             <p className="text-xs text-muted-foreground mt-1">
                                 {grupo.opcoes.length} {grupo.opcoes.length === 1 ? 'opção' : 'opções'}
                             </p>
-                        </div>
+                        </button>
                     );
                 })}
             </CardContent>
