@@ -172,8 +172,35 @@
 
 ### 5. Módulo de Caixa (Turno)
 
+*   **`GET /api/caixa/operacional`** — `ROLE_OPERADOR` ou `ROLE_ADMIN`
+    *   **Descrição:** Fonte operacional do estado do caixa. A role é resolvida pelo backend a partir do usuário atual do banco. Nunca retorna saldo inicial, valores de vendas, valores de movimentações, saldo esperado ou furo.
+    *   **Resposta de Sucesso (HTTP 200 OK):**
+        ```json
+        {
+          "caixaAberto": true,
+          "visaoAdministrativa": false,
+          "id": 105,
+          "status": "ABERTO",
+          "dataAbertura": "2026-05-06T08:00:00Z",
+          "operadorAberturaId": 12,
+          "operadorAberturaNome": "Operador",
+          "eventos": [
+            {
+              "id": "venda-900",
+              "tipo": "VENDA",
+              "status": "CONCLUIDA",
+              "descricao": "Venda #900",
+              "dataEvento": "2026-05-06T09:15:00Z"
+            }
+          ]
+        }
+        ```
+    *   **Sem caixa aberto:** retorna HTTP 200 com `caixaAberto: false`, campos do caixa nulos e `eventos: []`.
+    *   **Cache:** `Cache-Control: no-store`.
+
 *   **`GET /api/caixa/atual`**
-    *   **Descrição:** Retorna os dados do caixa que estiver com status `ABERTO` para o Tenant atual, essencial para o PDV validar se pode operar. Retorna 404 se não houver caixa aberto.
+    *   **Autorização:** somente `ROLE_ADMIN`; operador recebe HTTP 403.
+    *   **Descrição:** Retorna a visão monetária completa do caixa `ABERTO` para supervisão. Retorna 404 se não houver caixa aberto.
 
     * **Resposta de Sucesso (HTTP 200 OK)**
         ```json
@@ -184,6 +211,11 @@
           "saldoInicial": 150.50
         }
         ```
+
+*   **`GET /api/caixa/movimentacao`**
+    *   **Autorização:** somente `ROLE_ADMIN`; operador recebe HTTP 403.
+    *   **Descrição:** Retorna movimentações do caixa aberto com seus valores. A visão operacional do operador recebe apenas metadados de eventos por `/api/caixa/operacional`.
+    *   **Cache:** `Cache-Control: no-store`.
 
     * **Resposta de Erro (HTTP 404 Not Found)**
         ```json
@@ -235,14 +267,17 @@
           "saldoFinalInformado": 450.00
         }
         ```
-    *   **Retorno (200 OK):** Retorna os totais consolidados do dia.
+    *   **Retorno (200 OK):** Retorna os totais consolidados somente depois de a declaração ser aceita e o caixa ser fechado.
+    *   **Cache:** `Cache-Control: no-store`.
 
 ---
 
 ### 6. Frente de Caixa (Vendas)
 
 *   **`GET /api/vendas`** 
-    *   **Descrição:** Retorna as vendas associadas ao caixa atual (aberto). Fundamental para alimentar o histórico do turno no PDV.
+    *   **Autorização:** somente `ROLE_ADMIN`; operador recebe HTTP 403.
+    *   **Descrição:** Retorna a visão completa das vendas associadas ao caixa atual. O operador recebe apenas metadados sem valores pela visão operacional de caixa.
+    *   **Cache:** `Cache-Control: no-store`.
 
 *   **`POST /api/vendas`**
     *   **Descrição:** Regista uma nova venda. Obrigatório enviar o cabeçalho `Idempotency-Key` (UUID) para evitar duplicação por falha de rede. O cálculo do total da venda é feito no Backend com base nos preços armazenados no banco (Zero Trust).

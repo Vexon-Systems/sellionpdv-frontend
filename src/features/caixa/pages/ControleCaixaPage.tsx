@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { NumericFormat } from "react-number-format";
 
-import { Lock, Box, Coins, DollarSign, ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound, CheckCircle2 } from "lucide-react";
+import { Lock, Box, Coins, DollarSign, ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PageShell } from "@/components/layout/PageShell";
@@ -19,6 +19,53 @@ const formAberturaSchema = z.object({
 
 type FormAberturaInputs = z.infer<typeof formAberturaSchema>;
 
+interface ResumoCaixaAbertoProps {
+    visaoAdministrativa: boolean;
+    kpis: {
+        fundoTroco: number;
+        vendasDinheiro: number;
+        saldoFisico: number;
+    };
+}
+
+export function ResumoCaixaAberto({ visaoAdministrativa, kpis }: ResumoCaixaAbertoProps) {
+    if (!visaoAdministrativa) {
+        return (
+            <div className="mb-6 flex w-full items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
+                <ShieldCheck className="mt-0.5 shrink-0 text-blue-700" size={22} />
+                <div>
+                    <h3 className="font-semibold">Conferência cega ativa</h3>
+                    <p className="text-sm text-blue-800">
+                        Os valores esperados permanecem ocultos até a conclusão do fechamento.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full">
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
+                <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Saldo Físico Estimado</h3><Box size={20} className="text-gray-400 shrink-0 ml-2" /></div>
+                <p className="text-2xl font-bold text-primary mb-1 truncate w-full">{kpis.saldoFisico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p className="text-xs text-gray-500 truncate">Dinheiro que deve estar na gaveta.</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
+                <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Fundo de Troco</h3><Coins size={20} className="text-gray-400 shrink-0 ml-2" /></div>
+                <p className="text-2xl font-bold text-gray-900 mb-1 truncate w-full">{kpis.fundoTroco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p className="text-xs text-gray-500 truncate">Lançado na abertura.</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
+                <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Vendas em Dinheiro</h3><DollarSign size={20} className="text-gray-400 shrink-0 ml-2" /></div>
+                <p className="text-2xl font-bold text-green-600 mb-1 truncate w-full">{kpis.vendasDinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p className="text-xs text-gray-500 truncate">Apenas em espécie.</p>
+            </div>
+        </div>
+    );
+}
+
 export function ControleCaixaPage() {
     const [modalAtivo, setModalAtivo] = useState<'SANGRIA' | 'REFORCO' | null>(null);
     const [isFechamentoOpen, setIsFechamentoOpen] = useState(false);
@@ -30,7 +77,7 @@ export function ControleCaixaPage() {
 
     const { 
         caixaAtual, isCaixaAberto, isLoadingCaixa, 
-        kpis, extratoUnificado, 
+        kpis, extratoUnificado, visaoAdministrativa,
         abrir, isAbrindo, movimentar, isMovimentando, fechar, isFechando 
     } = useControleCaixa(fecharModais);
 
@@ -102,29 +149,13 @@ export function ControleCaixaPage() {
         );
     }
 
+    const dataAbertura = caixaAtual?.dataAbertura;
+
     return (
         <PageShell titulo="Controle de Caixa">
             <div className="flex-col items-start justify-between">
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full">
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
-                        <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Saldo Físico Estimado</h3><Box size={20} className="text-gray-400 shrink-0 ml-2" /></div>
-                        <p className="text-2xl font-bold text-primary mb-1 truncate w-full">{kpis.saldoFisico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                        <p className="text-xs text-gray-500 truncate">Dinheiro que deve estar na gaveta.</p>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
-                        <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Fundo de Troco</h3><Coins size={20} className="text-gray-400 shrink-0 ml-2" /></div>
-                        <p className="text-2xl font-bold text-gray-900 mb-1 truncate w-full">{kpis.fundoTroco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                        <p className="text-xs text-gray-500 truncate">Lançado na abertura.</p>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
-                        <div className="flex justify-between items-start mb-2"><h3 className="font-semibold text-gray-800 text-sm truncate">Vendas em Dinheiro</h3><DollarSign size={20} className="text-gray-400 shrink-0 ml-2" /></div>
-                        <p className="text-2xl font-bold text-green-600 mb-1 truncate w-full">{kpis.vendasDinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                        <p className="text-xs text-gray-500 truncate">Apenas em espécie.</p>
-                    </div>
-                </div>
+                <ResumoCaixaAberto visaoAdministrativa={visaoAdministrativa} kpis={kpis} />
 
                 <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
                     <div className="flex flex-wrap gap-3 w-full sm:w-auto">
@@ -140,9 +171,11 @@ export function ControleCaixaPage() {
                         
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full">
                             <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse shrink-0" />
-                            <span className="text-sm text-gray-700 font-normal">
-                                Caixa aberto dia <span className="font-bold">{new Date(caixaAtual!.dataAbertura).toLocaleDateString('pt-BR')}</span> às <span className="font-bold">{new Date(caixaAtual!.dataAbertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                            </span>
+                            {dataAbertura && (
+                                <span className="text-sm text-gray-700 font-normal">
+                                    Caixa aberto dia <span className="font-bold">{new Date(dataAbertura).toLocaleDateString('pt-BR')}</span> às <span className="font-bold">{new Date(dataAbertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </span>
+                            )}
                         </div>
                     </div>
                     
@@ -162,9 +195,11 @@ export function ControleCaixaPage() {
                                                 <p className="text-xs text-gray-500 mt-0.5">{item.subtitulo}</p>
                                             </div>
                                         </div>
-                                        <div className={`font-bold text-sm sm:text-base ${item.isEntrada ? 'text-green-600' : 'text-red-600'}`}>
-                                            {item.isEntrada ? '+ ' : '- '} {item.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                        </div>
+                                        {typeof item.valor === 'number' && (
+                                            <div className={`font-bold text-sm sm:text-base ${item.isEntrada ? 'text-green-600' : 'text-red-600'}`}>
+                                                {item.isEntrada ? '+ ' : '- '} {item.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

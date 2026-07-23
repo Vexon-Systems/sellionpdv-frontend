@@ -29,6 +29,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
         maquininhasAtivas,
         isLoadingMaquininhas,
         exigeMaquininha,
+        pagamentoPronto,
         isPending,
         handleConfirmar,
         handleClose,
@@ -137,18 +138,17 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
 
                         <div className="space-y-2">
                             <Label className="font-semibold text-gray-800">
-                                Bandeira do Cartão <span className="text-gray-400 font-normal">(opcional)</span>
+                                Bandeira do Cartão
                             </Label>
                             <Select
-                                value={bandeiraCartao ?? "NENHUMA"}
-                                onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as BandeiraCartao)}
+                                value={bandeiraCartao ?? undefined}
+                                onValueChange={(val) => setBandeiraCartao(val as BandeiraCartao)}
                                 disabled={isPending}
                             >
                                 <SelectTrigger className="h-11 w-full bg-surface-raised">
-                                    <SelectValue />
+                                    <SelectValue placeholder="Selecione a bandeira..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="NENHUMA">Não informar</SelectItem>
                                     <SelectItem value="VISA">Visa</SelectItem>
                                     <SelectItem value="MASTERCARD">Mastercard</SelectItem>
                                     <SelectItem value="ELO">Elo</SelectItem>
@@ -177,7 +177,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                 <DialogFooter>
                     <Button
                         onClick={handleConfirmar}
-                        disabled={!formaPagamento || (exigeMaquininha && !maquininhaId) || isPending}
+                        disabled={!pagamentoPronto || isPending}
                         size="lg"
                         className="h-12 w-full text-base"
                     >
