@@ -14,6 +14,7 @@ export interface VendaPayloadDTO {
     maquininhaId: number | null;
     bandeiraCartao?: BandeiraCartao | null;
     descontoAplicado: number;
+    motivoDesconto?: string | null;
 }
 
 export interface VendaTurnoDTO {

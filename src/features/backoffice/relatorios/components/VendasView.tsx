@@ -111,6 +111,7 @@ export function VendasView() {
                     <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Data e hora</TableHead>
                     <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Operador</TableHead>
                     <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Pagamento</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Motivo do desconto</TableHead>
                     <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Status</TableHead>
                     <TableHead className="h-11 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Valor</TableHead>
                     <TableHead className="w-12.5"></TableHead>
@@ -118,7 +119,7 @@ export function VendasView() {
                 </TableHeader>
                 <TableBody>
                   {vendas.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma venda encontrada.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma venda encontrada.</TableCell></TableRow>
                   ) : (
                     vendas.map((venda) => (
                       <TableRow key={venda.vendaId} className={venda.status === 'CANCELADA' ? 'h-15 bg-destructive/5 hover:bg-destructive/10' : 'h-15 hover:bg-muted/50'}>
@@ -126,6 +127,9 @@ export function VendasView() {
                         <TableCell className="py-3 text-sm text-foreground">{formatarDataHora(venda.dataVenda)}</TableCell>
                         <TableCell className="py-3 text-sm text-foreground">{venda.nomeOperador}</TableCell>
                         <TableCell className="py-3 text-sm text-muted-foreground">{venda.formaPagamento}</TableCell>
+                        <TableCell className="max-w-64 truncate py-3 text-sm text-muted-foreground" title={venda.motivoDesconto ?? undefined}>
+                          {venda.motivoDesconto ?? "—"}
+                        </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             venda.status === 'CONCLUIDA' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
@@ -213,12 +217,12 @@ export function VendasView() {
 
       </section>
 
-      {/* MODAL ISOLADO: Estorno da Venda */}
+      {/* MODAL ISOLADO: Cancelamento da Venda */}
       <Dialog open={isCancelDialogOpen} onOpenChange={(open) => { setIsCancelDialogOpen(open); if(!open) setJustificativa(""); }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-red-600 flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" /> Confirmar Estorno
+              <AlertCircle className="h-5 w-5" /> Confirmar Cancelamento
             </DialogTitle>
             <DialogDescription className="pt-2 text-gray-600">
               Você está prestes a cancelar a Venda <strong>#{vendaSelecionadaParaCancelamento}</strong>. Esta ação anulará a entrada financeira. E não poderá ser desfeita!
@@ -241,7 +245,7 @@ export function VendasView() {
             </Button>
             <Button variant="destructive" onClick={handleConfirmarCancelamento} disabled={!justificativa.trim() || isCancelando}>
               {isCancelando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Confirmar Estorno
+              Confirmar Cancelamento
             </Button>
           </DialogFooter>
         </DialogContent>

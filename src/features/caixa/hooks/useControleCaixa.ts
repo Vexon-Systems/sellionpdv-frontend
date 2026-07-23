@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -10,31 +10,47 @@ import type { ExtratoItem } from "../types/caixa";
 
 export function useControleCaixa(onSuccessCallback?: () => void) {
     const queryClient = useQueryClient();
-    const { setCaixa, limparCaixa } = useCaixaStore();
+    const { limparCaixa } = useCaixaStore();
 
     // 1. Buscas (Queries)
-    const { data: caixaAtual, isLoading: isLoadingCaixa, isError } = useQuery({
-        queryKey: ['caixa-atual'],
-        queryFn: apiCaixa.buscarAtual,
+    const { data: caixaOperacional, isLoading: isLoadingCaixa } = useQuery({
+        queryKey: ['caixa-operacional'],
+        queryFn: apiCaixa.buscarOperacional,
         retry: false,
     });
 
-    const isCaixaAberto = !!caixaAtual && !isError;
+    const isCaixaAberto = caixaOperacional?.caixaAberto === true;
+    const visaoAdministrativa = caixaOperacional?.visaoAdministrativa === true;
+
+    const { data: caixaAdministrativo } = useQuery({
+        queryKey: ['caixa-atual-administrativo', caixaOperacional?.id],
+        queryFn: apiCaixa.buscarAtual,
+        enabled: isCaixaAberto && visaoAdministrativa,
+        retry: false,
+    });
 
     const { data: vendas = [] } = useQuery({
-        queryKey: ['vendas-turno', caixaAtual?.id],
+        queryKey: ['vendas-turno-administrativo', caixaOperacional?.id],
         queryFn: apiVendas.listarVendasTurno,
-        enabled: isCaixaAberto,
+        enabled: isCaixaAberto && visaoAdministrativa,
     });
 
     const { data: movimentacoes = [] } = useQuery({
-        queryKey: ['movimentacoes-turno', caixaAtual?.id],
+        queryKey: ['movimentacoes-turno-administrativo', caixaOperacional?.id],
         queryFn: apiCaixa.listarMovimentacoes,
-        enabled: isCaixaAberto,
+        enabled: isCaixaAberto && visaoAdministrativa,
     });
 
+    useEffect(() => {
+        if (caixaOperacional && !caixaOperacional.visaoAdministrativa) {
+            queryClient.removeQueries({ queryKey: ['caixa-atual-administrativo'] });
+            queryClient.removeQueries({ queryKey: ['vendas-turno-administrativo'] });
+            queryClient.removeQueries({ queryKey: ['movimentacoes-turno-administrativo'] });
+        }
+    }, [caixaOperacional, queryClient]);
+
     // 2. Cálculos (KPIs e Extrato)
-    const fundoTroco = caixaAtual?.saldoInicial || 0;
+    const fundoTroco = caixaAdministrativo?.saldoInicial || 0;
     
     const vendasDinheiro = useMemo(() => {
         return vendas
@@ -57,17 +73,28 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     const saldoFisico = fundoTroco + vendasDinheiro + totalReforcos - totalSangrias;
 
     const extratoUnificado = useMemo(() => {
+        if (!visaoAdministrativa) {
+            return (caixaOperacional?.eventos ?? []).map((evento): ExtratoItem => ({
+                id: evento.id,
+                tipo: evento.tipo,
+                titulo: evento.descricao,
+                subtitulo: evento.status,
+                horario: new Date(evento.dataEvento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: new Date(evento.dataEvento).getTime(),
+            }));
+        }
+
         const itens: ExtratoItem[] = [];
 
-        if (caixaAtual) {
+        if (caixaAdministrativo) {
             itens.push({
-                id: `abertura-${caixaAtual.id}`,
+                id: `abertura-${caixaAdministrativo.id}`,
                 tipo: 'ABERTURA',
                 titulo: 'Abertura de Caixa',
                 subtitulo: 'Saldo inicial do turno',
-                horario: new Date(caixaAtual.dataAbertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                timestamp: new Date(caixaAtual.dataAbertura).getTime(),
-                valor: caixaAtual.saldoInicial,
+                horario: new Date(caixaAdministrativo.dataAbertura).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                timestamp: new Date(caixaAdministrativo.dataAbertura).getTime(),
+                valor: caixaAdministrativo.saldoInicial,
                 isEntrada: true
             });
         }
@@ -101,14 +128,14 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
         });
 
         return itens.sort((a, b) => b.timestamp - a.timestamp);
-    }, [caixaAtual, vendas, movimentacoes]);
+    }, [caixaAdministrativo, caixaOperacional, movimentacoes, vendas, visaoAdministrativa]);
 
     // 3. Mutações
     const abrir = useMutation({
         mutationFn: apiCaixa.abrir,
-        onSuccess: (novoCaixa) => {
-            queryClient.setQueryData(['caixa-atual'], novoCaixa);
-            setCaixa(novoCaixa);
+        onSuccess: () => {
+            limparCaixa();
+            queryClient.invalidateQueries({ queryKey: ['caixa-operacional'] });
             toast.success("Caixa aberto com sucesso!");
         },
         onError: (error) => {
@@ -119,7 +146,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     const movimentar = useMutation({
         mutationFn: apiCaixa.movimentacao,
         onSuccess: (_, variaveis) => {
-            queryClient.invalidateQueries({ queryKey: ['movimentacoes-turno'] });
+            queryClient.invalidateQueries({ queryKey: ['caixa-operacional'] });
+            queryClient.invalidateQueries({ queryKey: ['movimentacoes-turno-administrativo'] });
             toast.success(`${variaveis.tipo === 'SANGRIA' ? 'Sangria' : 'Reforço'} realizado!`);
             if (onSuccessCallback) onSuccessCallback();
         },
@@ -131,7 +159,10 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     const fechar = useMutation({
         mutationFn: apiCaixa.fechar,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['caixa-atual'] });
+            queryClient.removeQueries({ queryKey: ['caixa-atual-administrativo'] });
+            queryClient.removeQueries({ queryKey: ['vendas-turno-administrativo'] });
+            queryClient.removeQueries({ queryKey: ['movimentacoes-turno-administrativo'] });
+            queryClient.invalidateQueries({ queryKey: ['caixa-operacional'] });
             limparCaixa();
             toast.success(`Caixa fechado com sucesso!`);
             if (onSuccessCallback) onSuccessCallback();
@@ -142,9 +173,10 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     });
 
     return {
-        caixaAtual,
+        caixaAtual: caixaOperacional,
         isCaixaAberto,
         isLoadingCaixa,
+        visaoAdministrativa,
         kpis: { fundoTroco, vendasDinheiro, saldoFisico },
         extratoUnificado,
         abrir: abrir.mutateAsync,
