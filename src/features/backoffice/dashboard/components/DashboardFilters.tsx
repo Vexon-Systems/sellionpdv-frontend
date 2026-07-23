@@ -27,15 +27,15 @@ export function DashboardFilters({
     isRefreshing,
 }: DashboardFiltersProps) {
     return (
-        <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 rounded-xl border bg-surface-raised px-4 py-3 xl:flex-row xl:items-center">
             <div>
-                <h2 className="font-bold text-gray-800 text-lg">Visão Geral</h2>
-                <p className="text-gray-500 text-sm">Acompanhe o desempenho da sua loja em tempo real.</p>
+                <h2 className="text-lg font-semibold text-foreground">Visão Geral</h2>
+                <p className="text-sm text-muted-foreground">Acompanhe o desempenho da sua loja em tempo real.</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
                 <Tabs value={tabAtiva} onValueChange={onTabChange} className="w-full sm:w-auto">
-                    <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+                    <TabsList className="grid w-full grid-cols-3 bg-muted">
                         <TabsTrigger value="hoje" className="transition-all duration-300 ease-out">Hoje</TabsTrigger>
                         <TabsTrigger value="7dias" className="transition-all duration-300 ease-out">7 Dias</TabsTrigger>
                         <TabsTrigger value="mes" className="transition-all duration-300 ease-out">Este Mês</TabsTrigger>
@@ -49,7 +49,7 @@ export function DashboardFilters({
                     onClick={onRefresh}
                     disabled={isRefreshing}
                     title="Atualizar dados"
-                    className="border-gray-200 shrink-0"
+                    className="shrink-0"
                 >
                     <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
                 </Button>
@@ -61,11 +61,11 @@ export function DashboardFilters({
                                 id="date"
                                 variant="outline"
                                 className={cn(
-                                    "w-65 justify-start text-left font-normal border-gray-200",
+                                    "w-65 justify-start text-left font-normal",
                                     !date && "text-muted-foreground"
                                 )}
                             >
-                                <CalendarIcon className="mr-2 h-4 w-4 text-gray-500" />
+                                <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                 {date?.from ? (
                                     date.to ? (
                                         <>
@@ -80,7 +80,7 @@ export function DashboardFilters({
                                 )}
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-white" align="end">
+                        <PopoverContent className="w-auto p-0" align="end">
                             <Calendar
                                 mode="range"
                                 defaultMonth={date?.from}

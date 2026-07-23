@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -78,14 +77,13 @@ export function VendasView() {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-white shadow-sm border-gray-200">
-        <CardContent className="p-0">
-          <div className="pb-4 px-4 pt-4 border-b flex flex-col md:flex-row items-center justify-between gap-3 bg-white rounded-t-xl">
-            <h3 className="font-semibold text-gray-700 w-full md:w-auto">Últimas Transações</h3>
+      <section className="overflow-hidden rounded-xl border bg-surface-raised shadow-card">
+          <div className="flex flex-col items-center justify-between gap-3 border-b px-4 py-4 md:flex-row md:px-5">
+            <div className="w-full md:w-auto"><h3 className="font-semibold text-foreground">Últimas transações</h3><p className="mt-0.5 text-xs text-muted-foreground">Consulte, audite ou estorne vendas registradas.</p></div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
               <div className="w-full md:w-64">
                 <Select value={statusFiltro} onValueChange={setStatusFiltro}>
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-surface-raised">
                     <SelectValue placeholder="Filtrar por Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -95,26 +93,26 @@ export function VendasView() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button variant="outline" className="border-gray-200 gap-2 w-full sm:w-auto" onClick={handleExportarPdf} disabled={isExportando}>
+              <Button variant="outline" className="w-full gap-2 sm:w-auto" onClick={handleExportarPdf} disabled={isExportando}>
                 {isExportando ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
                 Exportar PDF
               </Button>
             </div>
           </div>
 
-          <div className="relative w-full overflow-auto min-h-[400px] px-4">
+          <div className="relative w-full overflow-auto px-4 md:px-5">
             {isLoading ? (
-              <div className="flex justify-center p-12"><Loader2 className="animate-spin text-blue-900 h-8 w-8" /></div>
+              <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
               <Table>
-                <TableHeader className="bg-gray-50/50">
+                <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Data e Hora</TableHead>
-                    <TableHead>Operador</TableHead>
-                    <TableHead>Pagamento</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">ID</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Data e hora</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Operador</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Pagamento</TableHead>
+                    <TableHead className="h-11 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+                    <TableHead className="h-11 text-right text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Valor</TableHead>
                     <TableHead className="w-12.5"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -123,19 +121,19 @@ export function VendasView() {
                     <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma venda encontrada.</TableCell></TableRow>
                   ) : (
                     vendas.map((venda) => (
-                      <TableRow key={venda.vendaId} className={venda.status === 'CANCELADA' ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50/50'}>
-                        <TableCell className="font-medium text-gray-500 pl-2">#{venda.vendaId}</TableCell>
-                        <TableCell className="text-sm">{formatarDataHora(venda.dataVenda)}</TableCell>
-                        <TableCell className="text-sm">{venda.nomeOperador}</TableCell>
-                        <TableCell className="text-sm">{venda.formaPagamento}</TableCell>
+                      <TableRow key={venda.vendaId} className={venda.status === 'CANCELADA' ? 'h-15 bg-destructive/5 hover:bg-destructive/10' : 'h-15 hover:bg-muted/50'}>
+                        <TableCell className="py-3 pl-2 font-medium tabular-nums text-muted-foreground">#{venda.vendaId}</TableCell>
+                        <TableCell className="py-3 text-sm text-foreground">{formatarDataHora(venda.dataVenda)}</TableCell>
+                        <TableCell className="py-3 text-sm text-foreground">{venda.nomeOperador}</TableCell>
+                        <TableCell className="py-3 text-sm text-muted-foreground">{venda.formaPagamento}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            venda.status === 'CONCLUIDA' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                            venda.status === 'CONCLUIDA' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                           }`}>
                             {venda.status}
                           </span>
                         </TableCell>
-                        <TableCell className={`text-right font-bold text-sm ${venda.status === 'CANCELADA' ? 'line-through text-red-400' : 'text-gray-900'}`}>
+                        <TableCell className={`py-3 text-right text-sm font-bold tabular-nums ${venda.status === 'CANCELADA' ? 'text-destructive line-through' : 'text-foreground'}`}>
                           {formatarMoeda(venda.valorTotal)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -175,8 +173,8 @@ export function VendasView() {
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between px-4 pt-4 border-t rounded-b-lg gap-4 sm:gap-0">
-            <span className="text-sm text-gray-500 font-medium">
+          <div className="flex flex-col items-center justify-between gap-4 border-t bg-surface-sunken/40 px-4 py-3 sm:flex-row md:px-5">
+            <span className="text-sm font-medium text-muted-foreground">
               Mostrando página {paginaAtual + 1} de {totalPaginas}
             </span>
             
@@ -213,8 +211,7 @@ export function VendasView() {
             </Pagination>
           </div>
 
-        </CardContent>
-      </Card>
+      </section>
 
       {/* MODAL ISOLADO: Estorno da Venda */}
       <Dialog open={isCancelDialogOpen} onOpenChange={(open) => { setIsCancelDialogOpen(open); if(!open) setJustificativa(""); }}>

@@ -36,10 +36,10 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && !isPending && handleClose()}>
-            <DialogContent className="sm:max-w-120 bg-white gap-6">
+            <DialogContent className="gap-6 bg-surface-raised sm:max-w-120">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-gray-900">Finalizar Venda</DialogTitle>
-                    <DialogDescription className="text-gray-500">
+                    <DialogTitle className="text-xl font-bold text-foreground">Finalizar Venda</DialogTitle>
+                    <DialogDescription>
                         Escolha o método de pagamento para concluir a transação.
                     </DialogDescription>
                 </DialogHeader>
@@ -51,7 +51,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                     className="grid grid-cols-2 gap-3"
                 >
                     <FieldLabel>
-                        <Field className="h-14">
+                        <Field className={`h-14 rounded-lg transition-colors ${formaPagamento === "DINHEIRO" ? "bg-success/10" : ""}`}>
                             <FieldContent>
                                 <div className="flex p-2 justify-between items-center text-green-600 rounded-full">
                                     <div className="flex gap-3">
@@ -65,7 +65,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                     </FieldLabel>
 
                     <FieldLabel>
-                        <Field className="h-14">
+                        <Field className={`h-14 rounded-lg transition-colors ${formaPagamento === "PIX" ? "bg-info/10" : ""}`}>
                             <FieldContent>
                                 <div className="flex p-2 justify-between items-center text-cyan-600 rounded-full">
                                     <div className="flex gap-3">
@@ -79,7 +79,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                     </FieldLabel>
 
                     <FieldLabel>
-                        <Field className="h-14">
+                        <Field className={`h-14 rounded-lg transition-colors ${formaPagamento === "CREDITO" ? "bg-primary/10" : ""}`}>
                             <FieldContent>
                                 <div className="flex p-2 justify-between items-center text-blue-600 rounded-full">
                                     <div className="flex gap-3">
@@ -93,7 +93,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                     </FieldLabel>
 
                     <FieldLabel>
-                        <Field className="h-14">
+                        <Field className={`h-14 rounded-lg transition-colors ${formaPagamento === "DEBITO" ? "bg-primary/10" : ""}`}>
                             <FieldContent>
                                 <div className="flex p-2 justify-between items-center text-purple-600 rounded-full">
                                     <div className="flex gap-3">
@@ -108,7 +108,7 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                 </RadioGroup>
 
                 {exigeMaquininha && (
-                    <div className="space-y-3 pt-2 border-t border-gray-100 animate-in fade-in-50 duration-200">
+                    <div className="animate-in space-y-3 border-t pt-4 fade-in-50 duration-200">
                         <div className="space-y-2">
                             <Label className="font-semibold text-gray-800">Selecione a Maquininha Utilizada</Label>
                             <Select
@@ -116,10 +116,10 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                                 onValueChange={setMaquininhaId}
                                 disabled={isPending || isLoadingMaquininhas}
                             >
-                                <SelectTrigger className="w-full bg-white h-11 border-gray-200">
+                                <SelectTrigger className="h-11 w-full bg-surface-raised">
                                     <SelectValue placeholder={isLoadingMaquininhas ? "Carregando terminais..." : "Selecione o terminal..."} />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white">
+                                <SelectContent>
                                     {maquininhasAtivas.length === 0 ? (
                                         <div className="p-3 text-sm text-center text-gray-500">
                                             Nenhum terminal ativo cadastrado.
@@ -144,10 +144,10 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                                 onValueChange={(val) => setBandeiraCartao(val === "NENHUMA" ? null : val as BandeiraCartao)}
                                 disabled={isPending}
                             >
-                                <SelectTrigger className="w-full bg-white h-11 border-gray-200">
+                                <SelectTrigger className="h-11 w-full bg-surface-raised">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white">
+                                <SelectContent>
                                     <SelectItem value="NENHUMA">Não informar</SelectItem>
                                     <SelectItem value="VISA">Visa</SelectItem>
                                     <SelectItem value="MASTERCARD">Mastercard</SelectItem>
@@ -161,15 +161,15 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                 )}
 
                 {formaPagamento === "PIX" && (
-                    <div className="flex flex-col items-center justify-center bg-slate-50 p-4 border rounded-xl border-dashed animate-in fade-in-50 duration-300">
+                    <div className="animate-in flex flex-col items-center justify-center rounded-xl border border-dashed bg-surface-sunken p-4 fade-in-50 duration-200">
                         <img src={pix} alt="QR Code Pix" className="w-20 h-20 object-contain" />
                         <p className="text-xs text-slate-500 mt-2">Aguarde a confirmação no aplicativo bancário.</p>
                     </div>
                 )}
 
-                <div className="bg-slate-100 px-4 py-3 rounded-xl flex justify-between items-center border border-slate-200 mt-2">
+                <div className="mt-2 flex items-center justify-between rounded-xl border bg-surface-sunken px-4 py-3">
                     <span className="text-slate-600 font-medium text-sm">Total a cobrar:</span>
-                    <span className="text-xl font-bold text-blue-950">
+                    <span className="text-xl font-bold tabular-nums text-primary">
                         {formatarMoeda(subtotal)}
                     </span>
                 </div>
@@ -178,7 +178,8 @@ export function CheckoutModal({ isOpen, onClose, subtotal, onSuccessCallback }: 
                     <Button
                         onClick={handleConfirmar}
                         disabled={!formaPagamento || (exigeMaquininha && !maquininhaId) || isPending}
-                        className="w-full h-11 bg-linear-to-br from-blue-950 to-blue-900 hover:brightness-110 text-white shadow-md cursor-pointer rounded-xl font-medium"
+                        size="lg"
+                        className="h-12 w-full text-base"
                     >
                         {isPending ? (
                             <div className="flex items-center gap-2">

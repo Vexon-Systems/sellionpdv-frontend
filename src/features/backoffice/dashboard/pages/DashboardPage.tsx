@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/Header";
+import { PageShell } from "@/components/layout/PageShell";
 import { useDashboardData } from "../hooks/useDashboardData";
 
 import { DashboardFilters } from "../components/DashboardFilters";
@@ -19,10 +19,7 @@ export function DashboardPage() {
     } = useDashboardData();
 
     return (
-        <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden">
-            <Header titulo="Dashboard"/>
-
-            <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <PageShell titulo="Dashboard">
                 
                 {/* 1. Filtros e Controlos de Data */}
                 <DashboardFilters
@@ -62,7 +59,6 @@ export function DashboardPage() {
                     isLoadingCaixa={queries.caixa.isLoading}
                 />
 
-            </div>
-        </div>
+        </PageShell>
     );
 }

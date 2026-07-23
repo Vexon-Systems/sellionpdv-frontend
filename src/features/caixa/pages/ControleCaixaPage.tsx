@@ -7,7 +7,7 @@ import { NumericFormat } from "react-number-format";
 import { Lock, Box, Coins, DollarSign, ArrowDownToLine, ArrowUpFromLine, Receipt, KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/layout/Header";
+import { PageShell } from "@/components/layout/PageShell";
 
 import { useControleCaixa } from "../hooks/useControleCaixa";
 import { MovimentacaoCaixaModal } from "../components/MovimentacaoCaixaModal";
@@ -51,31 +51,29 @@ export function ControleCaixaPage() {
 
     if (isLoadingCaixa) {
         return (
-            <div className="flex flex-col h-screen w-full bg-gray-50">
-                <Header titulo="Controle de Caixa"/>
+            <PageShell titulo="Controle de Caixa">
                 <div className="flex-1 flex items-center justify-center">
                     <p className="text-gray-500 font-medium animate-pulse">Carregando informações do caixa...</p>
                 </div>
-            </div>
+            </PageShell>
         );
     }
 
     if (!isCaixaAberto) {
         return (
-            <div className="flex flex-col h-screen w-full bg-gray-50">
-                <Header titulo="Controle de Caixa"/>
-                <div className="flex-1 flex flex-col items-center justify-center p-6">
-                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 max-w-md w-full text-center">
-                        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <PageShell titulo="Controle de Caixa">
+                <div className="flex min-h-full flex-col items-center justify-center p-6">
+                    <div className="w-full max-w-md rounded-xl border bg-surface-raised p-8 text-center shadow-card">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
                             <Lock size={32} />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Caixa Fechado</h2>
-                        <p className="text-gray-500 mb-6 text-sm">É necessário informar o saldo em dinheiro presente na gaveta para iniciar um novo turno de vendas.</p>
+                        <h2 className="mb-2 text-2xl font-bold text-foreground">Caixa Fechado</h2>
+                        <p className="mb-6 text-sm text-muted-foreground">É necessário informar o saldo em dinheiro presente na gaveta para iniciar um novo turno de vendas.</p>
                         
                         <form onSubmit={handleSubmit((dados) => abrir(dados.saldoInicial))} className="space-y-4 text-left">
                             {/* Campo Saldo Inicial Refatorado */}
                             <div className="space-y-2">
-                                <Label className="font-semibold text-gray-800">Fundo de Troco / Saldo Inicial (R$)</Label>
+                                <Label className="font-semibold text-foreground">Fundo de Troco / Saldo Inicial (R$)</Label>
                                 <Controller
                                     name="saldoInicial"
                                     control={control}
@@ -87,27 +85,26 @@ export function ControleCaixaPage() {
                                             thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
                                             disabled={isAbrindo}
                                             placeholder="R$ 0,00"
-                                            className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="flex h-9 w-full rounded-md border border-input bg-surface-raised px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                         />
                                     )}
                                 />
-                                {errors.saldoInicial && <p className="text-red-500 text-sm">{errors.saldoInicial.message}</p>}
+                                {errors.saldoInicial && <p className="text-sm text-destructive">{errors.saldoInicial.message}</p>}
                             </div>
                             
-                            <Button type="submit" disabled={isAbrindo} className="w-full bg-primary hover:bg-primary/90 text-white mt-4">
+                            <Button type="submit" disabled={isAbrindo} className="mt-4 w-full">
                                 {isAbrindo ? "Abrindo Caixa..." : "Abrir Caixa Agora"}
                             </Button>
                         </form>
                     </div>
                 </div>
-            </div>
+            </PageShell>
         );
     }
 
     return (
-        <div className="flex flex-col h-screen w-full bg-gray-50">
-            <Header titulo="Controle de Caixa"/>
-            <div className="flex-col justify-between items-start px-4 sm:px-8 py-6 overflow-y-auto">
+        <PageShell titulo="Controle de Caixa">
+            <div className="flex-col items-start justify-between">
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full">
                     <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center min-w-0">
@@ -137,9 +134,9 @@ export function ControleCaixaPage() {
                     <Button onClick={() => setIsFechamentoOpen(true)} className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto mt-2 sm:mt-0"><Lock size={16} className="mr-2 shrink-0" /> Iniciar Fechamento</Button>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex-1 flex flex-col min-h-100">
-                    <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50/50 rounded-t-xl gap-2">
-                        <h3 className="font-semibold text-gray-800">Extrato do Turno</h3>
+                <div className="min-h-100 flex flex-1 flex-col overflow-hidden rounded-xl border bg-surface-raised shadow-card">
+                    <div className="flex flex-col items-start justify-between gap-2 border-b p-4 sm:flex-row sm:items-center md:px-5">
+                        <h3 className="font-semibold text-foreground">Extrato do Turno</h3>
                         
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full">
                             <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse shrink-0" />
@@ -149,13 +146,13 @@ export function ControleCaixaPage() {
                         </div>
                     </div>
                     
-                    <div className="overflow-y-auto flex-1">
+                    <div className="flex-1 overflow-y-auto px-3 md:px-4">
                         {extratoUnificado.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-gray-400 p-8 space-y-3"><CheckCircle2 size={48} className="text-gray-200" /><p>Nenhuma movimentação registrada.</p></div>
                         ) : (
-                            <div className="p-2">
+                            <div>
                                 {extratoUnificado.map((item, index) => (
-                                    <div key={item.id} className={`flex items-center justify-between p-4 hover:bg-gray-50 transition-colors rounded-lg ${index !== extratoUnificado.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                    <div key={item.id} className={`flex items-center justify-between px-2 py-4 transition-colors hover:bg-muted/50 ${index !== extratoUnificado.length - 1 ? 'border-b' : ''}`}>
                                         <div className="flex items-center gap-4">
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.tipo === 'SANGRIA' ? 'bg-red-100' : item.tipo === 'ABERTURA' ? 'bg-blue-100' : 'bg-gray-100'}`}>
                                                 {renderIconeExtrato(item.tipo)}
@@ -178,6 +175,6 @@ export function ControleCaixaPage() {
                 <MovimentacaoCaixaModal tipo={modalAtivo} onClose={() => setModalAtivo(null)} onSave={(dados) => movimentar({ tipo: modalAtivo!, ...dados })} isSalvando={isMovimentando} />
                 <FechamentoCaixaModal isOpen={isFechamentoOpen} onClose={() => setIsFechamentoOpen(false)} onSave={fechar} isSalvando={isFechando} />
             </div>
-        </div>
+        </PageShell>
     );
 }

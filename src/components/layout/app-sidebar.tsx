@@ -1,11 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingCart, LogOut, ChefHat, Inbox, SlidersHorizontal, BarChart, ClipboardList, Users, CreditCard, Settings, Wallet } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  BarChart3,
+  ChefHat,
+  ClipboardList,
+  CreditCard,
+  Inbox,
+  LogOut,
+  Settings,
+  ShoppingCart,
+  SlidersHorizontal,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useLogout";
-import sellionLogoFullNeg from '@/assets/logo_sellion_negativa.png';
-import sellionSimbolo from '@/assets/simbolo_sellion.png';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip";
-
+import sellionLogoFullNeg from "@/assets/logo_sellion_negativa.png";
+import sellionSimbolo from "@/assets/simbolo_sellion.png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +28,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
 import {
   Sidebar,
   SidebarContent,
@@ -30,316 +40,133 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-export function AppSidebar(){
-  const {user} = useAuthStore();
+type NavigationItem = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  description: string;
+};
+
+const navigation = {
+  operacao: [
+    { label: "Frente de Caixa", to: "/", icon: ShoppingCart, description: "Realize vendas rápidas" },
+    { label: "Controle de Caixa", to: "/caixa", icon: Inbox, description: "Aberturas, fechamentos e sangrias" },
+  ],
+  gestao: [
+    { label: "Catálogo e Ficha Técnica", to: "/catalogo", icon: ChefHat, description: "Produtos e ficha técnica" },
+    { label: "Modificadores", to: "/modificadores", icon: SlidersHorizontal, description: "Grupos de modificadores" },
+    { label: "Dashboard", to: "/dashboard", icon: BarChart3, description: "Indicadores do negócio" },
+    { label: "Relatórios", to: "/relatorios", icon: ClipboardList, description: "Relatórios e auditoria" },
+    { label: "Equipe", to: "/equipe", icon: Users, description: "Gestão da equipe" },
+    { label: "Maquininhas", to: "/maquininhas", icon: CreditCard, description: "Meios de pagamento" },
+  ],
+  financeiro: [
+    { label: "Financeiro", to: "/financeiro", icon: Wallet, description: "Despesas e DRE gerencial" },
+  ],
+} satisfies Record<string, NavigationItem[]>;
+
+function NavigationGroup({ label, items }: { label: string; items: NavigationItem[] }) {
+  return (
+    <SidebarGroup className="px-2 py-2">
+      <SidebarGroupLabel className="px-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/60">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu className="gap-1">
+          {items.map(({ label: itemLabel, to, icon: Icon, description }) => (
+            <SidebarMenuItem key={to}>
+              <SidebarMenuButton
+                asChild
+                size="lg"
+                tooltip={{ children: description, className: "max-w-56" }}
+                className="h-10 rounded-lg px-2.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm"
+              >
+                <Link
+                  to={to}
+                  activeProps={{ className: "bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-sm" }}
+                >
+                  <Icon aria-hidden="true" />
+                  <span>{itemLabel}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+export function AppSidebar() {
+  const { user } = useAuthStore();
   const handleLogout = useLogout();
+  const isAdmin = user?.role === "ROLE_ADMIN";
 
-  const isAdmin = user?.role === 'ROLE_ADMIN';
+  return (
+    <TooltipProvider delayDuration={250}>
+      <Sidebar
+        variant="inset"
+        collapsible="icon"
+        className="border-none bg-primary text-primary-foreground [--sidebar:var(--primary)] [--sidebar-foreground:var(--primary-foreground)] [--sidebar-primary:oklch(0.3_0.075_268)] [--sidebar-primary-foreground:var(--primary-foreground)] [--sidebar-accent:oklch(1_0_0_/_10%)] [--sidebar-accent-foreground:var(--primary-foreground)] [--sidebar-border:oklch(1_0_0_/_12%)] [--sidebar-ring:var(--ring)]"
+      >
+        <SidebarHeader className="h-16 items-center justify-center border-b border-sidebar-border bg-sidebar px-3 py-3">
+          <img src={sellionLogoFullNeg} alt="Sellion" className="h-8 w-32 object-contain group-data-[collapsible=icon]:hidden" />
+          <img src={sellionSimbolo} alt="Sellion" className="hidden size-8 object-contain group-data-[collapsible=icon]:block" />
+        </SidebarHeader>
 
-  return(
-    <Sidebar variant="inset" collapsible="icon" className="bg-primary text-white border-none w-65">
+        <SidebarContent className="bg-sidebar py-2">
+          <NavigationGroup label="Operação" items={navigation.operacao} />
+          {isAdmin && <>
+            <NavigationGroup label="Gestão" items={navigation.gestao} />
+            <NavigationGroup label="Financeiro" items={navigation.financeiro} />
+          </>}
+        </SidebarContent>
 
-      <SidebarHeader className="h-16 flex justify-center items-center bg-primary">
-        <img 
-           src={sellionLogoFullNeg} 
-           alt="Sellion" 
-           className="w-32 object-contain transition-all duration-300 group-data-[collapsible=icon]:hidden" 
-         />
-
-        <img 
-           src={sellionSimbolo} 
-           alt="Sellion" 
-           className="hidden w-10 h-10 object-contain transition-all duration-300 group-data-[collapsible=icon]:block" 
-         />
-      </SidebarHeader>
-
-      {/* CONTENT */}
-      <SidebarContent className="bg-primary overflow-y-auto">
-
-        {/* Grupo de Operação */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Operação</SidebarGroupLabel>
-          <SidebarGroupContent>
-
-            <TooltipProvider delayDuration={300}>
-              <SidebarMenu className="flex flex-col gap-1">
-
-                {/* Item 1: PDV */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-bold"}}>
-                          <ShoppingCart size={20} color="white"/>
-                          <span className="ml-1 text-2sm">Frente de Caixa</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Acesse o PDV para realizar vendas rápidas</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
-
-                {/* Item 3: Controle de Caixa */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/caixa" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <Inbox color="white" />
-                          <span className="ml-1 text-2sm">Controle de Caixa</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie aberturas, fechamentos e sangrias</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
-
-              </SidebarMenu>
-            </TooltipProvider>
-
-
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Grupo de Gestão — visível apenas para admins */}
-        {isAdmin && (
-          <>
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Gestão</SidebarGroupLabel>
-            <SidebarGroupContent>
-
-              <TooltipProvider delayDuration={300}>
-                <SidebarMenu className="flex flex-col gap-1">
-
-                  {/* Item 1: Catálogo de Produtos */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/catalogo" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <ChefHat />
-                            <span className="ml-1 text-sm">Catálogo & Ficha Técnica</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Gerencie o catálogo de produtos</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                  {/* Item 2: Modificadores */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/modificadores" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <SlidersHorizontal />
-                            <span className="ml-1 text-sm">Modificadores</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Gerencie os grupos de modificadores</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                  {/* Item 3: Dashboard */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/dashboard" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <BarChart />
-                            <span className="ml-1 text-sm">Dashboard</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Visualize gráficos</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                  {/* Item 4: Relatórios */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/relatorios" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <ClipboardList />
-                            <span className="ml-1 text-sm">Relatórios</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Gerencie e exporte seus relatórios</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                  {/* Item 5: Equipe */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/equipe" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <Users />
-                            <span className="ml-1 text-sm">Equipe</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Gerencie sua equipe de trabalho</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                  {/* Item 6: Maquininhas */}
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/maquininhas" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <CreditCard />
-                            <span className="ml-1 text-sm">Maquininhas</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Gerencie as maquininhas de pagamento</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                </SidebarMenu>
-              </TooltipProvider>
-
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Grupo Financeiro */}
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Financeiro</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <TooltipProvider delayDuration={300}>
-                <SidebarMenu className="flex flex-col gap-1">
-
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                          <Link to="/financeiro" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                            <Wallet />
-                            <span className="ml-1 text-sm">Financeiro</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                        <p className="text-sm">Lançamentos de despesas e DRE Gerencial</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-
-                </SidebarMenu>
-              </TooltipProvider>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          </>
-        )}
-      </SidebarContent>
-
-      {/* Rodapé */}
-      <SidebarFooter className="bg-primary mt-auto w-full p-0">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-white/70 mb-1">Configurações e Sair</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <TooltipProvider>
-              <SidebarMenu className="w-full">
-
-                {/* Item 7: Configurações */}
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild className="text-white hover:bg-blue-800 transition duration-300 hover:text-white py-5">
-                        <Link to="/configuracoes" activeProps={{ className: "bg-linear-to-br from-blue-900 to-blue-600 text-white font-medium"}}>
-                          <Settings />
-                          <span className="ml-1 text-sm">Configurações</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-
-                    <TooltipContent side="right" className="bg-black text-white border-none shadow-lg">
-                      <p className="text-sm">Gerencie sua equipe de trabalho</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem>
-                  <AlertDialog>
-                    <Tooltip>
-                      <AlertDialogTrigger asChild>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton 
-                            className="text-white hover:bg-red-500/20 hover:text-red-200 py-5 cursor-pointer w-full flex justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-                          >
-                            <LogOut className="text-red-400 shrink-0" size={20} />
-                            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
-                              Sair
-                            </span>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                      </AlertDialogTrigger>
-                      
-                      <TooltipContent side="right" className="bg-black text-red-400 border-none shadow-lg">
-                        <p className="text-sm">Sair do SellionPDV</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <AlertDialogContent className="bg-white border-none">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-slate-900">Deseja mesmo sair?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-600">
-                          Sua sessão atual será encerrada e você precisará fazer login novamente para acessar o sistema.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="border-slate-200 text-slate-600 hover:bg-slate-100">
-                          Cancelar
-                        </AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={handleLogout}
-                          className="bg-red-500 hover:bg-red-600 text-white"
-                        >
-                          Confirmar Saída
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </TooltipProvider>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarFooter>
-      <SidebarRail/>
-    </Sidebar>
-  )
-
+        <SidebarFooter className="border-t border-sidebar-border bg-sidebar p-2">
+          <SidebarMenu className="gap-1">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                size="lg"
+                tooltip="Configurações da conta"
+                className="h-10 rounded-lg px-2.5 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+              >
+                <Link
+                  to="/configuracoes"
+                  activeProps={{ className: "bg-sidebar-primary text-sidebar-primary-foreground font-semibold" }}
+                >
+                  <Settings aria-hidden="true" />
+                  <span>Configurações</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <SidebarMenuButton size="lg" tooltip="Encerrar sessão" className="h-10 rounded-lg px-2.5 text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-primary-foreground">
+                    <LogOut className="text-destructive" aria-hidden="true" />
+                    <span>Sair</span>
+                  </SidebarMenuButton>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Deseja mesmo sair?</AlertDialogTitle>
+                    <AlertDialogDescription>Sua sessão atual será encerrada e será necessário fazer login novamente.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout} className="bg-destructive text-white hover:bg-destructive/90">Confirmar saída</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+    </TooltipProvider>
+  );
 }

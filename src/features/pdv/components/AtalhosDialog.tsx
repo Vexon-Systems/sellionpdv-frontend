@@ -22,7 +22,7 @@ export function AtalhosDialog({ isOpen, onOpenChange }: AtalhosDialogProps) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-slate-800">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
             <Keyboard size={18} />
             Atalhos do teclado
           </DialogTitle>
@@ -35,7 +35,7 @@ export function AtalhosDialog({ isOpen, onOpenChange }: AtalhosDialogProps) {
           {ATALHOS.map(({ tecla, descricao }) => (
             <li
               key={tecla}
-              className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-slate-50 border border-slate-100"
+              className="flex items-center justify-between gap-3 rounded-lg border bg-surface-sunken px-3 py-2"
             >
               <span className="text-sm text-slate-700">{descricao}</span>
               <kbd className="inline-flex items-center px-2 py-1 text-xs font-mono font-semibold text-slate-800 bg-white border border-slate-300 rounded shadow-sm">
@@ -45,7 +45,7 @@ export function AtalhosDialog({ isOpen, onOpenChange }: AtalhosDialogProps) {
           ))}
         </ul>
 
-        <p className="text-xs text-slate-400 mt-2">
+        <p className="mt-2 text-xs text-muted-foreground">
           Atalhos não disparam enquanto você está digitando em um campo de texto.
         </p>
       </DialogContent>

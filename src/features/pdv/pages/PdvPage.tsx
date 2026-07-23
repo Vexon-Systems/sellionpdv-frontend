@@ -78,7 +78,7 @@ export function PdvPage() {
     : undefined;
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-y-auto">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-surface-sunken">
       <Header
         titulo="Frente de Caixa"
         subtitulo={subtituloTurno}
@@ -87,54 +87,51 @@ export function PdvPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsAtalhosOpen(true)}
-            className="gap-1.5 cursor-pointer"
+            className="gap-1.5"
             title="Ver atalhos do teclado"
           >
             <HelpCircle size={14} />
             Atalhos
-            <kbd className="hidden sm:inline-flex ml-1 items-center px-1 py-0.5 text-[10px] font-mono font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded">
+            <kbd className="ml-1 hidden items-center rounded border bg-muted px-1 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground sm:inline-flex">
               ?
             </kbd>
           </Button>
         }
       />
 
-      <main className="flex flex-1 flex-col lg:flex-row min-h-0 w-full bg-gray-50 overflow-hidden">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         {/* Área principal: busca, categorias e vitrine */}
-        <div className="flex flex-1 flex-col px-4 md:px-8 py-6 min-w-0 overflow-y-auto">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto px-4 py-5 md:px-6 lg:px-8">
           {/* Barra de busca */}
-          <div className="relative w-full max-w-md shrink-0">
-            <Search className="absolute left-2 top-3 text-gray-800" size={18} />
+          <div className="relative w-full max-w-xl shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               ref={buscaRef}
               type="text"
               placeholder="Buscar por nome"
-              className="pl-10 pr-12 h-10 w-full bg-white border-gray-200"
+              className="h-11 w-full bg-surface-raised pl-10 pr-12"
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
             />
-            <kbd className="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded">
+            <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground sm:inline-flex">
               /
             </kbd>
           </div>
 
           {/* Abas de categorias */}
-          <div className="my-6 w-full">
+          <div className="mt-5 w-full">
             {isLoadingCategorias ? (
-              <div className="h-10 w-full animate-pulse bg-white rounded-lg" />
+              <div className="h-10 w-full animate-pulse rounded-lg bg-muted" />
             ) : (
               <Tabs
                 value={categoriaAtiva.toString()}
                 onValueChange={(val) => setCategoriaAtiva(Number(val))}
                 className="w-full"
               >
-                <TabsList
-                  variant="line"
-                  className="flex w-full justify-start h-auto p-1 rounded-lg overflow-x-auto"
-                >
+                <TabsList className="h-auto w-full flex-wrap justify-start rounded-none bg-transparent p-0">
                   <TabsTrigger
                     value="0"
-                    className="whitespace-nowrap px-4 py-2 rounded-md transition-all cursor-pointer"
+                    className="h-9 flex-none whitespace-nowrap rounded-md px-4 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   >
                     Todos
                     <span className="ml-1.5 text-xs text-gray-400 font-normal">
@@ -145,7 +142,7 @@ export function PdvPage() {
                     <TabsTrigger
                       key={cat.id}
                       value={cat.id.toString()}
-                      className="whitespace-nowrap px-4 py-2 rounded-md cursor-pointer transition-all"
+                      className="h-9 flex-none whitespace-nowrap rounded-md px-4 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       {cat.nome}
                       <span className="ml-1.5 text-xs text-gray-400 font-normal">

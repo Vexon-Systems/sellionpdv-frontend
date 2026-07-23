@@ -1,6 +1,5 @@
-// /features/pdv/components/CartSidebar.tsx
 import { memo } from "react";
-import { ShoppingCart, Minus, Plus, Pencil, Trash } from "lucide-react";
+import { Minus, Pencil, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatarMoeda } from "@/lib/utils";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
@@ -15,179 +14,59 @@ interface CartSidebarProps {
   onConfirmarVenda: () => void;
 }
 
-export function CartSidebar({
-  itens,
-  subtotal,
-  onAlterarQuantidade,
-  onRemoverItem,
-  onEditarItem,
-  onConfirmarVenda,
-}: CartSidebarProps) {
+export function CartSidebar({ itens, subtotal, onAlterarQuantidade, onRemoverItem, onEditarItem, onConfirmarVenda }: CartSidebarProps) {
   const hasItems = itens.length > 0;
-
-  // F2 aciona a cobrança. Só ativo quando tem itens — senão a tecla não faz nada.
   useKeyboardShortcut("F2", onConfirmarVenda, { enabled: hasItems });
 
   return (
-    <aside
-      className={`
-        bg-white flex flex-col border-gray-200 shadow-md shrink-0
-        transition-all duration-500 ease-in-out overflow-hidden
-        ${
-          hasItems
-            ? "w-full lg:w-[320px] xl:w-[400px] h-[45vh] lg:h-full opacity-100 border-t-2 lg:border-t-0 lg:border-l-2"
-            : "w-full lg:w-0 h-0 opacity-0 border-0"
-        }
-      `}
-    >
-      <div className="px-4 py-2 border-b border-gray-200 bg-white flex gap-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-          Carrinho
-        </h2>
+    <aside className="flex h-[25rem] w-full shrink-0 flex-col border-t bg-surface-raised lg:h-full lg:w-[22rem] lg:border-l lg:border-t-0 xl:w-[24rem]" aria-label="Carrinho de compras">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground"><ShoppingCart size={18} aria-hidden="true" /> Carrinho</h2>
+        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">{itens.length} {itens.length === 1 ? "item" : "itens"}</span>
       </div>
-
-      {/* Lista de itens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
-        {hasItems ? (
-          itens.map((item) => (
-            <CartItemCard
-              key={item.idCarrinho}
-              item={item}
-              onAlterarQuantidade={onAlterarQuantidade}
-              onRemover={onRemoverItem}
-              onEditar={onEditarItem}
-            />
-          ))
-        ) : (
-          <EmptyCartMessage />
-        )}
+      <div className="min-h-0 flex-1 overflow-y-auto bg-surface-sunken/60 p-3">
+        {hasItems ? <div className="space-y-2.5">{itens.map((item) => <CartItemCard key={item.idCarrinho} item={item} onAlterarQuantidade={onAlterarQuantidade} onRemover={onRemoverItem} onEditar={onEditarItem} />)}</div> : <EmptyCartMessage />}
       </div>
-
-      {/* Resumo e pagamento */}
-      <div className="bg-white px-4 py-3 border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div className="space-y-1 mb-4 text-sm">
-          <div className="flex justify-between text-gray-600">
-            <span>Subtotal</span>
-            <span className="font-medium">{formatarMoeda(subtotal)}</span>
-          </div>
-          <div className="flex justify-between text-green-600">
-            <span>Desconto</span>
-            <span className="font-medium">{formatarMoeda(0)}</span>
-          </div>
-          <div className="flex justify-between text-gray-900 text-lg font-bold pt-2 mt-2 border-t border-gray-100">
-            <span>Total</span>
-            <span>{formatarMoeda(subtotal)}</span>
-          </div>
+      <div className="border-t bg-surface-raised p-4 shadow-[0_-8px_18px_oklch(0.18_0.02_264_/_4%)]">
+        <div className="mb-4 space-y-2 text-sm">
+          <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span className="font-medium tabular-nums text-foreground">{formatarMoeda(subtotal)}</span></div>
+          <div className="flex justify-between text-muted-foreground"><span>Desconto</span><span className="font-medium tabular-nums text-foreground">{formatarMoeda(0)}</span></div>
+          <div className="flex justify-between border-t pt-3 text-lg font-bold text-foreground"><span>Total</span><span className="tabular-nums text-primary">{formatarMoeda(subtotal)}</span></div>
         </div>
-
-        <Button
-          disabled={!hasItems}
-          onClick={onConfirmarVenda}
-          className="cursor-pointer w-full h-12 text-base font-bold bg-linear-to-br from-blue-950 to-blue-900 hover:-translate-y-0.5 hover:brightness-130 transition-all duration-300 text-white shadow-md flex items-center justify-center gap-2"
-        >
+        <Button disabled={!hasItems} onClick={onConfirmarVenda} size="lg" className="h-12 w-full justify-between px-4 text-base">
           <span>Cobrar {formatarMoeda(subtotal)}</span>
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold bg-white/15 border border-white/25 rounded">
-            F2
-          </kbd>
+          <kbd className="hidden rounded border border-white/25 bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold sm:inline-flex">F2</kbd>
         </Button>
       </div>
     </aside>
   );
 }
 
-
-interface CartItemCardProps {
-  item: ItemCarrinho;
-  onAlterarQuantidade: (idCarrinho: string, delta: number) => void;
-  onRemover: (idCarrinho: string) => void;
-  onEditar: (idCarrinho: string) => void;
-}
+interface CartItemCardProps { item: ItemCarrinho; onAlterarQuantidade: (idCarrinho: string, delta: number) => void; onRemover: (idCarrinho: string) => void; onEditar: (idCarrinho: string) => void; }
 
 const CartItemCard = memo(function CartItemCard({ item, onAlterarQuantidade, onRemover, onEditar }: CartItemCardProps) {
   const temModificadores = (item.modificadores?.length ?? 0) > 0;
   return (
-    <div className="group flex flex-col gap-2 p-3 bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-colors">
-      <div className="flex justify-between items-start gap-2">
-        <div className="flex-1">
-          <h4 className="font-semibold text-slate-800 text-sm leading-tight">
-            {item.produto.nome}
-          </h4>
-
-          {item.modificadores && item.modificadores.length > 0 && (
-            <p className="mt-0.5 text-[11px] text-slate-500 leading-snug">
-              {item.modificadores.map((m) => m.nome).join(" · ")}
-            </p>
-          )}
-        </div>
-
-        <span className="font-bold text-slate-900 text-sm whitespace-nowrap">
-          {formatarMoeda(item.valorUnitarioTotal)}
-        </span>
+    <article className="group rounded-xl border bg-surface-raised p-3 shadow-sm transition-shadow hover:shadow-card">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0"><h3 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">{item.produto.nome}</h3>{temModificadores && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.modificadores.map((modifier) => modifier.nome).join(" · ")}</p>}</div>
+        <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">{formatarMoeda(item.valorUnitarioTotal)}</span>
       </div>
-
-      <div className="flex justify-between items-center mt-1">
-        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md h-8">
-          <Button
-            onClick={() => onAlterarQuantidade(item.idCarrinho, -1)}
-            variant="ghost"
-            size="icon"
-            className="h-full w-8 cursor-pointer rounded-none rounded-l-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-            aria-label="Diminuir quantidade"
-          >
-            <Minus size={14} />
-          </Button>
-
-          <span className="w-8 font-semibold text-xs text-center text-slate-800">
-            {item.quantidade}
-          </span>
-
-          <Button
-            onClick={() => onAlterarQuantidade(item.idCarrinho, 1)}
-            variant="ghost"
-            size="icon"
-            className="h-full w-8 cursor-pointer rounded-none rounded-r-md text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-            aria-label="Aumentar quantidade"
-          >
-            <Plus size={14} />
-          </Button>
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex h-8 items-center rounded-lg border bg-surface-sunken">
+          <Button onClick={() => onAlterarQuantidade(item.idCarrinho, -1)} variant="ghost" size="icon-sm" className="h-full rounded-r-none" aria-label={`Diminuir quantidade de ${item.produto.nome}`}><Minus size={14} /></Button>
+          <span className="w-8 text-center text-xs font-semibold tabular-nums text-foreground">{item.quantidade}</span>
+          <Button onClick={() => onAlterarQuantidade(item.idCarrinho, 1)} variant="ghost" size="icon-sm" className="h-full rounded-l-none" aria-label={`Aumentar quantidade de ${item.produto.nome}`}><Plus size={14} /></Button>
         </div>
-
-        <div className="flex items-center gap-1.5">
-          {temModificadores && (
-            <Button
-              onClick={() => onEditar(item.idCarrinho)}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 cursor-pointer text-slate-500 hover:bg-slate-100 hover:text-blue-700 opacity-80 group-hover:opacity-100 transition-opacity"
-              title="Editar item"
-              aria-label="Editar item"
-            >
-              <Pencil size={14} />
-            </Button>
-          )}
-          <Button
-            onClick={() => onRemover(item.idCarrinho)}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-pointer text-red-500 hover:bg-red-50 hover:text-red-600 bg-red-50/50 opacity-80 group-hover:opacity-100 transition-opacity"
-            title="Remover Item"
-          >
-            <Trash size={14} />
-          </Button>
+        <div className="flex items-center gap-1">
+          {temModificadores && <Button onClick={() => onEditar(item.idCarrinho)} variant="ghost" size="icon-sm" aria-label={`Editar ${item.produto.nome}`}><Pencil size={14} /></Button>}
+          <Button onClick={() => onRemover(item.idCarrinho)} variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" aria-label={`Remover ${item.produto.nome}`}><Trash2 size={14} /></Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 });
 
 function EmptyCartMessage() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-slate-400 mt-12 space-y-3">
-      <div className="bg-slate-100 p-4 rounded-full">
-        <ShoppingCart size={32} className="text-slate-300" />
-      </div>
-      <p className="text-sm font-medium text-slate-500">Seu carrinho está vazio</p>
-      <p className="text-xs text-slate-400">Adicione produtos para iniciar a venda</p>
-    </div>
-  );
+  return <div className="flex h-full flex-col items-center justify-center px-6 text-center"><div className="rounded-full bg-muted p-4 text-muted-foreground"><ShoppingCart size={28} aria-hidden="true" /></div><p className="mt-4 text-sm font-medium text-foreground">Seu carrinho está vazio</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">Selecione um produto para iniciar a venda.</p></div>;
 }
