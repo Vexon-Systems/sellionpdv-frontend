@@ -7,6 +7,25 @@ export interface CaixaAtualDTO {
     operadorAberturaNome: string | null;
 }
 
+export interface EventoCaixaOperacionalDTO {
+    id: string;
+    tipo: 'ABERTURA' | 'VENDA' | 'SANGRIA' | 'REFORCO';
+    status: string;
+    descricao: string;
+    dataEvento: string;
+}
+
+export interface CaixaOperacionalDTO {
+    caixaAberto: boolean;
+    visaoAdministrativa: boolean;
+    id: number | null;
+    status: "ABERTO" | "FECHADO" | null;
+    dataAbertura: string | null;
+    operadorAberturaId: number | null;
+    operadorAberturaNome: string | null;
+    eventos: EventoCaixaOperacionalDTO[];
+}
+
 export interface FechamentoDTO {
     saldoFinalInformado: number;
 }
@@ -27,6 +46,6 @@ export interface ExtratoItem {
     subtitulo: string;
     horario: string;
     timestamp: number;
-    valor: number;
-    isEntrada: boolean;
+    valor?: number;
+    isEntrada?: boolean;
 }

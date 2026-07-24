@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { extrairMensagemErro } from "@/lib/utils";
 import type { BandeiraCartao, FormaPagamento, VendaTurnoDTO } from "../types/venda";
 import type { DadosSucesso } from "@/types/pdv";
+import { exigeDadosCartao, pagamentoProntoParaConfirmar } from "../utils/politicaPagamento";
 
 interface UseCheckoutOptions {
     isOpen: boolean;
@@ -41,7 +42,9 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
     });
 
     const maquininhasAtivas = maquininhas.filter((m) => m.ativo);
-    const exigeMaquininha = formaPagamento === "CREDITO" || formaPagamento === "DEBITO";
+    const exigeMaquininha = exigeDadosCartao(formaPagamento);
+    const pagamentoPronto = pagamentoProntoParaConfirmar(
+        formaPagamento, maquininhaId, bandeiraCartao);
 
     function handleFormaPagamentoChange(forma: FormaPagamento | null) {
         setFormaPagamento(forma);
@@ -65,6 +68,10 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         }
         if (exigeMaquininha && !maquininhaId) {
             toast.warning("Atenção", { description: "Por favor, selecione qual maquininha foi utilizada." });
+            return;
+        }
+        if (exigeMaquininha && !bandeiraCartao) {
+            toast.warning("Atenção", { description: "Por favor, selecione a bandeira do cartão." });
             return;
         }
 
@@ -106,6 +113,7 @@ export function useCheckout({ isOpen, subtotal, onSuccess, onClose }: UseCheckou
         maquininhasAtivas,
         isLoadingMaquininhas,
         exigeMaquininha,
+        pagamentoPronto,
         isPending,
         handleConfirmar,
         handleClose: resetEFechar,
