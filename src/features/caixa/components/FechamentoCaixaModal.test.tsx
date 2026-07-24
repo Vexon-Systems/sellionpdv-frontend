@@ -1,10 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-    criarFechamentoDTO,
-    FechamentoCaixaModal,
-} from "./FechamentoCaixaModal";
+import { FechamentoCaixaModal } from "./FechamentoCaixaModal";
+import { criarFechamentoDTO } from "../utils/criarFechamentoDTO";
 
 describe("SEL-SEC-007 — fechamento com numerário físico", () => {
     it("cria o payload somente com o dinheiro contado", () => {

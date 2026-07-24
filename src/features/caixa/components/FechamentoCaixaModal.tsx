@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
 import type { FechamentoDTO } from "../types/caixa";
+import { criarFechamentoDTO } from "../utils/criarFechamentoDTO";
 
 const formSchema = z.object({
     dinheiro: z.number().min(0, "O valor não pode ser negativo."),
@@ -20,10 +21,6 @@ interface FechamentoCaixaModalProps {
     onClose: () => void;
     onSave: (dados: FechamentoDTO) => Promise<void>;
     isSalvando: boolean;
-}
-
-export function criarFechamentoDTO(dinheiroContado: number): FechamentoDTO {
-    return { saldoFinalInformado: dinheiroContado };
 }
 
 export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: FechamentoCaixaModalProps) {
