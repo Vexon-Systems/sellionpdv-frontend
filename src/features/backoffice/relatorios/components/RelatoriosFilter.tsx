@@ -34,18 +34,18 @@ export function RelatoriosFilter({
   isExportando
 }: FiltroPeriodoProps) {
   return (
-    <Card className="bg-white print:hidden">
+    <Card className="print:hidden">
       <CardContent className="px-4 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">{titulo}</h2>
-          <p className="text-sm text-gray-500">{subtitulo}</p>
+          <h2 className="text-lg font-semibold text-foreground">{titulo}</h2>
+          <p className="text-sm text-muted-foreground">{subtitulo}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          {isLoading && <Loader2 className="h-5 w-5 animate-spin text-blue-900" />}
+          {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
           
           <Tabs value={tabAtiva} onValueChange={onTabChange} className="w-full sm:w-auto">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsList className="grid w-full grid-cols-3 bg-muted">
               <TabsTrigger value="hoje" className="transition-all duration-300 ease-out">Hoje</TabsTrigger>
               <TabsTrigger value="7dias" className="transition-all duration-300 ease-out">7 Dias</TabsTrigger>
               <TabsTrigger value="mes" className="transition-all duration-300 ease-out">Este Mês</TabsTrigger>
@@ -60,11 +60,11 @@ export function RelatoriosFilter({
                   id="date"
                   variant="outline"
                   className={cn(
-                    "w-65 justify-start text-left font-normal border-gray-200",
+                    "w-65 justify-start text-left font-normal",
                     !date && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-gray-500" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                   {date?.from ? (
                     date.to ? (
                       <>
@@ -79,7 +79,7 @@ export function RelatoriosFilter({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white" align="end">
+              <PopoverContent className="w-auto p-0" align="end">
                 <Calendar
                   mode="range"
                   defaultMonth={date?.from}
@@ -95,7 +95,7 @@ export function RelatoriosFilter({
           {onExportarPdf && (
             <Button
               variant="outline"
-              className="border-gray-200 gap-2"
+              className="gap-2"
               onClick={onExportarPdf}
               disabled={isExportando}
             >

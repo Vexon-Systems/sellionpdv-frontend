@@ -1,7 +1,12 @@
 import { api } from "@/lib/api";
-import type { CaixaAtualDTO, FechamentoDTO, MovimentacaoDTO } from "../types/caixa";
+import type { CaixaAtualDTO, CaixaOperacionalDTO, FechamentoDTO, MovimentacaoDTO } from "../types/caixa";
 
 export const apiCaixa = {
+    buscarOperacional: async (): Promise<CaixaOperacionalDTO> => {
+        const { data } = await api.get<CaixaOperacionalDTO>("/api/caixa/operacional");
+        return data;
+    },
+
     buscarAtual: async (): Promise<CaixaAtualDTO> => {
         const { data } = await api.get<CaixaAtualDTO>("/api/caixa/atual");
         return data;

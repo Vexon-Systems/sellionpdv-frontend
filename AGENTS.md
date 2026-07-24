@@ -125,3 +125,16 @@ const form = useForm<z.infer<typeof schema>>({
 - `docs/BUSINESS_RULES.md` — regras de negócio do sistema
 - `docs/Contrato_Rotas_API.md` — todos os endpoints com request/response
 - `docs/specs/SPEC_TEMPLATE.md` — template para especificar novas features (SDD)
+
+## Correções de segurança SEL-SEC
+
+- Nunca implementar mais de um item SEL-SEC no mesmo PR, salvo aprovação explícita.
+- Ler a Spec aprovada antes de alterar código e não inventar regras de negócio ausentes nela.
+- Antes da implementação, mapear os fluxos afetados e apresentar um plano.
+- Sempre adicionar teste de regressão; para falhas cross-tenant, usar tenants distintos.
+- Para operações financeiras, testar invariantes monetárias.
+- Não alterar contratos públicos sem registrar a decisão na Spec.
+- Não reduzir cobertura para fazer testes passarem nem remover validações sem justificativa.
+- Tratar o backend como fronteira de segurança; controles no frontend são defesa em profundidade.
+- Após implementar, executar revisão adversarial e atualizar as evidências privadas da Spec.
+- Não publicar neste repositório público Specs, investigações ou relatórios com vulnerabilidades abertas.

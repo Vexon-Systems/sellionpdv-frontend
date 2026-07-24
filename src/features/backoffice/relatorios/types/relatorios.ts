@@ -37,6 +37,7 @@ export interface VendaResumo {
     formaPagamento: 'PIX' | 'DINHEIRO' | 'CREDITO' | 'DEBITO';
     status: 'CONCLUIDA' | 'CANCELADA';
     nomeOperador: string;
+    motivoDesconto?: string | null;
 }
 
 export interface VendaItemModificador {

@@ -31,7 +31,7 @@ export function UserAvatarDropdown() {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
   if (isLoading || !usuario) {
-    return <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />;
+    return <div className="size-9 rounded-full bg-muted animate-pulse" aria-label="Carregando perfil" />;
   }
 
   const iniciais = usuario.nome.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
@@ -39,8 +39,8 @@ export function UserAvatarDropdown() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="focus:outline-none cursor-pointer">
-          <Avatar className="w-10 h-10 hover:opacity-85 transition-opacity shadow-sm">
+        <DropdownMenuTrigger className="rounded-full cursor-pointer outline-none focus-visible:ring-3 focus-visible:ring-ring/40">
+          <Avatar className="size-9 border border-border shadow-sm transition-opacity hover:opacity-85">
             <AvatarImage src={usuario.avatarUrl || undefined} alt={usuario.nome} />
             <AvatarFallback className="bg-primary text-white text-xs font-bold">
               {iniciais}
@@ -48,11 +48,11 @@ export function UserAvatarDropdown() {
           </Avatar>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align="end" className="w-64 bg-white shadow-xl rounded-xl p-1 border border-gray-100">
+        <DropdownMenuContent align="end" className="w-64 rounded-xl border-border bg-popover p-1 shadow-floating">
           <DropdownMenuLabel className="px-3 py-3">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-gray-900 truncate">{usuario.nome}</span>
-              <span className="text-xs text-gray-500 font-medium truncate flex items-center gap-1.5 mt-1">
+              <span className="text-sm font-semibold text-foreground truncate">{usuario.nome}</span>
+              <span className="text-xs text-muted-foreground font-medium truncate flex items-center gap-1.5 mt-1">
                 <ShieldCheck size={14} className="text-primary" /> {formatarRole(usuario.role)}
               </span>
             </div>
@@ -61,17 +61,17 @@ export function UserAvatarDropdown() {
           <DropdownMenuSeparator />
           
           <DropdownMenuItem 
-            className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 cursor-pointer rounded-lg hover:bg-gray-50"
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground focus:bg-muted"
             onSelect={() => navigate({ to: '/configuracoes' })}
           >
-            <Settings size={16} className="text-gray-500" />
+            <Settings size={16} className="text-muted-foreground" />
             Configurações da Conta
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />
           
           <DropdownMenuItem 
-            className="flex items-center gap-2 px-3 py-2.5 text-sm text-red-600 cursor-pointer rounded-lg hover:bg-red-50 focus:bg-red-50"
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-destructive focus:bg-destructive/10"
             onSelect={(e) => { e.preventDefault(); setIsLogoutOpen(true); }}
           >
             <LogOut size={16} />
@@ -91,7 +91,7 @@ export function UserAvatarDropdown() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive text-white hover:bg-destructive/90">
               Sim, encerrar sessão
             </AlertDialogAction>
           </AlertDialogFooter>

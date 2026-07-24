@@ -8,11 +8,10 @@ import { Label } from "@/components/ui/label";
 import { NumericFormat } from "react-number-format";
 import { Info } from "lucide-react";
 import type { FechamentoDTO } from "../types/caixa";
+import { criarFechamentoDTO } from "../utils/criarFechamentoDTO";
 
 const formSchema = z.object({
     dinheiro: z.number().min(0, "O valor não pode ser negativo."),
-    maquininhas: z.number().min(0, "O valor não pode ser negativo."),
-    pix: z.number().min(0, "O valor não pode ser negativo."),
 });
 
 type FormInputs = z.infer<typeof formSchema>;
@@ -27,16 +26,15 @@ interface FechamentoCaixaModalProps {
 export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: FechamentoCaixaModalProps) {
     const { handleSubmit, reset, control, formState: { errors } } = useForm<FormInputs>({
         resolver: zodResolver(formSchema),
-        defaultValues: { dinheiro: 0, maquininhas: 0, pix: 0 }
+        defaultValues: { dinheiro: 0 }
     });
 
     useEffect(() => {
-        if (isOpen) reset({ dinheiro: 0, maquininhas: 0, pix: 0 });
+        if (isOpen) reset({ dinheiro: 0 });
     }, [isOpen, reset]);
 
     const onSubmit = (dados: FormInputs) => {
-        const saldoFinalInformado = dados.dinheiro + dados.maquininhas + dados.pix;
-        onSave({ saldoFinalInformado });
+        onSave(criarFechamentoDTO(dados.dinheiro));
     };
 
     return (
@@ -45,7 +43,7 @@ export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: Fe
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold">Fechamento de Caixa</DialogTitle>
                     <DialogDescription className="text-gray-500">
-                        Informe exatamente o que está fisicamente no caixa ou nos comprovantes de lote.
+                        Informe exclusivamente o dinheiro contado fisicamente na gaveta.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -69,48 +67,6 @@ export function FechamentoCaixaModal({ isOpen, onClose, onSave, isSalvando }: Fe
                             )}
                         />
                         {errors.dinheiro && <p className="text-red-500 text-sm">{errors.dinheiro.message}</p>}
-                    </div>
-
-                    {/* Campo Maquininhas */}
-                    <div className="space-y-2">
-                        <Label className="font-semibold text-gray-800">Fechamento de Lote (Maquininhas)</Label>
-                        <Controller
-                            name="maquininhas"
-                            control={control}
-                            render={({ field }) => (
-                                <NumericFormat
-                                    getInputRef={field.ref}
-                                    value={field.value}
-                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
-                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
-                                    disabled={isSalvando}
-                                    placeholder="R$ 0,00"
-                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                            )}
-                        />
-                        {errors.maquininhas && <p className="text-red-500 text-sm">{errors.maquininhas.message}</p>}
-                    </div>
-
-                    {/* Campo PIX */}
-                    <div className="space-y-2">
-                        <Label className="font-semibold text-gray-800">Total PIX Informado</Label>
-                        <Controller
-                            name="pix"
-                            control={control}
-                            render={({ field }) => (
-                                <NumericFormat
-                                    getInputRef={field.ref}
-                                    value={field.value}
-                                    onValueChange={(values) => field.onChange(values.floatValue || 0)}
-                                    thousandSeparator="." decimalSeparator="," prefix="R$ " decimalScale={2} fixedDecimalScale allowNegative={false}
-                                    disabled={isSalvando}
-                                    placeholder="R$ 0,00"
-                                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                            )}
-                        />
-                        {errors.pix && <p className="text-red-500 text-sm">{errors.pix.message}</p>}
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg flex gap-3 items-start mt-4">

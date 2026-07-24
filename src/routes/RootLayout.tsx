@@ -13,7 +13,7 @@ export function RootLayout() {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main className='flex flex-1 overflow-hidden'>
+            <main className='flex min-w-0 flex-1 overflow-hidden bg-surface-sunken'>
                 <Outlet />
             </main>
         </SidebarProvider>
