@@ -9,8 +9,10 @@ export const apiLancamentos = {
         return response.data
     },
 
-    criar: async (payload: LancamentoPayloadDTO): Promise<LancamentoDTO> => {
-        const response = await api.post<LancamentoDTO>("/api/financeiro/lancamentos", payload)
+    criar: async (payload: LancamentoPayloadDTO, idempotencyKey: string): Promise<LancamentoDTO> => {
+        const response = await api.post<LancamentoDTO>("/api/financeiro/lancamentos", payload, {
+            headers: { "Idempotency-Key": idempotencyKey },
+        })
         return response.data
     },
 
