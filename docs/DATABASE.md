@@ -26,4 +26,4 @@
 * **Equipe:**
   * `funcionarios` (alias `usuarios` com `tenant_id`): Colaboradores da loja. Role restrito a `ROLE_ADMIN` ou `ROLE_OPERADOR`. E-mail imutável. Soft delete via `ativo`.
 * **Financeiro:**
-  * `lancamentos_financeiros`: Despesas operacionais manuais (descricao, valor DECIMAL, categoria VARCHAR, data_referencia DATE, criado_em TIMESTAMPTZ). Hard delete — sem soft delete. Usado pelo `RelatorioService` para compor `despesasOperacionais` e calcular `lucroLiquido` no DRE.
+  * `lancamentos_financeiros`: Despesas operacionais manuais (descricao, valor DECIMAL, categoria VARCHAR, data_referencia DATE, criado_em TIMESTAMPTZ). Possui cancelamento lógico por `status`, com `motivo_cancelamento`, `data_cancelamento` e `usuario_cancelamento_id`; não há exclusão física. O `RelatorioService` considera somente lançamentos `ATIVO` para compor `despesasOperacionais` e calcular `lucroLiquido` no DRE.

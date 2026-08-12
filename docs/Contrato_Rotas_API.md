@@ -927,7 +927,7 @@
 
 ### 12. Financeiro (Lançamentos de Despesas)
 
-*Todas as rotas protegidas por `ROLE_ADMIN`. Filtro de período obrigatório via query params. Hard delete (sem soft delete).*
+*Todas as rotas protegidas por `ROLE_ADMIN`. Filtro de período obrigatório via query params. Lançamentos são cancelados de forma lógica; não existe exclusão física pela API.*
 
 * **`GET /api/financeiro/lancamentos?dataInicial=YYYY-MM-DD&dataFinal=YYYY-MM-DD`**
     *   **Descrição:** Retorna todos os lançamentos de despesas com `data_referencia` dentro do período. Ordenados por data decrescente.
@@ -940,7 +940,11 @@
             "valor": 2500.00,
             "categoria": "ALUGUEL",
             "dataReferencia": "2026-06-01",
-            "criadoEm": "2026-06-05T10:30:00Z"
+            "criadoEm": "2026-06-05T10:30:00Z",
+            "status": "ATIVO",
+            "motivoCancelamento": null,
+            "dataCancelamento": null,
+            "usuarioCancelamentoId": null
           },
           {
             "id": 2,
@@ -948,7 +952,11 @@
             "valor": 450.00,
             "categoria": "ENERGIA",
             "dataReferencia": "2026-06-10",
-            "criadoEm": "2026-06-10T08:00:00Z"
+            "criadoEm": "2026-06-10T08:00:00Z",
+            "status": "CANCELADO",
+            "motivoCancelamento": "Despesa registrada em duplicidade",
+            "dataCancelamento": "2026-06-10T09:00:00Z",
+            "usuarioCancelamentoId": 7
           }
         ]
         ```
@@ -972,8 +980,16 @@
     *   **Payload (Frontend):** Mesmo formato do POST.
     *   **Retorno (200 OK):** Objeto atualizado.
 
+* **`POST /api/financeiro/lancamentos/{id}/cancelamento`**
+    *   **Descrição:** Cancela o lançamento sem alterar seus dados financeiros originais. O motivo é obrigatório, após remover espaços nas extremidades, e deve ter de 3 a 500 caracteres. O usuário e o momento do cancelamento são registrados pelo servidor.
+    *   **Payload (Frontend):**
+        ```json
+        { "motivo": "Despesa registrada em duplicidade" }
+        ```
+    *   **Retorno (200 OK):** Objeto completo do lançamento com `status: "CANCELADO"`.
+    *   **Erros:** `400` para motivo inválido, `404` quando o lançamento não pertence ao tenant do administrador, e `422` se já estiver cancelado.
+
 * **`DELETE /api/financeiro/lancamentos/{id}`**
-    *   **Descrição:** Exclusão permanente (hard delete). Não há recuperação após confirmação.
-    *   **Retorno (204 No Content).**
+    *   **Descrição:** Removida. A rota retorna `405 Method Not Allowed`; use a rota de cancelamento.
 
 ---

@@ -61,6 +61,10 @@ export interface LancamentoDTO {
     categoria: CategoriaLancamento
     dataReferencia: string
     criadoEm: string
+    status: "ATIVO" | "CANCELADO"
+    motivoCancelamento: string | null
+    dataCancelamento: string | null
+    usuarioCancelamentoId: number | null
 }
 
 export interface LancamentoPayloadDTO {
@@ -68,4 +72,8 @@ export interface LancamentoPayloadDTO {
     valor: number
     categoria: CategoriaLancamento
     dataReferencia: string
+}
+
+export interface CancelamentoLancamentoPayloadDTO {
+    motivo: string
 }

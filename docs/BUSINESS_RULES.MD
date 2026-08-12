@@ -21,9 +21,9 @@
 * **Soft delete obrigatório:** Maquininhas não podem ser excluídas fisicamente — vendas históricas têm FK para o `maquininha_id`.
 
 ## 5. Regras do Módulo Financeiro
-* **Acesso restrito:** Apenas usuários com `ROLE_ADMIN` podem criar, editar ou excluir lançamentos financeiros.
-* **Hard delete:** Lançamentos podem ser excluídos permanentemente (sem soft delete). Não há necessidade de histórico retroativo para despesas manuais.
-* **Impacto no DRE:** Os lançamentos do período são somados por categoria e subtraídos do `lucroBrutoEstimado` para gerar o `lucroLiquido`. O DRE só reflete lançamentos dentro do intervalo `dataInicial–dataFinal` consultado.
+* **Acesso restrito:** Apenas usuários com `ROLE_ADMIN` podem criar, editar ou cancelar lançamentos financeiros.
+* **Cancelamento lógico:** O lançamento original é preservado. Para cancelá-lo, o administrador informa motivo entre 3 e 500 caracteres; o servidor registra o usuário e a data. Lançamentos cancelados não podem ser alterados nem cancelados novamente.
+* **Impacto no DRE:** Os lançamentos `ATIVO` do período são somados por categoria e subtraídos do `lucroBrutoEstimado` para gerar o `lucroLiquido`. Lançamentos `CANCELADO` são preservados para histórico, mas não integram os totais operacionais.
 * **Data de referência:** O campo `dataReferencia` (LocalDate) determina em qual período o lançamento aparece no DRE — independente de quando foi criado (`criadoEm`).
 
 ## 6. Regras de Gestão de Equipe

@@ -1,5 +1,5 @@
 import { api } from "@/lib/api"
-import type { LancamentoDTO, LancamentoPayloadDTO } from "../types/lancamento"
+import type { CancelamentoLancamentoPayloadDTO, LancamentoDTO, LancamentoPayloadDTO } from "../types/lancamento"
 
 export const apiLancamentos = {
     listar: async (dataInicial: string, dataFinal: string): Promise<LancamentoDTO[]> => {
@@ -19,7 +19,8 @@ export const apiLancamentos = {
         return response.data
     },
 
-    excluir: async (id: number): Promise<void> => {
-        await api.delete(`/api/financeiro/lancamentos/${id}`)
+    cancelar: async (id: number, payload: CancelamentoLancamentoPayloadDTO): Promise<LancamentoDTO> => {
+        const response = await api.post<LancamentoDTO>(`/api/financeiro/lancamentos/${id}/cancelamento`, payload)
+        return response.data
     },
 }
