@@ -23,6 +23,13 @@ Um sistema de Frente de Caixa (PDV) moderno, escalável e seguro, focado na expe
 **Infraestrutura:**
 * PostgreSQL (Hospedado no Supabase)
 
+## Deploy
+
+- A branch `main` é a fonte dos deployments de produção na Vercel.
+- A branch `dev` e as demais branches geram deployments Preview para validação.
+- As variáveis `VITE_*` são públicas no navegador; nunca devem conter segredos.
+- `VITE_API_URL` deve apontar para a API de produção no ambiente Production e para a API de staging no ambiente Preview.
+
 ## Destaques Arquiteturais
 
 * **Confiança Zero (Zero Trust):** O backend nunca confia em valores financeiros enviados no payload do frontend. Todos os cálculos de totais e descontos são refeitos na camada de *Service* buscando os valores base diretamente do banco de dados.
