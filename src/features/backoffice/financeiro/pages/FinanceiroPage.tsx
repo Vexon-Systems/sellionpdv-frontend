@@ -6,6 +6,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, AlertCir
 
 import { PageShell } from "@/components/layout/PageShell"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { DataTable } from "@/components/ui/data-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -42,16 +43,18 @@ export function FinanceiroPage() {
     const [mesReferencia, setMesReferencia] = useState(() => startOfMonth(new Date()))
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [lancamentoEdicao, setLancamentoEdicao] = useState<LancamentoDTO | null>(null)
-    const [lancamentoParaExcluir, setLancamentoParaExcluir] = useState<LancamentoDTO | null>(null)
+    const [lancamentoParaCancelar, setLancamentoParaCancelar] = useState<LancamentoDTO | null>(null)
+    const [motivoCancelamento, setMotivoCancelamento] = useState("")
 
     const dataInicial = format(startOfMonth(mesReferencia), "yyyy-MM-dd")
     const dataFinal = format(endOfMonth(mesReferencia), "yyyy-MM-dd")
 
-    const { lancamentos, isLoading, isError, criar, atualizar, excluir, isSalvando, isExcluindo } =
+    const { lancamentos, isLoading, isError, criar, atualizar, cancelar, isSalvando, isCancelando } =
         useLancamentos(dataInicial, dataFinal)
 
-    const totalMes = lancamentos.reduce((acc, l) => acc + l.valor, 0)
-    const maiorDespesa = lancamentos.length > 0 ? [...lancamentos].sort((a, b) => b.valor - a.valor)[0] : null
+    const lancamentosAtivos = lancamentos.filter((l) => l.status === "ATIVO")
+    const totalMes = lancamentosAtivos.reduce((acc, l) => acc + l.valor, 0)
+    const maiorDespesa = lancamentosAtivos.length > 0 ? [...lancamentosAtivos].sort((a, b) => b.valor - a.valor)[0] : null
     const maiorPct = maiorDespesa && totalMes > 0 ? Math.round((maiorDespesa.valor / totalMes) * 100) : 0
     const nomeMes = format(mesReferencia, "MMMM", { locale: ptBR })
     const mesAtual = startOfMonth(new Date())
@@ -76,6 +79,7 @@ export function FinanceiroPage() {
     }
 
     const handleEditar = (lancamento: LancamentoDTO) => {
+        if (lancamento.status === "CANCELADO") return
         setLancamentoEdicao(lancamento)
         setIsModalOpen(true)
     }
@@ -103,7 +107,14 @@ export function FinanceiroPage() {
         {
             accessorKey: "descricao",
             header: "Descrição",
-            cell: ({ row }) => <span className="font-medium text-foreground">{row.original.descricao}</span>,
+            cell: ({ row }) => (
+                <div>
+                    <span className="font-medium text-foreground">{row.original.descricao}</span>
+                    {row.original.status === "CANCELADO" && (
+                        <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">Cancelado</span>
+                    )}
+                </div>
+            ),
         },
         {
             accessorKey: "categoria",
@@ -126,12 +137,14 @@ export function FinanceiroPage() {
             header: "",
             cell: ({ row }) => (
                 <div className="flex justify-end gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                    <button type="button" onClick={() => handleEditar(row.original)} className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Editar ${row.original.descricao}`}>
-                        <Pencil size={14} />
-                    </button>
-                    <button type="button" onClick={() => setLancamentoParaExcluir(row.original)} className="rounded-md p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Excluir ${row.original.descricao}`}>
-                        <Trash2 size={14} />
-                    </button>
+                    {row.original.status === "ATIVO" && <>
+                        <button type="button" onClick={() => handleEditar(row.original)} className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Editar ${row.original.descricao}`}>
+                            <Pencil size={14} />
+                        </button>
+                        <button type="button" onClick={() => { setLancamentoParaCancelar(row.original); setMotivoCancelamento("") }} className="rounded-md p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Cancelar ${row.original.descricao}`}>
+                            <Trash2 size={14} />
+                        </button>
+                    </>}
                 </div>
             ),
         },
@@ -193,7 +206,7 @@ export function FinanceiroPage() {
                                         </span>
                                     </div>
                                     <p className="mb-1 text-2xl font-bold text-foreground">{formatarMoeda(totalMes)}</p>
-                                    <p className="text-xs text-muted-foreground">{lancamentos.length} lançamentos no período</p>
+                                    <p className="text-xs text-muted-foreground">{lancamentosAtivos.length} ativos no período</p>
                                 </div>
 
                                 {/* Quantidade */}
@@ -202,8 +215,8 @@ export function FinanceiroPage() {
                                         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Lançamentos</p>
                                         <AlignJustify size={14} className="mt-0.5 text-muted-foreground" />
                                     </div>
-                                    <p className="mb-1 text-2xl font-bold text-foreground">{lancamentos.length}</p>
-                                    <p className="text-xs text-muted-foreground">registros em {nomeMes}</p>
+                                    <p className="mb-1 text-2xl font-bold text-foreground">{lancamentosAtivos.length}</p>
+                                    <p className="text-xs text-muted-foreground">ativos em {nomeMes}</p>
                                 </div>
 
                                 {/* Maior despesa */}
@@ -303,7 +316,7 @@ export function FinanceiroPage() {
                                                             <Pencil size={13} />
                                                         </button>
                                                         <button
-                                                            onClick={() => setLancamentoParaExcluir(l)}
+                                                            onClick={() => { setLancamentoParaCancelar(l); setMotivoCancelamento("") }}
                                                             className="rounded-md p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
                                                         >
                                                             <Trash2 size={13} />
@@ -334,31 +347,48 @@ export function FinanceiroPage() {
             />
 
             <AlertDialog
-                open={!!lancamentoParaExcluir}
-                onOpenChange={(open) => !open && setLancamentoParaExcluir(null)}
+                open={!!lancamentoParaCancelar}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setLancamentoParaCancelar(null)
+                        setMotivoCancelamento("")
+                    }
+                }}
             >
                 <AlertDialogContent className="bg-white">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir lançamento?</AlertDialogTitle>
+                        <AlertDialogTitle>Cancelar lançamento?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Tem certeza que deseja excluir{" "}
-                            <strong>"{lancamentoParaExcluir?.descricao}"</strong>? Esta ação não pode ser desfeita.
+                            O registro de <strong>"{lancamentoParaCancelar?.descricao}"</strong> será preservado,
+                            mas deixará de compor o DRE. Informe o motivo do cancelamento.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <Input
+                        value={motivoCancelamento}
+                        onChange={(event) => setMotivoCancelamento(event.target.value)}
+                        minLength={3}
+                        maxLength={500}
+                        disabled={isCancelando}
+                        placeholder="Ex.: lançamento duplicado"
+                        aria-label="Motivo do cancelamento"
+                    />
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isExcluindo}>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isCancelando}>Voltar</AlertDialogCancel>
                         <AlertDialogAction
-                            disabled={isExcluindo}
+                            disabled={isCancelando || motivoCancelamento.trim().length < 3}
                             onClick={() => {
-                                if (lancamentoParaExcluir) {
-                                    excluir(lancamentoParaExcluir.id, {
-                                        onSuccess: () => setLancamentoParaExcluir(null),
+                                if (lancamentoParaCancelar) {
+                                    cancelar({ id: lancamentoParaCancelar.id, payload: { motivo: motivoCancelamento } }, {
+                                        onSuccess: () => {
+                                            setLancamentoParaCancelar(null)
+                                            setMotivoCancelamento("")
+                                        },
                                     })
                                 }
                             }}
                             className="bg-red-600 hover:bg-red-700 text-white"
                         >
-                            {isExcluindo ? "Excluindo..." : "Confirmar Exclusão"}
+                            {isCancelando ? "Cancelando..." : "Confirmar cancelamento"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
