@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { apiLancamentos } from "../services/apiLancamentos"
-import type { LancamentoPayloadDTO } from "../types/lancamento"
+import type { CancelamentoLancamentoPayloadDTO, LancamentoPayloadDTO } from "../types/lancamento"
 
 export function useLancamentos(dataInicial: string, dataFinal: string) {
     const queryClient = useQueryClient()
@@ -34,13 +34,14 @@ export function useLancamentos(dataInicial: string, dataFinal: string) {
         onError: () => toast.error("Erro ao atualizar lançamento."),
     })
 
-    const { mutate: excluir, isPending: isExcluindo } = useMutation({
-        mutationFn: (id: number) => apiLancamentos.excluir(id),
+    const { mutate: cancelar, isPending: isCancelando } = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: CancelamentoLancamentoPayloadDTO }) =>
+            apiLancamentos.cancelar(id, payload),
         onSuccess: () => {
-            toast.success("Lançamento excluído.")
+            toast.success("Lançamento cancelado. O registro foi preservado.")
             invalidate()
         },
-        onError: () => toast.error("Erro ao excluir lançamento."),
+        onError: () => toast.error("Erro ao cancelar lançamento."),
     })
 
     return {
@@ -51,8 +52,8 @@ export function useLancamentos(dataInicial: string, dataFinal: string) {
         isCriando,
         atualizar,
         isAtualizando,
-        excluir,
-        isExcluindo,
+        cancelar,
+        isCancelando,
         isSalvando: isCriando || isAtualizando,
     }
 }
