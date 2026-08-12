@@ -1,11 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRef } from "react"
 import { toast } from "sonner"
 import { apiLancamentos } from "../services/apiLancamentos"
 import type { CancelamentoLancamentoPayloadDTO, LancamentoPayloadDTO } from "../types/lancamento"
+import { ChaveIdempotenciaCriacao } from "../utils/chaveIdempotencia"
 
 export function useLancamentos(dataInicial: string, dataFinal: string) {
     const queryClient = useQueryClient()
     const queryKey = ["lancamentos", dataInicial, dataFinal]
+    const chaveCriacao = useRef<ChaveIdempotenciaCriacao | null>(null)
+    if (!chaveCriacao.current) {
+        chaveCriacao.current = new ChaveIdempotenciaCriacao()
+    }
 
     const { data: lancamentos = [], isLoading, isError } = useQuery({
         queryKey,
@@ -16,8 +22,10 @@ export function useLancamentos(dataInicial: string, dataFinal: string) {
     const invalidate = () => queryClient.invalidateQueries({ queryKey })
 
     const { mutate: criar, isPending: isCriando } = useMutation({
-        mutationFn: (payload: LancamentoPayloadDTO) => apiLancamentos.criar(payload),
+        mutationFn: (payload: LancamentoPayloadDTO) =>
+            apiLancamentos.criar(payload, chaveCriacao.current!.obter()),
         onSuccess: () => {
+            chaveCriacao.current!.concluirIntento()
             toast.success("Lançamento registrado com sucesso.")
             invalidate()
         },
@@ -49,6 +57,7 @@ export function useLancamentos(dataInicial: string, dataFinal: string) {
         isLoading,
         isError,
         criar,
+        reiniciarCriacao: () => chaveCriacao.current!.concluirIntento(),
         isCriando,
         atualizar,
         isAtualizando,

@@ -962,7 +962,8 @@
         ```
 
 * **`POST /api/financeiro/lancamentos`**
-    *   **Descrição:** Registra uma nova despesa operacional.
+    *   **Descrição:** Registra uma nova despesa operacional. Exige o header `Idempotency-Key` com UUID válido; o frontend preserva a mesma chave em uma retentativa da mesma intenção.
+    *   **Header obrigatório:** `Idempotency-Key: 0d2dce97-9b70-4b39-9251-790dad6e2755`
     *   **Payload (Frontend):**
         ```json
         {
@@ -973,7 +974,9 @@
         }
         ```
         *(Nota: `categoria` aceita: `ALUGUEL`, `ENERGIA`, `AGUA`, `INTERNET_TELEFONE`, `CONTADOR`, `FOLHA_PAGAMENTO`, `PRO_LABORE`, `COMPRA_MERCADORIA`, `EMBALAGENS_MATERIAIS`, `IMPOSTOS`, `TAXAS_BANCARIAS`, `MANUTENCAO`, `MARKETING`, `OUTROS`.)*
-    *   **Retorno (201 Created):** Objeto completo do lançamento criado.
+    *   **Retorno da primeira chamada (201 Created):** Objeto completo do lançamento criado.
+    *   **Replay idêntico (200 OK):** Retorna o objeto originalmente criado e o header `Idempotent-Replayed: true`, sem criar outro lançamento.
+    *   **Erros:** `400` para header ausente/inválido; `409` (`IDEMPOTENCY_KEY_REUSED`) quando a chave já foi usada com payload diferente.
 
 * **`PUT /api/financeiro/lancamentos/{id}`**
     *   **Descrição:** Atualiza um lançamento existente.

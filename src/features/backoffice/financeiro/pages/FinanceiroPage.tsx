@@ -49,7 +49,7 @@ export function FinanceiroPage() {
     const dataInicial = format(startOfMonth(mesReferencia), "yyyy-MM-dd")
     const dataFinal = format(endOfMonth(mesReferencia), "yyyy-MM-dd")
 
-    const { lancamentos, isLoading, isError, criar, atualizar, cancelar, isSalvando, isCancelando } =
+    const { lancamentos, isLoading, isError, criar, reiniciarCriacao, atualizar, cancelar, isSalvando, isCancelando } =
         useLancamentos(dataInicial, dataFinal)
 
     const lancamentosAtivos = lancamentos.filter((l) => l.status === "ATIVO")
@@ -85,11 +85,13 @@ export function FinanceiroPage() {
     }
 
     const handleNovoLancamento = () => {
+        reiniciarCriacao()
         setLancamentoEdicao(null)
         setIsModalOpen(true)
     }
 
     const handleFecharModal = () => {
+        reiniciarCriacao()
         setIsModalOpen(false)
         setLancamentoEdicao(null)
     }
