@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useState } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchCaixas } from "../services/apiRelatorios";
-import { type RelatorioCaixa } from "../types/relatorios";
 import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useCaixas() {
@@ -15,8 +15,6 @@ export function useCaixas() {
   });
   const [tabAtiva, setTabAtiva] = useState<string>("mes");
   
-  const [caixas, setCaixas] = useState<RelatorioCaixa[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleTabChange = (valor: string) => {
     setTabAtiva(valor);
@@ -41,33 +39,30 @@ export function useCaixas() {
     }
   };
 
-  useEffect(() => {
-    const carregarCaixas = async () => {
-      if (!date?.from || !date?.to) return;
-
-      const dataInicialStr = format(date.from, 'yyyy-MM-dd');
-      const dataFinalStr = format(date.to, 'yyyy-MM-dd');
-
-      setIsLoading(true);
+  const dataInicial = date?.from ? format(date.from, 'yyyy-MM-dd') : '';
+  const dataFinal = date?.to ? format(date.to, 'yyyy-MM-dd') : '';
+  const query = useQuery({
+    queryKey: ['relatorios', 'caixas', dataInicial, dataFinal],
+    enabled: !!dataInicial && !!dataFinal,
+    queryFn: async () => {
       try {
-        const response = await fetchCaixas(dataInicialStr, dataFinalStr, 0, 100); 
-        setCaixas(response.content);
+        return await fetchCaixas(dataInicial, dataFinal, 0, 100);
       } catch (error) {
-        reportOperationalError("relatorios.caixas", error);
-      } finally {
-        setIsLoading(false);
+        reportOperationalError('relatorios.caixas', error);
+        throw error;
       }
-    };
-
-    carregarCaixas();
-  }, [date]);
+    },
+    retry: false,
+  });
 
   return {
     date,
     tabAtiva,
     handleTabChange,
     handleCalendarChange,
-    caixas,
-    isLoading
+    caixas: query.isError || !dataInicial || !dataFinal ? [] : query.data?.content ?? [],
+    isLoading: query.isFetching,
+    isError: query.isError,
+    tentarNovamente: query.refetch
   };
 }

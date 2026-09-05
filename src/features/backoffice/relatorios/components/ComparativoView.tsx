@@ -1,3 +1,4 @@
+import { QueryError } from '@/components/QueryError';
 import type { ReactNode } from "react";
 import { useComparativo } from "../hooks/useComparativo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +55,7 @@ function MetricCard({ titulo, icone, valorAtual, valorAnterior, percentual, form
 }
 
 export function ComparativoView() {
-  const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading } = useComparativo();
+  const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading, isError, tentarNovamente } = useComparativo();
 
   // Dados mockados
   const dadosGrafico = [
@@ -76,6 +77,8 @@ export function ComparativoView() {
         onTabChange={handleTabChange}
         onCalendarChange={handleCalendarChange}
       />
+      {isError && <QueryError onRetry={() => void tentarNovamente()} />}
+
 
       {/* Dashboards */}
       {data && (

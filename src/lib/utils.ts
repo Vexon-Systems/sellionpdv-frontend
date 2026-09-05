@@ -8,7 +8,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export function extrairMensagemErro(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
+    if (!error.response) {
+      const method = error.config?.method?.toLowerCase();
+      if (method && !['get', 'head', 'options'].includes(method)) {
+        return 'Não foi possível confirmar o resultado da operação. Consulte os registros antes de iniciar outra operação.';
+      }
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
+    }
     const detail = error.response?.data?.detail;
+    if (detail === 'Venda já processada com esta chave.') {
+      return 'Esta venda já foi registrada. Confira o histórico com o responsável antes de iniciar uma nova venda.';
+    }
     if (typeof detail === "string" && detail.trim().length > 0) {
       return detail;
     }

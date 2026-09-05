@@ -1,3 +1,4 @@
+import { QueryError } from '@/components/QueryError';
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
@@ -76,7 +77,7 @@ export function ControleCaixaPage() {
     };
 
     const { 
-        caixaAtual, isCaixaAberto, isLoadingCaixa, 
+        caixaAtual, isCaixaAberto, isLoadingCaixa, isErrorCaixa, tentarNovamente,
         kpis, extratoUnificado, visaoAdministrativa,
         abrir, isAbrindo, movimentar, isMovimentando, fechar, isFechando 
     } = useControleCaixa(fecharModais);
@@ -104,6 +105,10 @@ export function ControleCaixaPage() {
                 </div>
             </PageShell>
         );
+    }
+
+    if (isErrorCaixa || !caixaAtual) {
+        return <PageShell titulo="Controle de Caixa"><QueryError message="Não foi possível consultar o caixa" onRetry={() => void tentarNovamente()} /></PageShell>;
     }
 
     if (!isCaixaAberto) {

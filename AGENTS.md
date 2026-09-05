@@ -4,7 +4,7 @@ SellionPDV é um POS SaaS multi-tenant para franquias alimentícias, em produç�
 
 ## Stack
 
-- **Framework:** React 18 + TypeScript + Vite
+- **Framework:** React 19 + TypeScript + Vite
 - **Estilização:** Tailwind CSS v4 + shadcn/ui (componentes Radix UI)
 - **Roteamento:** TanStack Router (flat routes)
 - **Data fetching:** TanStack React Query (useQuery + useMutation)
@@ -12,7 +12,7 @@ SellionPDV é um POS SaaS multi-tenant para franquias alimentícias, em produç�
 - **Formulários:** react-hook-form + zod + Controller
 - **Inputs numéricos:** react-number-format (`NumericFormat`)
 - **Datas:** date-fns com locale ptBR
-- **HTTP:** axios com interceptor JWT em `src/services/api.ts`
+- **HTTP:** axios com interceptor JWT em `src/lib/api.ts`
 
 ## Arquitetura — Feature-Sliced Design (FSD)
 
@@ -82,7 +82,7 @@ Cada feature segue a estrutura: `types/ → services/ → hooks/ → components/
 
 ```ts
 // src/store/useAuthStore.ts
-const { user, token, isAuthenticated, clearAuth } = useAuthStore()
+const { user, accessToken, isAuthenticated, clearAuth } = useAuthStore()
 
 // user.role é 'ROLE_ADMIN' ou 'ROLE_OPERADOR'
 const isAdmin = user?.role === 'ROLE_ADMIN'

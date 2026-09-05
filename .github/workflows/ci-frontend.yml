@@ -2,9 +2,9 @@ name: CI — Frontend (React)
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
   push:
-    branches: [dev, main]
+    branches: [main]
 
 permissions:
   contents: read
@@ -19,11 +19,11 @@ jobs:
         # v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Configurar Node.js 20
+      - name: Configurar Node.js 22
         # v4.4.0
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Instalar dependências
@@ -35,7 +35,11 @@ jobs:
       - name: Verificar qualidade do código (ESLint)
         run: npm run lint
 
+      - name: Executar testes de regressão
+        run: npm test
+
       - name: Build de produção (TypeScript + Vite)
         run: npm run build
         env:
-          CI: false
+          VITE_API_URL: https://api.example.invalid
+          VITE_SENTRY_ENVIRONMENT: ci

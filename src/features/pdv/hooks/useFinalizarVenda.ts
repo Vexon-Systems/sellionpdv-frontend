@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { finalizarVenda } from "../services/apiVendas";
 import type { ItemCarrinho } from "../../../types/pdv"; 
 import type { BandeiraCartao, FormaPagamento } from "../types/venda"; //
@@ -35,7 +35,14 @@ export const criarPayloadVenda = (dadosFrontend: FormatoVendaFrontend) => {
 };
 
 export const useFinalizarVenda = () => {
+    const client = useQueryClient();
     return useMutation({
+        retry: false,
+        onSuccess: () => {
+            void client.invalidateQueries({ queryKey: ['caixa-operacional'] });
+            void client.invalidateQueries({ queryKey: ['relatorios'] });
+            void client.invalidateQueries({ queryKey: ['vendas-turno-administrativo'] });
+        },
         mutationFn: async (dadosFrontend: FormatoVendaFrontend) => {
             const payloadLimpo = criarPayloadVenda(dadosFrontend);
 

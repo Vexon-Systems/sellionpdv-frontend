@@ -13,7 +13,7 @@ export function ErrorFallback({ error }: ErrorFallbackProps = {}) {
     <div className="flex h-screen flex-col items-center justify-center gap-4 text-center px-4">
       <h1 className="text-xl font-semibold">Algo deu errado</h1>
       <p className="text-muted-foreground max-w-md">
-        Encontramos um erro inesperado. Já fomos notificados — recarregue a página para continuar.
+        Encontramos um erro inesperado. Recarregue a página para continuar. Se o problema persistir, entre em contato com o suporte.
       </p>
       <Button onClick={() => window.location.reload()}>Recarregar</Button>
     </div>

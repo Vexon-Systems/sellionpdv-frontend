@@ -1,3 +1,4 @@
+import { QueryError } from '@/components/QueryError';
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -18,7 +19,7 @@ const formatarData = (isoString: string | null) => {
 };
 
 export function CaixasView() {
-  const { date, tabAtiva, handleTabChange, handleCalendarChange, caixas, isLoading } = useCaixas();
+  const { date, tabAtiva, handleTabChange, handleCalendarChange, caixas, isLoading, isError, tentarNovamente } = useCaixas();
   const [isExportando, setIsExportando] = useState(false);
 
   const columns = useMemo<ColumnDef<RelatorioCaixa>[]>(() => [
@@ -79,6 +80,8 @@ export function CaixasView() {
       const dataInicial = format(date.from, "yyyy-MM-dd");
       const dataFinal = format(date.to, "yyyy-MM-dd");
       await downloadPdf("/api/relatorios/caixas.pdf", `caixas-${dataInicial}-a-${dataFinal}.pdf`, { dataInicial, dataFinal });
+    } catch {
+      // downloadPdf já apresentou a falha.
     } finally {
       setIsExportando(false);
     }
@@ -94,17 +97,19 @@ export function CaixasView() {
         isLoading={isLoading}
         onTabChange={handleTabChange}
         onCalendarChange={handleCalendarChange}
-        onExportarPdf={handleExportarPdf}
+        onExportarPdf={!isError && !isLoading ? handleExportarPdf : undefined}
         isExportando={isExportando}
       />
+      {isError && <QueryError onRetry={() => void tentarNovamente()} />}
 
-      <DataTable
+
+      {!isError && <DataTable
         columns={columns}
         data={caixas}
         emptyMessage="Nenhum caixa encontrado para o período selecionado."
         isLoading={isLoading}
         pageSize={10}
-      />
+      />}
     </div>
   );
 }

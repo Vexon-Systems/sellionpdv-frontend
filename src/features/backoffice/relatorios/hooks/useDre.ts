@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useState } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchDre } from "../services/apiRelatorios";
-import { type DreResponse } from "../types/relatorios";
 import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useDre() {
@@ -15,8 +15,6 @@ export function useDre() {
   });
   const [tabAtiva, setTabAtiva] = useState<string>("mes");
   
-  const [data, setData] = useState<DreResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleTabChange = (valor: string) => {
     setTabAtiva(valor);
@@ -41,33 +39,30 @@ export function useDre() {
     }
   };
 
-  useEffect(() => {
-    const carregarDre = async () => {
-      if (!date?.from || !date?.to) return;
-
-      const dataInicial = format(date.from, 'yyyy-MM-dd');
-      const dataFinal = format(date.to, 'yyyy-MM-dd');
-
-      setIsLoading(true);
+  const dataInicial = date?.from ? format(date.from, 'yyyy-MM-dd') : '';
+  const dataFinal = date?.to ? format(date.to, 'yyyy-MM-dd') : '';
+  const query = useQuery({
+    queryKey: ['relatorios', 'dre', dataInicial, dataFinal],
+    enabled: !!dataInicial && !!dataFinal,
+    queryFn: async () => {
       try {
-        const response = await fetchDre(dataInicial, dataFinal);
-        setData(response);
+        return await fetchDre(dataInicial, dataFinal);
       } catch (error) {
-        reportOperationalError("relatorios.dre", error);
-      } finally {
-        setIsLoading(false);
+        reportOperationalError('relatorios.dre', error);
+        throw error;
       }
-    };
-
-    carregarDre();
-  }, [date]); 
+    },
+    retry: false,
+  });
 
   return {
     date,
     tabAtiva,
     handleTabChange,
     handleCalendarChange,
-    data,
-    isLoading
+    data: query.isError || !dataInicial || !dataFinal ? null : query.data ?? null,
+    isLoading: query.isFetching,
+    isError: query.isError,
+    tentarNovamente: query.refetch
   };
 }

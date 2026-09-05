@@ -6,7 +6,7 @@ import { Toaster } from './components/ui/sonner';
 import { ErrorFallback } from './components/ErrorFallback';
 import { ThemeProvider } from './components/theme-provider';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 
 function App() {
   return (
