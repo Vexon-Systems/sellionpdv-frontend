@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { User } from '@/types/user';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
@@ -49,6 +50,7 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
 interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
+  usuario: User;
 }
 
 let isRefreshing = false;
@@ -71,7 +73,8 @@ api.interceptors.response.use(
 
     const isAuthRoute =
       originalRequest?.url?.includes('/api/auth/refresh') ||
-      originalRequest?.url?.includes('/api/auth/login');
+      originalRequest?.url?.includes('/api/auth/login') ||
+      originalRequest?.url === '/api/usuarios/me/senha';
 
     if (
       error.response?.status !== 401 ||
@@ -114,8 +117,13 @@ api.interceptors.response.use(
         { timeout: 15_000 }
       );
 
-      const { accessToken, refreshToken: novoRefreshToken } = response.data;
-      useAuthStore.getState().setTokens(accessToken, novoRefreshToken);
+      const { accessToken, refreshToken: novoRefreshToken, usuario } = response.data;
+      useAuthStore.getState().setAuth(usuario, accessToken, novoRefreshToken);
+      if (usuario.deveTrocarSenha) {
+        onRefreshDone(null);
+        window.location.href = '/trocar-senha';
+        return Promise.reject(error);
+      }
 
       onRefreshDone(accessToken);
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
