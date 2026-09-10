@@ -27,6 +27,7 @@ dist-ssr
 
 .vercel
 .env*
+!.env.example
 
 # Documentos internos de seguranca (auditoria SAST/OWASP) — mantidos so localmente,
 # nunca commitados enquanto o repositorio for publico

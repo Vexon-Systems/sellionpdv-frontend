@@ -18,6 +18,7 @@ export async function downloadPdf(
     const response = await api.get<Blob>(endpoint, {
       params,
       responseType: "blob",
+      timeout: 60_000,
     });
 
     const filename = extrairFilenameDeContentDisposition(response) ?? fallbackFilename;

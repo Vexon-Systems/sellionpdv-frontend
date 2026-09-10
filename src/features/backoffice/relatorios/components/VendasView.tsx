@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { QueryError } from '@/components/QueryError';
 import { format } from "date-fns";
 import { useVendas } from "../hooks/useVendas";
 import { downloadPdf } from "@/lib/downloadPdf";
@@ -32,9 +33,9 @@ const formatarDataHora = (dataIso: string) =>
 
 export function VendasView() {
   const {
-    vendas, isLoading, paginaAtual, setPaginaAtual, totalPaginas,
+    vendas, isLoading, isError, tentarNovamente, paginaAtual, setPaginaAtual, totalPaginas,
     statusFiltro, setStatusFiltro, isSheetOpen, setIsSheetOpen,
-    detalhesVenda, isLoadingDetalhes, abrirDetalhes,
+    detalhesVenda, isLoadingDetalhes, isErrorDetalhes, tentarDetalhesNovamente, abrirDetalhes,
     isCancelDialogOpen, setIsCancelDialogOpen, abrirModalCancelamento,
     vendaSelecionadaParaCancelamento, cancelarVenda
   } = useVendas();
@@ -101,7 +102,7 @@ export function VendasView() {
           </div>
 
           <div className="relative w-full overflow-auto px-4 md:px-5">
-            {isLoading ? (
+            {isError ? <QueryError onRetry={() => void tentarNovamente()} /> : isLoading ? (
               <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
               <Table>
@@ -261,7 +262,7 @@ export function VendasView() {
             </div>
           </SheetHeader>
 
-          {isLoadingDetalhes || !detalhesVenda ? (
+          {isErrorDetalhes ? <QueryError onRetry={() => void tentarDetalhesNovamente()} /> : isLoadingDetalhes || !detalhesVenda ? (
             <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-900" /></div>
           ) : (
             <div className="space-y-6">

@@ -59,7 +59,6 @@ export function FinanceiroPage() {
     const nomeMes = format(mesReferencia, "MMMM", { locale: ptBR })
     const mesAtual = startOfMonth(new Date())
     const exibindoMesAtual = format(mesReferencia, "yyyy-MM") === format(mesAtual, "yyyy-MM")
-    const showLegacyTable = import.meta.env.DEV && false
 
     const handleSalvar = (dados: LancamentoPayloadDTO, id?: number) => {
         const payload: LancamentoPayloadDTO = {
@@ -275,62 +274,6 @@ export function FinanceiroPage() {
                                 getRowClassName={() => "group"}
                             />
                         )}
-                        {showLegacyTable && <section className="overflow-hidden border-y bg-surface-raised">
-                                <div className="overflow-x-auto px-4 md:px-5">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b bg-surface-sunken/70">
-                                            <th className="w-20 px-2 py-3.5 text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Data</th>
-                                            <th className="px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</th>
-                                            <th className="hidden px-4 py-3.5 text-left text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:table-cell">Categoria</th>
-                                            <th className="w-36 px-2 py-3.5 text-right text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor</th>
-                                            <th className="px-4 py-3.5 w-16" />
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {lancamentos.map((l, idx) => (
-                                            <tr
-                                                key={l.id}
-                                                className={`group transition-colors hover:bg-muted/50 ${idx !== lancamentos.length - 1 ? "border-b" : ""}`}
-                                            >
-                                                <td className="px-2 py-4 font-mono text-xs tabular-nums text-muted-foreground">
-                                                    {format(new Date(l.dataReferencia + "T12:00:00"), "dd/MM")}
-                                                </td>
-                                                <td className="px-4 py-4 font-medium text-foreground">{l.descricao}</td>
-                                                <td className="px-4 py-4 hidden sm:table-cell">
-                                                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                        <span
-                                                            className="w-2 h-2 rounded-full shrink-0"
-                                                            style={{ backgroundColor: CATEGORIA_DOT_COLOR[l.categoria] ?? "#9ca3af" }}
-                                                        />
-                                                        {CATEGORIA_LABELS[l.categoria]}
-                                                    </span>
-                                                </td>
-                                                <td className="px-2 py-4 text-right font-semibold tabular-nums text-foreground">
-                                                    {formatarMoeda(l.valor)}
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <div className="flex gap-0.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button
-                                                            onClick={() => handleEditar(l)}
-                                                            className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                                                        >
-                                                            <Pencil size={13} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setLancamentoParaCancelar(l); setMotivoCancelamento("") }}
-                                                            className="rounded-md p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-                                                        >
-                                                            <Trash2 size={13} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                </div>
-                            </section>}
                     </TabsContent>
 
                     {/* ─── ABA DRE ─── */}

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useState } from "react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { fetchComparativo } from "../services/apiRelatorios";
-import { type RelatorioComparativoResponse } from "../types/relatorios";
 import { reportOperationalError } from "@/lib/errorReporting";
 
 export function useComparativo() {
@@ -15,8 +15,6 @@ export function useComparativo() {
   });
   const [tabAtiva, setTabAtiva] = useState<string>("mes");
   
-  const [data, setData] = useState<RelatorioComparativoResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleTabChange = (valor: string) => {
     setTabAtiva(valor);
@@ -41,33 +39,30 @@ export function useComparativo() {
     }
   };
 
-  useEffect(() => {
-    const carregarComparativo = async () => {
-      if (!date?.from || !date?.to) return;
-      
-      const dataInicialStr = format(date.from, 'yyyy-MM-dd');
-      const dataFinalStr = format(date.to, 'yyyy-MM-dd');
-
-      setIsLoading(true);
+  const dataInicial = date?.from ? format(date.from, 'yyyy-MM-dd') : '';
+  const dataFinal = date?.to ? format(date.to, 'yyyy-MM-dd') : '';
+  const query = useQuery({
+    queryKey: ['relatorios', 'comparativo', dataInicial, dataFinal],
+    enabled: !!dataInicial && !!dataFinal,
+    queryFn: async () => {
       try {
-        const response = await fetchComparativo(dataInicialStr, dataFinalStr);
-        setData(response);
+        return await fetchComparativo(dataInicial, dataFinal);
       } catch (error) {
-        reportOperationalError("relatorios.comparativo", error);
-      } finally {
-        setIsLoading(false);
+        reportOperationalError('relatorios.comparativo', error);
+        throw error;
       }
-    };
-
-    carregarComparativo();
-  }, [date]);
+    },
+    retry: false,
+  });
 
   return {
     date,
     tabAtiva,
     handleTabChange,
     handleCalendarChange,
-    data,
-    isLoading
+    data: query.isError || !dataInicial || !dataFinal ? null : query.data ?? null,
+    isLoading: query.isFetching,
+    isError: query.isError,
+    tentarNovamente: query.refetch
   };
 }

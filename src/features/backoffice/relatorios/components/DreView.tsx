@@ -1,3 +1,4 @@
+import { QueryError } from '@/components/QueryError';
 import { useState } from "react";
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -27,7 +28,7 @@ function DreRow({ label, value, tone = "default", detail = false, emphasis = fal
 }
 
 export function DreView() {
-  const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading } = useDre();
+  const { date, tabAtiva, handleTabChange, handleCalendarChange, data, isLoading, isError, tentarNovamente } = useDre();
   const [isExportando, setIsExportando] = useState(false);
 
   const handleExportarPdf = async () => {
@@ -37,6 +38,8 @@ export function DreView() {
       const dataInicial = format(date.from, "yyyy-MM-dd");
       const dataFinal = format(date.to, "yyyy-MM-dd");
       await downloadPdf("/api/relatorios/dre.pdf", `dre-${dataInicial}-a-${dataFinal}.pdf`, { dataInicial, dataFinal });
+    } catch {
+      // downloadPdf já apresentou a falha.
     } finally {
       setIsExportando(false);
     }
@@ -56,6 +59,8 @@ export function DreView() {
 
   return <div className="space-y-6 print:m-0 print:bg-white">
     <RelatoriosFilter titulo="Demonstração de Resultado" subtitulo="Apuração em tempo real do período fiscal." date={date} tabAtiva={tabAtiva} isLoading={isLoading} onTabChange={handleTabChange} onCalendarChange={handleCalendarChange} onExportarPdf={data ? handleExportarPdf : undefined} isExportando={isExportando} />
+      {isError && <QueryError onRetry={() => void tentarNovamente()} />}
+
 
     {data && <div className="space-y-6 print:block">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">

@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8080',
+  timeout: 30_000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -109,7 +110,8 @@ api.interceptors.response.use(
     try {
       const response = await axios.post<RefreshResponse>(
         `${api.defaults.baseURL}/api/auth/refresh`,
-        { refreshToken }
+        { refreshToken },
+        { timeout: 15_000 }
       );
 
       const { accessToken, refreshToken: novoRefreshToken } = response.data;

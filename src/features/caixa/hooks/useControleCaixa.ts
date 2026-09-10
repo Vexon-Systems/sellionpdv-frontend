@@ -4,42 +4,50 @@ import { toast } from "sonner";
 
 import { apiCaixa } from "../services/apiCaixa";
 import { apiVendas } from "@/features/pdv/services/apiVendas";
-import { useCaixaStore } from "@/store/useCaixaStore";
+import { useCaixaOperacional } from "./useCaixaOperacional";
 import { extrairMensagemErro } from "@/lib/utils";
 import type { ExtratoItem } from "../types/caixa";
 
 export function useControleCaixa(onSuccessCallback?: () => void) {
     const queryClient = useQueryClient();
-    const { limparCaixa } = useCaixaStore();
 
     // 1. Buscas (Queries)
-    const { data: caixaOperacional, isLoading: isLoadingCaixa } = useQuery({
-        queryKey: ['caixa-operacional'],
-        queryFn: apiCaixa.buscarOperacional,
-        retry: false,
-    });
+    const consultaCaixa = useCaixaOperacional();
+    const { data: caixaOperacional } = consultaCaixa;
 
     const isCaixaAberto = caixaOperacional?.caixaAberto === true;
     const visaoAdministrativa = caixaOperacional?.visaoAdministrativa === true;
 
-    const { data: caixaAdministrativo } = useQuery({
+    const consultaAdministrativa = useQuery({
         queryKey: ['caixa-atual-administrativo', caixaOperacional?.id],
         queryFn: apiCaixa.buscarAtual,
         enabled: isCaixaAberto && visaoAdministrativa,
         retry: false,
     });
 
-    const { data: vendas = [] } = useQuery({
+    const consultaVendas = useQuery({
         queryKey: ['vendas-turno-administrativo', caixaOperacional?.id],
         queryFn: apiVendas.listarVendasTurno,
         enabled: isCaixaAberto && visaoAdministrativa,
+        retry: false,
     });
 
-    const { data: movimentacoes = [] } = useQuery({
+    const consultaMovimentacoes = useQuery({
         queryKey: ['movimentacoes-turno-administrativo', caixaOperacional?.id],
         queryFn: apiCaixa.listarMovimentacoes,
         enabled: isCaixaAberto && visaoAdministrativa,
+        retry: false,
     });
+
+    const { data: caixaAdministrativo } = consultaAdministrativa;
+    const { data: vendas = [] } = consultaVendas;
+    const { data: movimentacoes = [] } = consultaMovimentacoes;
+    const consultasAtivas = isCaixaAberto && visaoAdministrativa
+        ? [consultaCaixa, consultaAdministrativa, consultaVendas, consultaMovimentacoes]
+        : [consultaCaixa];
+    const isErrorCaixa = consultasAtivas.some(consulta => consulta.isError);
+    const isLoadingCaixa = !isErrorCaixa && consultasAtivas.some(consulta => consulta.isPending);
+    const tentarNovamente = () => Promise.all(consultasAtivas.map(consulta => consulta.refetch()));
 
     useEffect(() => {
         if (caixaOperacional && !caixaOperacional.visaoAdministrativa) {
@@ -134,7 +142,6 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
     const abrir = useMutation({
         mutationFn: apiCaixa.abrir,
         onSuccess: () => {
-            limparCaixa();
             queryClient.invalidateQueries({ queryKey: ['caixa-operacional'] });
             toast.success("Caixa aberto com sucesso!");
         },
@@ -163,7 +170,6 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
             queryClient.removeQueries({ queryKey: ['vendas-turno-administrativo'] });
             queryClient.removeQueries({ queryKey: ['movimentacoes-turno-administrativo'] });
             queryClient.invalidateQueries({ queryKey: ['caixa-operacional'] });
-            limparCaixa();
             toast.success(`Caixa fechado com sucesso!`);
             if (onSuccessCallback) onSuccessCallback();
         },
@@ -176,6 +182,8 @@ export function useControleCaixa(onSuccessCallback?: () => void) {
         caixaAtual: caixaOperacional,
         isCaixaAberto,
         isLoadingCaixa,
+        isErrorCaixa,
+        tentarNovamente,
         visaoAdministrativa,
         kpis: { fundoTroco, vendasDinheiro, saldoFisico },
         extratoUnificado,

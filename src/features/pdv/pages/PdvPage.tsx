@@ -7,7 +7,7 @@ import { Search, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { usePdv } from "../hooks/usePdv";
-import { useCaixaStore } from "@/store/useCaixaStore";
+import { useCaixaOperacional } from "@/features/caixa/hooks/useCaixaOperacional";
 import { formatarNomeCurto } from "@/lib/utils";
 import { useKeyboardShortcut } from "@/hooks/useKeyboardShortcut";
 import { AtalhosDialog } from "../components/AtalhosDialog";
@@ -51,14 +51,14 @@ export function PdvPage() {
     contextoEdicao,
   } = usePdv();
 
-  const caixaAtual = useCaixaStore((s) => s.caixaAtual);
+  const { data: caixaAtual, isError: isErrorCaixa } = useCaixaOperacional();
   const buscaRef = useRef<HTMLInputElement>(null);
   const [isAtalhosOpen, setIsAtalhosOpen] = useState(false);
 
   // Atalho "/" foca o campo de busca. Atalho "?" abre o painel de ajuda.
   useKeyboardShortcut("/", () => buscaRef.current?.focus());
   useKeyboardShortcut("?", () => setIsAtalhosOpen(true));
-  const subtituloTurno = caixaAtual
+  const subtituloTurno = !isErrorCaixa && caixaAtual?.caixaAberto && caixaAtual.dataAbertura
     ? (
       <span className="inline-flex items-center gap-1">
         <span>Turno aberto</span>
