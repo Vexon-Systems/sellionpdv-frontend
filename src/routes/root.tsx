@@ -6,7 +6,8 @@ import { ControleCaixaPage } from '@/features/caixa/pages/ControleCaixaPage';
 
 import { RootLayout } from './RootLayout';
 import { RootErrorComponent } from './RootErrorComponent';
-import { requireAuth, requireAdmin } from './auth-guards';
+import { requireAuth, requireAdmin, requireSession } from './auth-guards';
+import { TrocarSenhaPage } from '@/features/auth/pages/TrocarSenhaPage';
 import {
     CatalogoPage,
     ModificadoresPage,
@@ -34,6 +35,13 @@ const pdvRoute = createRoute({
     path: '/',
     beforeLoad: requireAuth,
     component: PdvPage,
+});
+
+const trocarSenhaRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/trocar-senha',
+    beforeLoad: requireSession,
+    component: TrocarSenhaPage,
 });
 
 const caixaRoute = createRoute({
@@ -101,6 +109,7 @@ const financeiroRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
     loginRoute,
+    trocarSenhaRoute,
     pdvRoute,
     caixaRoute,
     catalogoRoute,
