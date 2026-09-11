@@ -29,6 +29,7 @@ Adicionar um override explícito de `fast-uri` para `3.1.7`, regenerar apenas o 
 
 ## Revisão adversarial
 
+- Após integrar a `main`, o lockfile foi regenerado usando o manifesto combinado: preserva `@hookform/resolvers@5.7.1` da atualização Dependabot e fixa `fast-uri@3.1.7`. A instalação determinística, o audit, o lint, os 42 testes e o build foram executados novamente com sucesso.
 - A correção não altera contratos públicos, rotas, modelos de dados ou regras de negócio.
 - O override está na linha 3.x compatível com os pedidos transitivos `^3.0.1`; não introduz uma atualização de major.
 - Não foram usados `npm audit fix`, `--force` nem scripts de ciclo de vida para produzir a alteração.
