@@ -18,7 +18,7 @@ describe('fila de refresh', () => {
     };
     const pending = Promise.all([api.get('/one'), api.get('/two')]);
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
-    complete({ data: { accessToken: 'new', refreshToken: 'rotated' } });
+    complete({ data: { accessToken: 'new', refreshToken: 'rotated', usuario: { id: 1, nome: 'Admin', email: 'admin@example.invalid', role: 'ROLE_ADMIN', deveTrocarSenha: false } } });
     expect((await pending).map(r => r.data)).toEqual(['ok', 'ok']);
     expect(refresh.mock.calls[0][2]).toEqual({ timeout: 15_000 });
   });

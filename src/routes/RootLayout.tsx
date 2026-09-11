@@ -4,7 +4,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 
 export function RootLayout() {
     const routerState = useRouterState();
-    const isLoginPage = routerState.location.pathname === '/login';
+    const isLoginPage = ['/login', '/trocar-senha'].includes(routerState.location.pathname);
 
     if (isLoginPage) {
         return <Outlet />;

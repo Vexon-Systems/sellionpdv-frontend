@@ -53,7 +53,7 @@ export function LoginForm({
       queryClient.clear();
       setAuth(respostaApi.usuario, respostaApi.accessToken, respostaApi.refreshToken);
       toast.success(`Bem-vindo de volta, ${respostaApi.usuario.nome}!`);
-      navigate({ to: "/" });
+      navigate({ to: respostaApi.usuario.deveTrocarSenha ? '/trocar-senha' : '/' });
 
     } catch (error) {
       reportOperationalError("auth.login", error);
